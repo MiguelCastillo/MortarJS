@@ -29,11 +29,15 @@ define(function(require, exports, module) {
       widget = require("mortar/widget"),
       infuser = require("infuser");
 
-  var style = function(options) {
+  function style(options) {
+    var deferred = $.Deferred();
     options = options || {};
 
+    if (typeof options.css === "string" ) {
+    }
+    else if (typeof options.less === "string" ) {
+    }
     if (typeof options.url === "string") {
-      var deferred = $.Deferred();
       infuser.get({
           "templateId": options.url,
           "templateSuffix": "",
@@ -43,11 +47,13 @@ define(function(require, exports, module) {
         }, function( rc_style ) {
           deferred.resolve( rc_style );
         });
-      return deferred;
     }
-    
-    return options;
-  };
+    else {
+      deferred.reject("No suitable option"); 
+    }
+
+    return deferred;
+  }
 
 
   widget("mortar.style", {

@@ -26,7 +26,9 @@ define(function(require, exports, module) {
   "use strict";
 
   require("jquery.ui");
-  var mortar = require("mortar/namespace");
+
+  var mortar  = require("mortar/namespace"),
+      ko      = require("ko");
   var _widget = $.widget;
   
   $.widget = function( name, base, prototype ) {
@@ -59,31 +61,36 @@ define(function(require, exports, module) {
     var resources = [null, null, null];    
 
     if ( infuser ) {
-      if ( options.fragment && typeof options.fragment.url === "string" && mortar.fragment ) {
+      if ( options.fragment && mortar.fragment ) {
+        options.fragment.element = options.fragment.element || _self.element;
         resources[0] = mortar.fragment(options.fragment);
       }
   
-      if ( options.style && typeof options.style.url === "string" && mortar.style ) {
+      if ( options.style && mortar.style ) {
+        options.style.element = options.style.element || _self.element;
         resources[1] = mortar.style(options.style);
       }
   
-      if ( options.model && typeof options.model.url === "string" && mortar.model ) {
+      if ( options.model && mortar.model ) {
+        options.model.element = options.model.element || _self.element;
         resources[2] = mortar.model(options.model);
       }
     }
 
     return $.when.apply($, resources).then(function(fragment, style, model) {
+      if ( fragment ) {
+        _self.element.html( $(fragment) );
+      }
+      
+      if ( style ) {
+      }
 
-      if ( typeof fragment === "string" ) {
-        _self.element.html(fragment);
+      if ( model ) {
+        _self.element.each(function(index, el) {
+          ko.applyBindings(model, el);
+        });
       }
-      
-      if ( typeof style === "string" ) {
-      }
-      
-      if ( typeof model === "object" ) {
-      }
-      
+
       return {
         fragment: fragment,
         style: style,

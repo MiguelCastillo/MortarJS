@@ -25,16 +25,18 @@
 define(function(require, exports, module) {
   "use strict";
 
-  require("ko");
   var mortar  = require("mortar/namespace"),
       widget  = require("mortar/widget"),
       infuser = require("infuser");
 
-  var model = function(options) {
+  function model(options) {
+    var deferred = $.Deferred();
     options = options || {};
 
-    if ( typeof options.url === "string" ) {
-      var deferred = $.Deferred();
+    if ( options.data ){
+      deferred.resolve(options.data);      
+    }
+    else if ( typeof options.url === "string" ) {
       infuser.get({
           "templateId": options.url,
           "templateSuffix": "",
@@ -44,11 +46,13 @@ define(function(require, exports, module) {
         }, function( rc_model ) {
           deferred.resolve( rc_model );
         });
-      return deferred;
     }
-    
-    return options;
-  };
+    else {
+      deferred.reject("No suitable option"); 
+    }
+
+    return deferred;
+  }
   
 
   widget("mortar.model", {
@@ -56,7 +60,7 @@ define(function(require, exports, module) {
     },
 
     _create: function() {
-        
+
     },
 
     _destroy: function() {

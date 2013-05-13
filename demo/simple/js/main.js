@@ -1,6 +1,6 @@
 define(function(require, exports, modules) {
 
-  require("mortar/fragment"), require("mortar/style");
+  require("mortar/fragment"), require("mortar/model");
   var widget = require("mortar/widget");
 
   widget("mortar.main", {
@@ -14,7 +14,7 @@ define(function(require, exports, modules) {
       },
       'model': {
         'data': {
-          'hello': 'world'
+          'say': 'Hello World'
         }
       }
     },
@@ -27,7 +27,7 @@ define(function(require, exports, modules) {
   });
 
 
-  $(document).ready(function(){
+  $(function(){
     $('body').main();
   });
 
