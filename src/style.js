@@ -37,16 +37,11 @@ define(function(require, exports, module) {
     }
     else if (typeof options.less === "string" ) {
     }
-    if (typeof options.url === "string") {
-      infuser.get({
-          "templateId": options.url,
-          "templateSuffix": "",
-          "ajax": {
-            dataType: "text"
-          },
-        }, function( rc_style ) {
-          deferred.resolve( rc_style );
-        });
+    else if (typeof options.url === "string") {
+      var handler = styleHandler[options.type];
+      if (handler) {
+        handler.load(options, deferred); 
+      }
     }
     else {
       deferred.reject("No suitable option"); 
@@ -54,10 +49,63 @@ define(function(require, exports, module) {
 
     return deferred;
   }
+  
+
+  function loader(url, dataType, cb) {
+    infuser.get({
+      "templateId": url,
+      "templateSuffix": "",
+      "ajax": {
+        dataType: dataType
+      },
+    }, cb);
+  }
+
+
+  var styleHandler = {
+    "css": {
+      dataType: "text",
+      load: function(options, deferred){
+        loader(options.url, "text", function(rc_style){
+          $("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
+          deferred.resolve( rc_style );          
+        });
+        
+        /*
+        * Loading directly as a link...  Not really what we need from this
+        var cssLink = document.createElement("link");
+        cssLink.setAttribute("rel", "stylesheet");
+        cssLink.setAttribute("type", "text/css");
+        cssLink.setAttribute("href", options.url);
+        deferred.resolve(cssLink);
+        */
+      }
+    },
+    "$css": {
+      load: function(options, deferred) {
+        loader(options.url, "json", function(rc_style){
+          if( options.element instanceof jQuery ){
+            options.element.css(rc_style);
+          }
+          deferred.resolve( rc_style );          
+        });
+      }
+    },
+    "less": {
+      load: function(options, deferred) {
+        loader(options.url, "text", function(rc_style){
+          //Process less content and then add it to the document as regular css
+          //$("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
+          deferred.resolve( rc_style );
+        });
+      }
+    }
+  };
 
 
   widget("mortar.style", {
     options: {
+
     },
 
     _create: function() {

@@ -82,9 +82,6 @@ define(function(require, exports, module) {
         _self.element.html( $(fragment) );
       }
       
-      if ( style ) {
-      }
-
       if ( model ) {
         _self.element.each(function(index, el) {
           ko.applyBindings(model, el);

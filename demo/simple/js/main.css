@@ -1,3 +1,11 @@
 .main {
-  background-color: red; 
+  color: #696969;
+  background-color: #efefef;
+  border: 1px solid #acacac;
+  border-radius: 5px;
+  padding: 1em;
+}
+
+.main .ko-data {
+  color: #cacaca; 
 }

@@ -1,6 +1,6 @@
 define(function(require, exports, modules) {
 
-  require("mortar/fragment"), require("mortar/model");
+  require("mortar/fragment"), require("mortar/model"), require("mortar/style");
   var widget = require("mortar/widget");
 
   widget("mortar.main", {
@@ -20,6 +20,7 @@ define(function(require, exports, modules) {
     },
 
     _create: function() {
+      this.element.addClass(this.widgetName);
     },
     
     _destroy: function() {
@@ -28,7 +29,7 @@ define(function(require, exports, modules) {
 
 
   $(function(){
-    $('body').main();
+    $("<div class='main-container'>").main().appendTo('body');
   });
 
 });
