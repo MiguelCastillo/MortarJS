@@ -6,10 +6,10 @@ define(function(require, exports, modules) {
   widget("mortar.main", {
     options: {
       'fragment': {
-        'url': 'js/main.html'
+        'url': 'views/main.html'
       },
       'style': {
-        'url': 'js/main.css',
+        'url': 'views/main.css',
         'type': 'css'
       },
       'model': {

@@ -2,7 +2,7 @@
 var requirejsConfig = {
   baseUrl: "../../",
   paths: {
-    "app": "demo/simple",
+    "app": "demo/basic",
     "lib": "lib",
     "mortar": "src",
     "jquery": "lib/jquery-1.9.1",
