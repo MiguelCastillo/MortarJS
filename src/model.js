@@ -33,10 +33,7 @@ define(function(require, exports, module) {
     var deferred = $.Deferred();
     options = options || {};
 
-    if ( options.data ){
-      deferred.resolve(options.data);      
-    }
-    else if ( typeof options.url === "string" ) {
+    if ( typeof options.url === "string" ) {
       infuser.get({
           "templateId": options.url,
           "templateSuffix": "",
@@ -47,27 +44,37 @@ define(function(require, exports, module) {
           deferred.resolve( rc_model );
         });
     }
+    else if ( typeof options.data === "object" ) {
+      deferred.resolve(options.data);
+    }
+    else if ( typeof options === "object" ) {
+      deferred.resolve(options);
+    }
     else {
-      deferred.reject("No suitable option"); 
+      deferred.reject("No suitable option");
     }
 
     return deferred;
   }
-  
+
 
   widget("mortar.model", {
     options: {
     },
 
     _create: function() {
-
+      var model = new model(this.options);
+      this.element.data("model", model);
+      this.model = model;
     },
 
     _destroy: function() {
-        
+
     }
   });
 
+
   mortar.model = model;
   return model;
+
 });

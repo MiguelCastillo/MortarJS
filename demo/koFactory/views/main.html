@@ -1,0 +1,71 @@
+<h3>Knockout data factory: </h3>
+<p>Knockout data bind: </p>
+
+<div class='ko-data'>
+  Integer: <span data-bind="text: integer"></span>
+</div>
+
+<hr>
+
+<div class='ko-data'>
+  Negative Integer: <span data-bind="text: ninteger"></span>
+</div>
+
+<hr>
+
+<div class='ko-data'>
+  Float: <span data-bind="text: float"></span>
+</div>
+
+<hr>
+
+<div class='ko-data'>
+  Negative Float: <span data-bind="text: nfloat"></span>
+</div>
+
+<hr>
+
+<div class='ko-data'>
+  String: <span data-bind="text: string"></span>
+</div>
+
+<hr>
+
+<div class='ko-data'>
+  Array of integers:
+  <table>
+    <tbody data-bind="foreach: arrayInteger">
+      <tr>
+        <td data-bind="text: $data"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<hr>
+
+<div class='ko-data'>
+  Array of floats:
+  <table>
+    <tbody data-bind="foreach: arrayFloat">
+      <tr>
+        <td data-bind="text: $data"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<hr>
+
+<div class='ko-data'>
+  Plain object:
+  <table>
+    <tbody>
+      <tr>
+        <td data-bind="text: object.name.first"></td>
+        <td data-bind="text: object.name.last"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+

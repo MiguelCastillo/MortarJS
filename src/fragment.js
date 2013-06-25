@@ -29,10 +29,11 @@ define(function(require, exports, module) {
       widget = require("mortar/widget"),
       infuser = require("infuser");
 
-  function fragment(options) {
-    var deferred = $.Deferred();
-    options = options || {};
-    
+  function fragment(settings) {
+    settings = settings || {};
+    var deferred = $.Deferred(),
+        options = settings.options || settings;
+
     if (typeof options === "string") {
       deferred.resolve(options);
     }
@@ -43,14 +44,14 @@ define(function(require, exports, module) {
           "ajax": {
           }
         }, function( rc_fragment ) {
-          deferred.resolve( rc_fragment );
+          deferred.resolve(rc_fragment);
         });
     }
     else if (options.html) {
       deferred.resolve(options.html);
     }
     else {
-      deferred.reject("No suitable option"); 
+      deferred.reject("No suitable option");
     }
 
     return deferred;
@@ -62,11 +63,12 @@ define(function(require, exports, module) {
     },
 
     _create: function() {
-        
+      var _fragment = new fragment(this);
+      this.element.data("_fragment", _fragment);
     },
 
     _destroy: function() {
-        
+
     }
   });
 
