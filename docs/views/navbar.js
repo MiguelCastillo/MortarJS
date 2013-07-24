@@ -2,10 +2,8 @@ define(function(require, exports, modules) {
 
   var view = require("mortar/view");
 
-
   function init(widget) {
   }
-
 
   view("docs.navbar", {
     options: {

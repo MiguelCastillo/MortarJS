@@ -17,19 +17,8 @@
   margin-bottom: 20px;
 }
 
-
-.main .hero-unit {
-  padding: 30px 60px;
+.main .copyright {
+  font-size: 12px;
+  text-align: center;
 }
 
-.main .hero-unit > .actions {
-  margin-top: 40px;
-  font-size: 14px;
-}
-
-.main .hero-unit > h1,
-.main .hero-unit > h2,
-.main .hero-unit > h3,
-.main .hero-unit > h4 {
-  font-family: Rockwell, "Courier Bold", Courier, Georgia, Times, "Times New Roman", serif;
-}
