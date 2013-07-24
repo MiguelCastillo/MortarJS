@@ -16,6 +16,9 @@ MortarJs
 
 <p> Performance, modularity and responsiveness are core to MortarJs.
 
+<p>
+<a href="http://miguelcastillo.github.io/MortarJs/" target="mortarjs">Main page</a>
+
 
 Contact me
 ===============
