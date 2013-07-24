@@ -16,11 +16,10 @@
   color: #ffffff;
 }
 
-.main .hero-unit > h1,
-.main .hero-unit > h2,
-.main .hero-unit > h3,
-.main .hero-unit > h4 {
+.mainheader > h1,
+.mainheader > h2,
+.mainheader > h3,
+.mainheader > h4 {
   font-family: Rockwell, "Courier Bold", Courier, Georgia, Times, "Times New Roman", serif;
-  font-weight: 400;
-  text-shadow: 2px 2px 2px rgba(150, 150, 150, 1);
+  text-shadow: 2px 2px 2px rgba(98, 98, 98, 1);
 }
