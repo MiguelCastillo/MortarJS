@@ -16,6 +16,10 @@
   color: #ffffff;
 }
 
+.mainheader > .actions .btn-primary {
+  color: #000000;
+}
+
 .mainheader > h1,
 .mainheader > h2,
 .mainheader > h3,
