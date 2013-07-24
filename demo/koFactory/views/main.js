@@ -1,7 +1,7 @@
 define(function(require, exports, modules) {
 
-  require("mortar/fragment"), require("mortar/model"), require("mortar/style"), koFactory = require("mortar/ko.factory");
-  var widget = require("mortar/widget");
+  var view = require("mortar/view"),
+      koFactory = require("mortar/ko.factory");
 
   var model = koFactory.fromJS({
     "integer": 1,
@@ -20,21 +20,13 @@ define(function(require, exports, modules) {
   });
 
 
-  widget("mortar.main", {
+  view("mortar.main", {
     options: {
-      "fragment": {
-        "url": "views/main.html"
-      },
-      "style": {
-        "url": "views/main.css",
-        "type": "css"
-      },
+      "style": true,
       "model": model
     },
 
     _create: function() {
-      this.element.addClass(this.widgetName);
-
       var count = 0;
       setInterval(function() {
         if ( count++ < 10 ) {

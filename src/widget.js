@@ -29,13 +29,21 @@ define(function(require, exports, module) {
 
   var mortar  = require("mortar/namespace"),
       ko      = require("ko");
-  var _widget = $.widget;
-  
-  $.widget = function( name, base, prototype ) {
+  var $widget = $.widget;
+
+  function widget( name, base, prototype ) {
     base = base || {};
 
-    var _create = base._create;
+    var _init    = base._init;
+    var _create  = base._create;
     var _destroy = base._destroy;
+
+
+    if (typeof _init === "function") {
+      base._init = function() {
+        _init.apply(this, arguments);
+      };
+    }
 
     if (typeof _create === 'function') {
       base._create = function() {
@@ -52,25 +60,25 @@ define(function(require, exports, module) {
       };
     }
 
-    _widget(name, base, prototype);
-  };
-  
-  
+    $widget(name, base, prototype);
+  }
+
+
   function handleOptions(options) {
     var _self = this;
-    var resources = [null, null, null];    
+    var resources = [null, null, null];
 
     if ( infuser ) {
       if ( options.fragment && mortar.fragment ) {
         options.fragment.element = options.fragment.element || _self.element;
         resources[0] = mortar.fragment(options.fragment);
       }
-  
+
       if ( options.style && mortar.style ) {
         options.style.element = options.style.element || _self.element;
         resources[1] = mortar.style(options.style);
       }
-  
+
       if ( options.model && mortar.model ) {
         options.model.element = options.model.element || _self.element;
         resources[2] = mortar.model(options.model);
@@ -81,7 +89,11 @@ define(function(require, exports, module) {
       if ( fragment ) {
         _self.element.html( $(fragment) );
       }
-      
+
+      if ( style !== null ) {
+        _self.element.addClass(_self.widgetName);
+      }
+
       if ( model ) {
         _self.element.each(function(index, el) {
           ko.applyBindings(model, el);
@@ -91,14 +103,16 @@ define(function(require, exports, module) {
       return {
         fragment: fragment,
         style: style,
-        model: model        
+        model: model
       };
     });
   }
 
-  // Restore all jQuery widget factory functions and properties
-  $.extend( $.widget, _widget );
 
-  mortar.widget = $.widget;
+  // Restore all jQuery widget factory functions and properties
+  $.extend( widget, $widget );
+
+  $.widget = widget;
+  mortar.widget = widget;
   return mortar.widget;
 });
