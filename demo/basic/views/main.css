@@ -1,0 +1,9 @@
+.main {
+  color: #696969;
+  background-color: #efefef;
+  padding: 1em;
+}
+
+.main .ko-data {
+  color: #000000;
+}
