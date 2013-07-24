@@ -2,10 +2,7 @@
 var requirejsConfig = {
   baseUrl: "./",
   paths: {
-    "app": "docs",
-    "lib": "lib",
     "mortar": "src",
-    "views": "docs/views",
     "jquery": "lib/js/jquery-1.10.1",
     "jquery.ui": "lib/jquery-ui-1.10.3/ui/jquery-ui",
     "bootstrap": "lib/bootstrap/js/bootstrap",
