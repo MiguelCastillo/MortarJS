@@ -5,13 +5,13 @@ var requirejsConfig = {
     "app": "demo/basic",
     "lib": "lib",
     "mortar": "src",
-    "jquery": "lib/jquery-1.10.1",
+    "jquery": "lib/js/jquery-1.10.1",
     "jquery.ui": "lib/jquery-ui-1.10.3/ui/jquery-ui",
     "bootstrap": "lib/bootstrap/js/bootstrap",
-    "infuser": "lib/infuser-amd",
-    "trafficCop": "lib/TrafficCop",
-    "ko": "lib/knockout-2.2.1",
-    "koext": "lib/koExternalTemplateEngine-amd"
+    "infuser": "lib/js/infuser-amd",
+    "trafficCop": "lib/js/TrafficCop",
+    "ko": "lib/js/knockout-2.2.1",
+    "koext": "lib/js/koExternalTemplateEngine-amd"
   },
   "shim": {
     "jquery.ui": ["jquery"],
