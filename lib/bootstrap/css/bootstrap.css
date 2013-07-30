@@ -2179,7 +2179,6 @@ input[type="button"].btn-block {
 .btn-primary {
   color: #ffffff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-<<<<<<< HEAD
   background-color: #006dcc;
   background-image: -moz-linear-gradient(top, #0088cc, #0044cc);
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0088cc), to(#0044cc));
@@ -2191,19 +2190,6 @@ input[type="button"].btn-block {
   border-color: #0044cc #0044cc #002a80;
   border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
   *background-color: #0044cc;
-=======
-  background-color: #f6dc0d;
-  background-image: -moz-linear-gradient(top, #ffc40d, #e9ff0d);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffc40d), to(#e9ff0d));
-  background-image: -webkit-linear-gradient(top, #ffc40d, #e9ff0d);
-  background-image: -o-linear-gradient(top, #ffc40d, #e9ff0d);
-  background-image: linear-gradient(to bottom, #ffc40d, #e9ff0d);
-  background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffc40d', endColorstr='#ffe9ff0d', GradientType=0);
-  border-color: #e9ff0d #e9ff0d #aec000;
-  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-  *background-color: #e9ff0d;
->>>>>>> gh-pages
   /* Darken IE7 buttons by default so they stand out more given they won't have borders */
 
   filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
@@ -2215,21 +2201,12 @@ input[type="button"].btn-block {
 .btn-primary.disabled,
 .btn-primary[disabled] {
   color: #ffffff;
-<<<<<<< HEAD
   background-color: #0044cc;
   *background-color: #003bb3;
 }
 .btn-primary:active,
 .btn-primary.active {
   background-color: #003399 \9;
-=======
-  background-color: #e9ff0d;
-  *background-color: #ddf300;
-}
-.btn-primary:active,
-.btn-primary.active {
-  background-color: #c6d900 \9;
->>>>>>> gh-pages
 }
 .btn-warning {
   color: #ffffff;
@@ -3032,11 +3009,7 @@ input[type="submit"].btn.btn-mini {
   background-color: #e6e6e6;
 }
 .btn-group.open .btn-primary.dropdown-toggle {
-<<<<<<< HEAD
   background-color: #0044cc;
-=======
-  background-color: #e9ff0d;
->>>>>>> gh-pages
 }
 .btn-group.open .btn-warning.dropdown-toggle {
   background-color: #f89406;

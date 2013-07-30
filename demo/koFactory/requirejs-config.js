@@ -6,11 +6,7 @@ var requirejsConfig = {
     "lib": "lib",
     "mortar": "src",
     "jquery": "lib/js/jquery-1.10.1",
-<<<<<<< HEAD
     "jquery.ui": "lib/jquery-ui-1.10.3/ui/jquery-ui",
-=======
-    "jquery.widget": "lib/js/jquery.ui.widget",
->>>>>>> gh-pages
     "bootstrap": "lib/bootstrap/js/bootstrap",
     "infuser": "lib/js/infuser-amd",
     "trafficCop": "lib/js/TrafficCop",
@@ -18,11 +14,7 @@ var requirejsConfig = {
     "koext": "lib/js/koExternalTemplateEngine-amd"
   },
   "shim": {
-<<<<<<< HEAD
     "jquery.ui": ["jquery"],
-=======
-    "jquery.widget": ["jquery"],
->>>>>>> gh-pages
     "infuser": ["jquery"]
   },
   waitSeconds: 15

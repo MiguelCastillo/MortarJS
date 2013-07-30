@@ -22,10 +22,7 @@ define(function(require, exports, modules) {
 
   view("mortar.main", {
     options: {
-<<<<<<< HEAD
       "style": true,
-=======
->>>>>>> gh-pages
       "model": model
     },
 
