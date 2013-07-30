@@ -7,7 +7,6 @@ define(function(require, exports, modules) {
 
   view("docs.navbar", {
     options: {
-      "style": true
     },
 
     _create: function() {

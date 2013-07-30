@@ -7,7 +7,6 @@ define(function(require, exports, modules) {
 
   view("docs.mainheader", {
     options: {
-      "style": true,
     },
 
     _create: function() {

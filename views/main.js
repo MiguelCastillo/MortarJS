@@ -13,7 +13,6 @@ define(function(require, exports, module) {
 
   view("docs.main", {
     options: {
-      "style": true
     },
 
     _create: function() {

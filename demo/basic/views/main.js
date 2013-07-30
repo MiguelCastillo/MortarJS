@@ -1,10 +1,16 @@
+//
+// Require js module definition
+//
 define(function(require, exports, modules) {
 
+  // Load mortar view
   var view = require("mortar/view");
 
+  // Register a view in the factory
+  // When registering a view, a css and fragment will be automatically loaded
+  // with the macthing name of the widget, unless they are set to false.
   view("mortar.main", {
     options: {
-      "style": true,
       "model": {
         "data": {
           "say": 'Hello World'
@@ -20,8 +26,9 @@ define(function(require, exports, modules) {
   });
 
 
+  // When document is ready, instantiate main.
   $(function(){
-    $("<div class='main-container'>").main().appendTo('body');
+    $('body').main();
   });
 
 });

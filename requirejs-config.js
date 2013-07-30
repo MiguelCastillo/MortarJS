@@ -4,7 +4,7 @@ var requirejsConfig = {
   paths: {
     "mortar": "src",
     "jquery": "lib/js/jquery-1.10.1",
-    "jquery.ui": "lib/jquery-ui-1.10.3/ui/jquery-ui",
+    "jquery.widget": "lib/js/jquery.ui.widget",
     "bootstrap": "lib/bootstrap/js/bootstrap",
     "infuser": "lib/js/infuser-amd",
     "trafficCop": "lib/js/TrafficCop",

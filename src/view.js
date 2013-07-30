@@ -38,11 +38,13 @@ define( function( require, exports, module ) {
   */
   function view( name, base, protoype ) {
     base = base || {options: {}};
+    var path = "./views", type, url, _name = "" + name;
 
     var offset = name.length;
     while( offset ) {
-      if (name[offset] === ".") {
-        offset++;
+      if (_name[offset] === ".") {
+        // Move the offset forward to exclude the period from the widget name.
+        _name = _name.substr( offset + 1 );
         break;
       }
       offset--;
@@ -50,15 +52,22 @@ define( function( require, exports, module ) {
 
     // We will assume we are going to load a fragment unless it has been specifically
     // turned off.
-    if ( !base.options.hasOwnProperty("fragment") || base.options.fragment === true ) {
+    if ( base.options.fragment !== false ) {
+      var fragment = base.options.fragment || {};
+      type = fragment.type || "html";
+      url = path + "/" + _name + "." + type;
+
       base.options.fragment = {
-        url: "./views/" + name.substr( offset ) + ".html"
+        type: type,
+        url: url
       };
     }
 
-    if ( base.options.hasOwnProperty("style")  && base.options.style !== false ) {
-      var type = base.options.style.type || "css";
-      var url  = base.options.style.url || "./views/" + name.substr( offset ) + "." + type;
+    // We will also assume we are going to load a css unless specifically disabled.
+    if ( base.options.style !== false ) {
+      var style = base.options.style || {};
+      type = style.type || "css";
+      url  = style.url || path + "/" + _name + "." + type;
 
       base.options.style = {
         type: type,
