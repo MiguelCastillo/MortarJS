@@ -4,7 +4,6 @@ define(function(require, exports, modules) {
 
   view("mortar.main", {
     options: {
-      "style": true,
     },
 
     _create: function() {

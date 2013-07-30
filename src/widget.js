@@ -25,7 +25,7 @@
 define(function(require, exports, module) {
   "use strict";
 
-  require("jquery.ui");
+  require("jquery.widget");
 
   var mortar  = require("mortar/namespace"),
       ko      = require("ko");

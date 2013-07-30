@@ -1,7 +1,15 @@
+.main,
+.main * {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
 .main {
   color: #696969;
   background-color: #efefef;
   padding: 1em;
+  height: 100%;
 }
 
 .main .ko-data {
