@@ -25,7 +25,11 @@
 define(function(require, exports, module) {
   "use strict";
 
+<<<<<<< HEAD
   require("jquery.ui");
+=======
+  require("jquery.widget");
+>>>>>>> gh-pages
 
   var mortar  = require("mortar/namespace"),
       ko      = require("ko");

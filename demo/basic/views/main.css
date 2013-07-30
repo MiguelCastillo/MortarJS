@@ -1,7 +1,21 @@
+<<<<<<< HEAD
+=======
+.main,
+.main * {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+>>>>>>> gh-pages
 .main {
   color: #696969;
   background-color: #efefef;
   padding: 1em;
+<<<<<<< HEAD
+=======
+  height: 100%;
+>>>>>>> gh-pages
 }
 
 .main .ko-data {
