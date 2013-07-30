@@ -12,7 +12,7 @@ var requirejsConfig = {
     "koext": "lib/js/koExternalTemplateEngine-amd"
   },
   "shim": {
-    "jquery.ui": ["jquery"],
+    "jquery.widget": ["jquery"],
     "infuser": ["jquery"]
   },
   waitSeconds: 15
