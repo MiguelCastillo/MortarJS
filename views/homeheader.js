@@ -5,7 +5,7 @@ define(function(require, exports, modules) {
   function init( widget ) {
   }
 
-  view("docs.mainheader", {
+  view("docs.homeheader", {
     options: {
     },
 

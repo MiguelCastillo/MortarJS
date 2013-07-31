@@ -1,29 +1,29 @@
-.mainheader {
+.homeheader {
   padding: 30px 60px;
   background-color: brown;
   color: #ffffff;
   border-radius: 0px;
 }
 
-.mainheader > .actions {
+.homeheader > .actions {
   margin-top: 40px;
   font-size: 14px;
   color: #ffffff;
   opacity: .8;
 }
 
-.mainheader > .actions a {
+.homeheader > .actions a {
   color: #ffffff;
 }
 
-.mainheader > .actions .btn-primary {
+.homeheader > .actions .btn-primary {
   color: #000000;
 }
 
-.mainheader > h1,
-.mainheader > h2,
-.mainheader > h3,
-.mainheader > h4 {
+.homeheader > h1,
+.homeheader > h2,
+.homeheader > h3,
+.homeheader > h4 {
   font-family: Rockwell, "Courier Bold", Courier, Georgia, Times, "Times New Roman", serif;
   text-shadow: 2px 2px 2px rgba(98, 98, 98, 1);
 }

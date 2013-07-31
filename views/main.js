@@ -4,8 +4,7 @@ define(function(require, exports, module) {
   //view.register("components", "./components");
   //view.register("examples", "./examples");
   require("views/navbar");
-  require("views/mainheader");
-  require("views/maincontent");
+  require("views/home");
   require("views/components");
   require("views/examples");
 
@@ -31,7 +30,7 @@ define(function(require, exports, module) {
 
     widget.element
       .on("click", "a[href=#home]", function(evt) {
-        _viewManager.switchView("maincontent");
+        _viewManager.switchView("home");
       })
       .on("click", "a[href=#components]", function(evt) {
         _viewManager.switchView("components");
@@ -41,7 +40,7 @@ define(function(require, exports, module) {
       });
 
     widget.element.find(".navbarContainer").navbar();
-    _viewManager.switchView("maincontent");
+    _viewManager.switchView("home");
   }
 
 

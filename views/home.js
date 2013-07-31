@@ -1,15 +1,15 @@
 define(function(require, exports, modules) {
 
   var view = require("mortar/view");
-  require("views/mainheader");
+  require("views/homeheader");
 
 
   function init(widget) {
-    widget.element.find(".mainheaderContainer").mainheader();
+    widget.element.find(".homeheaderContainer").homeheader();
   }
 
 
-  view("doc.maincontent", {
+  view("docs.home", {
     options: {
     },
 
