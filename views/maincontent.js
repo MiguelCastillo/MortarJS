@@ -1,9 +1,11 @@
 define(function(require, exports, modules) {
 
   var view = require("mortar/view");
+  require("views/mainheader");
 
 
   function init(widget) {
+    widget.element.find(".mainheaderContainer").mainheader();
   }
 
 
@@ -12,7 +14,6 @@ define(function(require, exports, modules) {
     },
 
     _create: function() {
-      this.element.addClass("container");
       init(this);
     },
 

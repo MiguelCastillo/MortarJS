@@ -41,7 +41,6 @@ define(function(require, exports, module) {
       });
 
     widget.element.find(".navbarContainer").navbar();
-    widget.element.find(".mainheaderContainer").mainheader();
     _viewManager.switchView("maincontent");
   }
 
