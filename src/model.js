@@ -63,9 +63,9 @@ define(function(require, exports, module) {
     },
 
     _create: function() {
-      var model = new model(this.options);
-      this.element.data("model", model);
-      this.model = model;
+      var _model = new model(this.options);
+      this.element.data("model", _model);
+      this.model = _model;
     },
 
     _destroy: function() {
