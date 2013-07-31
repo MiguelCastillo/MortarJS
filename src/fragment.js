@@ -64,7 +64,8 @@ define(function(require, exports, module) {
 
     _create: function() {
       var _fragment = new fragment(this);
-      this.element.data("_fragment", _fragment);
+      this.element.data("fragment", _fragment);
+      this.fragment = _fragment;
     },
 
     _destroy: function() {

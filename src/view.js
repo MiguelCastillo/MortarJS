@@ -33,51 +33,67 @@ define( function( require, exports, module ) {
   require("mortar/model");
   require("mortar/style");
 
-  /**
-  * @param {string} name - the name of the widget.  Must follow jquery ui naming conventions
-  */
-  function view( name, base, protoype ) {
-    base = base || {options: {}};
-    var path = "./views", type, url, _name = "" + name;
 
-    var offset = name.length;
-    while( offset ) {
-      if (_name[offset] === ".") {
-        // Move the offset forward to exclude the period from the widget name.
-        _name = _name.substr( offset + 1 );
-        break;
+  function register(name, path) {
+    /**
+    * @param {string} name - the name of the widget.  Must follow jquery ui naming conventions
+    */
+    function _view ( name, base, protoype ) {
+      base = base || {options: {}};
+      var type, url, _name = "" + name;
+
+      var offset = name.length;
+      while( offset ) {
+        if (_name[offset] === ".") {
+          // Move the offset forward to exclude the period from the widget name.
+          _name = _name.substr( offset + 1 );
+          break;
+        }
+        offset--;
       }
-      offset--;
+
+      // We will assume we are going to load a fragment unless it has been specifically
+      // turned off.
+      if ( base.options.fragment !== false ) {
+        var fragment = base.options.fragment || {};
+        type = fragment.type || "html";
+        url = path + "/" + _name + "." + type;
+
+        base.options.fragment = {
+          type: type,
+          url: url
+        };
+      }
+
+      // We will also assume we are going to load a css unless specifically disabled.
+      if ( base.options.style !== false ) {
+        var style = base.options.style || {};
+        type = style.type || "css";
+        url  = style.url || path + "/" + _name + "." + type;
+
+        base.options.style = {
+          type: type,
+          url: url
+        };
+      }
+
+      widget( name, base, protoype );
     }
 
-    // We will assume we are going to load a fragment unless it has been specifically
-    // turned off.
-    if ( base.options.fragment !== false ) {
-      var fragment = base.options.fragment || {};
-      type = fragment.type || "html";
-      url = path + "/" + _name + "." + type;
-
-      base.options.fragment = {
-        type: type,
-        url: url
-      };
-    }
-
-    // We will also assume we are going to load a css unless specifically disabled.
-    if ( base.options.style !== false ) {
-      var style = base.options.style || {};
-      type = style.type || "css";
-      url  = style.url || path + "/" + _name + "." + type;
-
-      base.options.style = {
-        type: type,
-        url: url
-      };
-    }
-
-    widget( name, base, protoype );
+    return _view;
   }
 
+
+  // Register default view and make the factory available in it so that
+  // other views can be registered...
+  var view = register("view", "./views");
+  view.register = function( name, path ) {
+    if ( !view[name] ) {
+      view[name] = register(name, path);
+    }
+
+    return view[name];
+  };
 
   $.view = view;
   mortar.view = view;

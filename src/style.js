@@ -40,16 +40,16 @@ define(function(require, exports, module) {
     else if (typeof options.url === "string") {
       var handler = styleHandler[options.type];
       if (handler) {
-        handler.load(options, deferred); 
+        handler.load(options, deferred);
       }
     }
     else {
-      deferred.reject("No suitable option"); 
+      deferred.reject("No suitable option");
     }
 
     return deferred;
   }
-  
+
 
   function loader(url, dataType, cb) {
     infuser.get({
@@ -68,9 +68,9 @@ define(function(require, exports, module) {
       load: function(options, deferred){
         loader(options.url, "text", function(rc_style){
           $("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
-          deferred.resolve( rc_style );          
+          deferred.resolve( rc_style );
         });
-        
+
         /*
         * Loading directly as a link...  Not really what we need from this
         var cssLink = document.createElement("link");
@@ -87,7 +87,7 @@ define(function(require, exports, module) {
           if( options.element instanceof jQuery ){
             options.element.css(rc_style);
           }
-          deferred.resolve( rc_style );          
+          deferred.resolve( rc_style );
         });
       }
     },
@@ -109,11 +109,13 @@ define(function(require, exports, module) {
     },
 
     _create: function() {
-        
+      var _style = new style(this.options);
+      this.element.data("style", _style);
+      this.style = _style;
     },
 
     _destroy: function() {
-        
+
     }
   });
 
