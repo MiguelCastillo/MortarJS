@@ -29,14 +29,15 @@ define(function(require, exports, module) {
     var _viewManager = viewManager(widget);
 
     widget.element
-      .on("click", "a[href=#home]", function(evt) {
-        _viewManager.switchView("home");
-      })
-      .on("click", "a[href=#components]", function(evt) {
-        _viewManager.switchView("components");
-      })
-      .on("click", "a[href=#examples]", function(evt) {
-        _viewManager.switchView("examples");
+      .on("click", "a[href^=#]", function(evt) {
+        var $this = $(this);
+        var href = $this.attr("href");
+        href = href.substr(1).replace(/\s/g,"");
+        _viewManager.switchView(href || "home");
+
+        // Set the active item
+        $(".active", $this.closest("ul")).removeClass("active");
+        $this.closest("li").addClass("active");
       });
 
     widget.element.find(".navbarContainer").navbar();

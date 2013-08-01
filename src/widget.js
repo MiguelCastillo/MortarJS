@@ -56,6 +56,10 @@ define(function(require, exports, module) {
 
     if (typeof _destroy === 'function') {
       base._destroy = function() {
+        if (this.hasOwnProperty("style")) {
+          this.element.removeClass(this.widgetName);
+        }
+
         _destroy.apply(this, arguments);
       };
     }
@@ -87,14 +91,17 @@ define(function(require, exports, module) {
 
     return $.when.apply($, resources).then(function(fragment, style, model) {
       if ( fragment ) {
+        _self.fragment = fragment;
         _self.element.html( $(fragment) );
       }
 
       if ( style !== null ) {
+        _self.style = style;
         _self.element.addClass(_self.widgetName);
       }
 
       if ( model ) {
+        _self.model = model;
         _self.element.each(function(index, el) {
           ko.applyBindings(model, el);
         });
