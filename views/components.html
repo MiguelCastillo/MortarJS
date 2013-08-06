@@ -1,9 +1,9 @@
 <div class="hero-unit"></div>
 
-<div class="container">
+<div class="container" data-spy="scroll" data-target=".navbar-components">
   <div class="row">
 
-    <div class="span3">
+    <div class="span3" class="navbar-components">
       <ul class="nav nav-list affix-top">
         <li>
           <a href="#widget">Widget</a>
@@ -15,7 +15,7 @@
           <a href="#model">Model</a>
         </li>
         <li>
-          <a hred="#style">Style</a>
+          <a href="#style">Style</a>
         </li>
         <li>
           <a href="#fragment">Fragment</a>
@@ -27,18 +27,48 @@
     </div>
 
 
-    <div class="span9">
-    Widget: base component that integrates with jQuery plugin ecosystem and synchronize operations such as loading dynamic html fragments, data models, and style sheets.
+    <div class="span9" data-offset="0">
+      <section id="widget">
+        <h1 class="page-header">Widget</h1>
+        <p>
+            base component that integrates with jQuery plugin ecosystem and synchronize operations such as loading dynamic html fragments, data models, and style sheets.
+        </p>
+      </section>
 
-    View: construct that refines the widget component to automatically load html fragments and style sheets when instantiated.
+      <section id="view">
+        <h1 class="page-header">View</h1>
+        <p>
+            construct that refines the widget component to automatically load html fragments and style sheets when instantiated.
+        </p>
+      </section>
 
-    Model: derived from widget to provides a transparent system for dynamic loading of data from a url or a locally.
+      <section id="model">
+        <h1 class="page-header">Model</h1>
+        <p>
+            derived from widget to provides a transparent system for dynamic loading of data from a url or a locally.
+        </p>
+      </section>
 
-    Style: derived from widget to provide a transparent system for loading style sheets dynamically from a url or locally.
+      <section id="style">
+        <h1 class="page-header">Style</h1>
+        <p>
+            derived from widget to provide a transparent system for loading style sheets dynamically from a url or locally.
+        </p>
+      </section>
 
-    Fragment: derived from widget to provide a transparent system for loading html fragments dynamically from a url or locally.
+      <section id="fragment">
+        <h1 class="page-header">Fragment</h1>
+        <p>
+            derived from widget to provide a transparent system for loading html fragments dynamically from a url or locally.
+        </p>
+      </section>
 
-    ko.factory: provides a simple interface to create KnockouJs observables.  It is designed for simplicity, efficiency, and speed.
+      <section id="kofactory">
+        <h1 class="page-header">Ko Factory</h1>
+        <p>
+            provides a simple interface to create KnockouJs observables.  It is designed for simplicity, efficiency, and speed.
+        </p>
+      </section>
     </div>
 
   </div>

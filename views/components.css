@@ -2,3 +2,17 @@
   border-radius: 5px;
   background: none #f7f5fa;
 }
+
+.components .affix-top {
+  width: inherit;
+}
+
+.components .affix {
+  top: 40px;
+  width: inherit;
+}
+
+.components section {
+  padding-top: 30px;
+}
+

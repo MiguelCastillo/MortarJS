@@ -29,7 +29,7 @@ define(function(require, exports, module) {
     var _viewManager = viewManager(widget);
 
     widget.element
-      .on("click", "a[href^=#]", function(evt) {
+      .on("click", ".navbarContainer a[href^=#]", function(evt) {
         var $this = $(this);
         var href = $this.attr("href");
         href = href.substr(1).replace(/\s/g,"");
@@ -56,6 +56,11 @@ define(function(require, exports, module) {
     _destroy: function() {
 
     }
+  });
+
+
+  $(document).on("click.main", "[href^=#]", function(evt) {
+    //evt.preventDefault();
   });
 
 

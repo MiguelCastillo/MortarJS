@@ -13,7 +13,8 @@ var requirejsConfig = {
   },
   "shim": {
     "jquery.widget": ["jquery"],
-    "infuser": ["jquery"]
+    "infuser": ["jquery"],
+    "bootstrap": ["jquery"]
   },
   waitSeconds: 15
 };
