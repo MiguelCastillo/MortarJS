@@ -31,42 +31,106 @@
       <section id="widget">
         <h1 class="page-header">Widget</h1>
         <p>
-            base component that integrates with jQuery plugin ecosystem and synchronize operations such as loading dynamic html fragments, data models, and style sheets.
+          MortarJs Widget is a core component that integrates with the jQuery plugin ecosystem and synchronizes operations such as loading dynamic html fragments, data models, and style sheets.
         </p>
+        <h2>How do you use Widget?</h2>
+        <h3>1. Define your Widget</h3>
+        In this step, you define default options, callback when the widget instance is ready for business, and a destructor.  These are generally the only bits you will ever need when defining a Widget. But since the underlying engine is jQuery UI widget factory, you can specify other properties/methods that jQuery UI widget factory can use.  Please see <a href="http://jqueryui.com/widget/" target="jqueryui">jQuery UI widget factory</a> for more details.
+
+        <section class="jscode defineWidget">
+        widget("mortar.main", {
+          // Default options
+          options: {
+          },
+
+          // Callback when widget is ready for business
+          _create: function() {
+          },
+
+          // Destructor
+          _destroy: function() {
+          }
+        });
+        </section>
+
+        <section class="FYI">
+          <h4>FYI</h4>
+          <i>1. MortarJs Widget provides the same core interfaces as jQuery UI widget factory to enable a migration from existing jQuery systems</i>
+          <br/>
+          <p>2. Widget names must conform to the namespace.name requirement imposed by jQuery UI widget factory.  So, a valid widget name is "mortar.main", but not "main" or "mortar".</p>
+        </section>
+
+
+        <h3>2. Instantiate your Widget</h3>
+        Since MortarJs Widgets are jQuery plugins, you would just use them as such.
+        <section class="jscode instantiateWidget">
+          $("body").main();
+        </section>
+
+
+        <h3>3. Give meaning to your Widget!</h3>
+        An important part of modern Web Appplication is loading data from a server.  And in more advanced scenarios, loading dynamic html template for rendering your data.  MortarJs Widget makes this easy for you by loading html fragments, server data, and synchronizing these operations so that you can safely add your behavior to the widget instance.
+        <section class="jscode meaningfulWidget">
+          widget("mortar.main", {
+            // Default options
+            options: {
+              template: {
+                "url": "http://template.html"
+              },
+              model: {
+                "url": "http://data.json"
+              }
+            },
+
+            // Callback when widget is ready for business
+            _create: function() {
+              console.log("Your html template and server data are loaded at this point");
+            },
+
+            // Destructor
+            _destroy: function() {
+            }
+          });
+        </section>
+
+        <section class="FYI">
+          <h4>FYI</h4>
+          <p>1. A common issue for KnockoutJs developers is knowing when to call ko.applyBindings and that it can only be done <i>only</i> once.  MortarJs Widget takes care of this for you.</p>
+        </section>
       </section>
 
       <section id="view">
         <h1 class="page-header">View</h1>
         <p>
-            construct that refines the widget component to automatically load html fragments and style sheets when instantiated.
+          construct from core widget, which automatically load html fragments and style sheets.  Difference between this and widget is that widget a path for html fragments and css files need to be specified in order to get loaded. View will automatically load these files from the default folder "views", unless explicitly disabled when instantiating your views.
         </p>
       </section>
 
       <section id="model">
         <h1 class="page-header">Model</h1>
         <p>
-            derived from widget to provides a transparent system for dynamic loading of data from a url or a locally.
+          derived from widget to provides a transparent system for dynamic loading of data from a url or a locally.
         </p>
       </section>
 
       <section id="style">
         <h1 class="page-header">Style</h1>
         <p>
-            derived from widget to provide a transparent system for loading style sheets dynamically from a url or locally.
+          derived from widget to provide a transparent system for loading style sheets dynamically from a url or locally.
         </p>
       </section>
 
       <section id="fragment">
         <h1 class="page-header">Fragment</h1>
         <p>
-            derived from widget to provide a transparent system for loading html fragments dynamically from a url or locally.
+          derived from widget to provide a transparent system for loading html fragments dynamically from a url or locally.
         </p>
       </section>
 
       <section id="kofactory">
         <h1 class="page-header">Ko Factory</h1>
         <p>
-            provides a simple interface to create KnockouJs observables.  It is designed for simplicity, efficiency, and speed.
+          provides a simple interface to create KnockouJs observables.  It is designed for simplicity, efficiency, and speed.
         </p>
       </section>
     </div>
