@@ -44,10 +44,12 @@
   font-size: 1em;
   margin: 0px;
   padding: 0px;
+  padding-top: 20px;
   padding-left: 15px;
   border: 0px;
   border-left: 2px solid #ddd;
   border-radius: 0px;
-  background-color: transparent;
+  background: #272822;
+  color: #F8F8F2;
 }
 
