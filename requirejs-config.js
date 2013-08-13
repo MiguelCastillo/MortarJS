@@ -9,12 +9,16 @@ var requirejsConfig = {
     "infuser": "lib/js/infuser-amd",
     "trafficCop": "lib/js/TrafficCop",
     "ko": "lib/js/knockout-2.2.1",
-    "koext": "lib/js/koExternalTemplateEngine-amd"
+    "koext": "lib/js/koExternalTemplateEngine-amd",
+    "codemirror": "lib/CodeMirror"
   },
   "shim": {
     "jquery.widget": ["jquery"],
     "infuser": ["jquery"],
-    "bootstrap": ["jquery"]
+    "bootstrap": ["jquery"],
+    "codemirror/mode/javascript/javascript": ["codemirror/lib/codemirror"],
+    "codemirror/addon/runmode/runmode": ["codemirror/lib/codemirror"],
+    "codemirror/addon/runmode/colorize": ["codemirror/lib/codemirror"]
   },
   waitSeconds: 15
 };

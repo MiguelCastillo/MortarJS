@@ -35,3 +35,19 @@
   color: white;
   border-radius: 0px;
 }
+
+.components .jscode textarea {
+  display: none;
+}
+
+.components .jscode pre {
+  font-size: 1em;
+  margin: 0px;
+  padding: 0px;
+  padding-left: 15px;
+  border: 0px;
+  border-left: 2px solid #ddd;
+  border-radius: 0px;
+  background-color: transparent;
+}
+
