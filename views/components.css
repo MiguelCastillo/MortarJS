@@ -1,6 +1,20 @@
 .components .nav-list {
-  border-radius: 5px;
-  background: none #f7f5fa;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 0px;
+  border: 1px solid black;
+}
+
+.components .nav a {
+  color: #454545;
+  text-shadow: none;
+}
+
+.components .nav > li > a:hover,
+.nav > li > a:focus {
+  text-decoration: none;
+  color: #696969;
+  border-right: 2px solid brown;
 }
 
 .components .affix-top {
@@ -16,3 +30,8 @@
   padding-top: 30px;
 }
 
+.components > .hero-unit {
+  background: none brown;
+  color: white;
+  border-radius: 0px;
+}

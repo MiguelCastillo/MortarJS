@@ -9,7 +9,7 @@ define(function(require, exports, module) {
     setTimeout(function () {
       $(".nav-list", widget.element).affix({
         offset: {
-          top: function () { return $(window).width() <= 980 ? 290 : 150; }
+          top: function () { return $(window).width() <= 980 ? 290 : 220; }
         , bottom: 270
         }
       });
