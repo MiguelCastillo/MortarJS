@@ -34,12 +34,10 @@
     <div class="span9" data-offset="0">
       <section id="widget">
         <h1 class="page-header">Widget</h1>
-        <p>
-          MortarJs Widget is a core component that integrates with the jQuery plugin ecosystem leveraging jQuery UI widget factory. Its primary purpose is to gracefully handle asynchronous operations such as loading dynamic html fragments, data models, and style sheets.
-        </p>
+        MortarJs Widget is a core component that integrates with jQuery's plugin ecosystem by leveraging jQuery UI widget factory. Its primary purpose is to gracefully handle asynchronous operations such as loading dynamic html fragments, data models, and style sheets for UI components. But, since MortarJs Widget are just jQuery plugins, they could really be anything you need whether a UI component or not.
         <h2>How do you use Widget?</h2>
         <h3>1. Define your Widget</h3>
-        In this step, you define default options, callback when the widget instance is ready for business, and a destructor.  These are generally the only bits you will ever need when defining a Widget. But since the underlying engine is jQuery UI widget factory, you can specify other properties/methods that jQuery UI widget factory can use.  Please see <a href="http://jqueryui.com/widget/" target="jqueryui">jQuery UI widget factory</a> for more details.
+        In this step, you define default options, constructor, and a destructor.  These are generally the only bits you will ever need when defining a Widget. But since the underlying engine is jQuery UI widget factory, you can specify other properties/methods that jQuery UI widget factory can use.  Please see <a href="http://jqueryui.com/widget/" target="jqueryui">jQuery UI widget factory</a> for more details.
 
         <section class="jscode">
           <textarea>
@@ -48,11 +46,11 @@ widget("mortar.main", {
   options: {
   },
 
-  // Callback when widget is ready for business
+  // @constructor - callback when widget is ready for business
   _create: function() {
   },
 
-  // Destructor
+  // @destructor
   _destroy: function() {
   }
 });
@@ -62,14 +60,13 @@ widget("mortar.main", {
 
         <section class="FYI">
           <h4>FYI</h4>
-          <i>1. MortarJs Widget provides the same core interfaces as jQuery UI widget factory to enable a migration path from existing jQuery systems.</i>
-          <br/>
+          <p><i>1. MortarJs Widget provides the same core interfaces as jQuery UI widget factory to enable a migration path from existing jQuery systems.</i></p>
           <p>2. Widget names must conform to the namespace.name requirement imposed by jQuery UI widget factory.  So, a valid widget name is "mortar.main", but not "main" or "mortar".</p>
         </section>
 
 
         <h3>2. Instantiate your Widget</h3>
-        Since MortarJs Widgets are jQuery plugins, you would just use them as such.
+        <p>Since MortarJs Widgets are jQuery plugins, you would just use them as such.</p>
         <section class="jscode">
           <textarea>
 $("body").main();
@@ -77,7 +74,7 @@ $("body").main();
         </section>
 
 
-        <h3>3. Give meaning to your Widget!</h3>
+        <h3>3. Give domain specific meaning to your Widget!</h3>
         An important part of modern Web Appplications is dynamically loading data from a server as needed, which is fundamental to any SPA (Single Page Application).  And in more advanced scenarios, loading dynamic html templates for rendering your data.  MortarJs Widget makes this easy for you by loading both html fragments and server data, and synchronizing these operations.
         <section class="jscode">
           <textarea>
@@ -113,9 +110,42 @@ widget("mortar.main", {
 
       <section id="view">
         <h1 class="page-header">View</h1>
-        <p>
-          construct from core widget, which automatically load html fragments and style sheets.  Difference between this and widget is that widget a path for html fragments and css files need to be specified in order to get loaded. View will automatically load these files from the default folder "views", unless explicitly disabled when instantiating your views.
-        </p>
+        <p>MortarJs View is an extension of Widget where html fragments and style sheets are loaded automatically, without any special configuration.  It is designed to make authoring of UI components easier.<br/>
+        <i>Why do we need this?</i> - It is just a convinience so that you don't need to specify an html template and style sheet in every widget definition.</p>
+
+        <section class="jscode">
+          <textarea>
+view("mortar.main", {
+  // Default options
+  options: {
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+          </textarea>
+        </section>
+
+        <section>
+          Let's disect this code.  The view is called main (namespace is mortar), and when a main view is instantiated two things will happen.
+          <p>
+          1. A template with name "main.html" will be loaded<br/>
+          2. A style sheet with name "main.css" will be loaded<br/>
+          </p>
+          <p><i>So, now your code has been nicely broken up into JavaScript, HTML, and CSS.</i></p>
+
+          <p>
+            Another important thing that happens is that the view name is automatically added as a class name to the view. So, now your views provide a very clean way to define well scoped css rules. This might not seem very powerful at a quick glance, but... You will quickly appreciate this system when dealing with large amounts of css, where small changes quickly translate to regressions because css rules are not well defined with a scope.
+          </p>
+          <p>A quick example for illustrating this would be using two UI controls.  Let's say a menu and a dropdown where both depend on a hierarchy and anchors contain the data a user sees.  If you want the anchors in the menus and dropdowns to look different, you would normally create css rules that target anchors in .menus and in .dropdown.  Imagine the menu and dropdown were views?  You could then very easily use the menu.css and dropdown.css that are automatically loaded by your menu and dropdown views.
+
+          <p>* By default, your views are expected to be in a folder called views.</p>
+        </section>
       </section>
 
       <section id="model">
