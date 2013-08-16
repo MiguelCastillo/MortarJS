@@ -104,14 +104,16 @@ widget("mortar.main", {
 
         <section class="FYI">
           <h4>FYI</h4>
+            <!--
           <p>1. A common issue for KnockoutJs developers is knowing when to call ko.applyBindings and that it can be done <i>only</i> once.  MortarJs Widget takes care of this for you.</p>
+          <p>2. Another common problem when developing with KnockoutJs is cleanly separating view models, especially when dealing with nested UI components and view models are not supposed to cascade down.</p>
+            -->
         </section>
       </section>
 
       <section id="view">
         <h1 class="page-header">View</h1>
-        <p>MortarJs View is an extension of Widget where html fragments and style sheets are loaded automatically, without any special configuration.  It is designed to make authoring of UI components easier.<br/>
-        <i>Why do we need this?</i> - It is just a convinience so that you don't need to specify an html template and style sheet in every widget definition.</p>
+        <p>MortarJs View is an extension of Widget where html fragments and style sheets are loaded automatically, without any special configuration.  Its purpose is to make authoring of UI components easier.<br/>
 
         <section class="jscode">
           <textarea>
@@ -132,19 +134,31 @@ view("mortar.main", {
         </section>
 
         <section>
-          Let's disect this code.  Views will download html fragments and style sheets by using the name of the view. The view is called main (namespace is mortar), and when a main view is instantiated two things will happen.
+          <i>Let's dissect this code...</i> The View in this example is called main (namespace is mortar). So when a main View is instantiated two things happen.
           <p>
-          1. A template with name "main.html" will be loaded<br/>
-          2. A style sheet with name "main.css" will be loaded<br/>
+            1. A template with name "main.html" is loaded<br/>
+            2. A style sheet with name "main.css" is loaded<br/>
           </p>
-          <p><i>So, now your code has been nicely broken up into JavaScript, HTML, and CSS by simply defining a view.</i></p>
 
           <p>
-            Another important thing that happens when the main view is instatiated is that the view name is automatically added as a class name to the view. This gives your views a very clean way to define well scoped css rules. This might not seem very powerful at a quick glance, but... You will quickly appreciate this system when dealing with large amounts of css, where small changes quickly translate to regressions because css rules are not well defined with a scope.
+            The name of the html fragment and style sheet is derived from the name of the View itself, hence main.html and main.css.
           </p>
-          <p>To illustrate this, please consider two UI controls: menu and dropdown.  Generally both depend on a hierarchy and anchors contain data users see.  If you want the anchors in the menus and dropdowns to look different, you would normally create css rules that target anchors in .menus and in .dropdown.  Imagine the menu and dropdown were views?  You could then very easily use the menu.css and dropdown.css that are automatically loaded by your menu and dropdown views.
 
-          <p>* By default, your views are expected to be in a folder called views. In more advanced uses, you can configure a view factory where you can specify the folder where your viewscan be found.</p>
+          <p><i>
+            * By simply defining a View, with very little effort you have created a place for your domain specific logic (JavaScript), your presentation (HTML), and look and feel (CSS)!
+          </i></p>
+
+          <p>
+            Another important thing that happens when a View is instatiated is its name (E.g. main) is automatically added as a css class in the dom element containing it. This provides a very clean way to scope all the css rules in the css file for the View, which really helps avoid collision with all your other css rules.
+          </p>
+
+          <p>
+            To illustrate this please consider two UI controls: menu and dropdown.  Generally both depend on a dom hierarchy with anchors containing user data.  If you want the anchors in the menus and dropdowns to look different, you would normally create css rules that target anchors in .menus and in .dropdown.  Imagine the menu and dropdown were views?  You would use the menu.css and dropdown.css that are automatically loaded to define the specific css rules.
+          </p>
+
+          <p>
+            * By default, your views are expected to be in a folder called views. In more advanced uses, you can configure a view factory where you can specify the folder where your views can be found.
+          </p>
         </section>
       </section>
 
