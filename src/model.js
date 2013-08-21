@@ -27,7 +27,8 @@ define(function(require, exports, module) {
 
   var mortar  = require("mortar/namespace"),
       widget  = require("mortar/widget"),
-      infuser = require("infuser");
+      infuser = require("infuser"),
+      ko      = require("ko");
 
   function model(options) {
     var deferred = $.Deferred();
@@ -63,9 +64,14 @@ define(function(require, exports, module) {
     },
 
     _create: function() {
+      var _self = this;
       var _model = new model(this.options);
       this.element.data("model", _model);
       this.model = _model;
+
+      _model.done(function(data) {
+        ko.applyBindings(data, _self.element[0]);
+      });
     },
 
     _destroy: function() {
