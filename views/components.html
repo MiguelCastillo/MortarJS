@@ -108,7 +108,7 @@ widget("mortar.main", {
 
         <section class="jscode">
           <p>When the _create function is called, all the relevant dynamic and asynchronous operations are done and you are ready to add business logic to the Widget instance.</p>
-          <p>A MortarJs Widget instance is a jQuery UI widget, so everything that jQuery UI widgets provide are accessible in exactly the same way.  Therefore we can call into other MortarJs Widget, Views, or any other jQuery plugin.  Very common operations are to add event listeners/handlers and also instantiate other Widgets and Views that are contained by this Widget instance.</p>
+          <p>In practice, a MortarJs Widget instance is a jQuery UI widget instance.  So, everything that a jQuery UI widget instance provides is accessible in exactly the same way in a MortarJs Widget instance. And some very common operations are to add event listeners/handlers and also instantiate other Widgets and Views that are to be contained by a Widget instance.</p>
 
           <textarea>
 function init( wInstance ) {
