@@ -107,8 +107,8 @@ widget("mortar.main", {
         </section>
 
         <section class="jscode">
-          <p>When the _create function is called, all the relevant dynamic and asynchronous operations are done and you are ready to add business logic to the Widget instance.</p>
-          <p>In practice, a MortarJs Widget instance is a jQuery UI widget instance.  So, everything that a jQuery UI widget instance provides is accessible in exactly the same way in a MortarJs Widget instance. And some very common operations are to add event listeners/handlers and also instantiate other Widgets and Views that are to be contained by a Widget instance.</p>
+          <p>When the _create function is called, all the relevant dynamic and asynchronous operations are finished and you are ready to add business logic to the Widget instance. Some very common operations are to add event listeners/handlers and to instantiate other Widgets and Views that are to be contained by a Widget instance.</p>
+          <p>In practice, a MortarJs Widget instance is a jQuery UI widget instance so, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</p>
 
           <textarea>
 function init( wInstance ) {
@@ -171,8 +171,149 @@ view("mortar.main", {
             2. A style sheet with name "main.css" is loaded<br/>
           </p>
           <p>The name of the html fragment and style sheet is derived from the name of the View itself, hence main.html and main.css.</p>
-          <p>Another important thing that happens when a View is instatiated is that its name (E.g. main) gets automatically added as a css class to the containing DOM element. This provides a very clean way to scope all the css rules in the css file for the View, which really helps avoid cross contamination with other UI components and css.</p>
-          <p>To illustrate this please consider two UI controls: menu and dropdown.  Generally both depend on a dom hierarchy with anchors containing user data.  If you want the anchors in the menus and dropdowns to look different, you would normally create css rules that target anchors in .menus and in .dropdown.  If the menu and dropdown were views, you would simply use the menu.css and dropdown.css that are automatically loaded by the views.</p>
+        </section>
+
+        <section>
+          <p><b>CSS note: </b>An important thing that happens when a View is instantiated is that its name (E.g. main) gets automatically added as a css class to the containing DOM element. This provides a very clean way to scope all the css rules in the css file for the View, which really helps avoid cross contamination with other UI components and their respective css.</p>
+          <p>To illustrate this please consider two UI controls: menu and dropdown.  Generally both depend on a dom hierarchy with anchors containing user data.  If you want the anchors in the menus and dropdowns to look different, you would normally create css rules that target anchors in .menus and .dropdown.  If the menu and dropdown were views, you would simply use the menu.css and dropdown.css that are automatically loaded by the views.</p>
+
+          <section class="jscode">
+
+            <textarea>
+view("mortar.menu", {
+  // Default options
+  options: {
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+            </textarea>
+          </section>
+          <section class="jscode">
+            <textarea>
+.menu a {
+  color: blue;
+}
+            </textarea>
+          </section>
+
+          <hr>
+
+          <section class="jscode">
+            <textarea>
+view("mortar.dropdown", {
+  // Default options
+  options: {
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+            </textarea>
+          </section>
+
+          <section class="jscode">
+            <textarea>
+.dropdown a {
+  color: red;
+}
+            </textarea>
+          </section>
+        </section>
+
+        <section>
+          <p><b>KnockoutJs note: </b>When a model is loaded, it is <i>only</i> applied to the html of the View at the time of its creation.  This has a rather important implication, especially if you are loading dynamic html fragments.  View models do not propagate down into children Views, which is a very disired behavior in larger web applications.</p>
+          <p><i>* When view models don't propagate down to children Views, you can safely nest Views with independent view models.</i></p>
+          <p>To illustrate, think of a web application with multiple sections (Views) where users can trigger server requests; Search and Email notifications. When a user triggers a request for Search, data for Email notifications really shouldn't be sent to the server. Using Views to break up Search and Email notifications allows you to have completely separate view models and event handlers.</p>
+
+          <section class="jscode">
+            <textarea>
+view("mortar.search", {
+  // Default options
+  options: {
+    model: {
+      search: {
+        text: "Maverick"
+      }
+    }
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+    init( this );
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+
+
+function init(wInstance) {
+  wInstance.on("click", ".getSearchResults", function(evt) {
+    var data = ko.dataFor(this);
+    data = ko.mapping.toJs(data);
+
+    $.ajax({
+      url: "http://dummy/search",
+      data: data
+    });
+  });
+}
+            </textarea>
+          </section>
+
+          <hr/>
+
+          <section class="jscode">
+            <textarea>
+view("mortar.emailNotifications", {
+  // Default options
+  options: {
+    model: {
+      when: "lastFiveHours"
+    }
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+    init( this );
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+
+
+function init(wInstance) {
+  wInstance.on("click", ".getEmailNotifications", function(evt) {
+    var data = ko.dataFor(this);
+    data = ko.mapping.toJs(data);
+
+    $.ajax({
+      url: "http://dummy/emailNotifications",
+      data: data
+    });
+  });
+}
+            </textarea>
+          </section>
+
+        </section>
+
+        <section>
           <p>* By default, your views are expected to be in a folder called views. In more advanced uses, you can configure a view factory where you can specify the folder where your views can be found.</p>
         </section>
       </section>
@@ -233,23 +374,17 @@ $("body").model({
 
       <section id="style">
         <h1 class="page-header">Style</h1>
-        <p>
-          derived from widget to provide a transparent system for loading style sheets dynamically from a url or locally.
-        </p>
+        <p>derived from widget to provide a transparent system for loading style sheets dynamically from a url or locally.</p>
       </section>
 
       <section id="fragment">
         <h1 class="page-header">Fragment</h1>
-        <p>
-          derived from widget to provide a transparent system for loading html fragments dynamically from a url or locally.
-        </p>
+        <p>derived from widget to provide a transparent system for loading html fragments dynamically from a url or locally.</p>
       </section>
 
       <section id="kofactory">
         <h1 class="page-header">Ko Factory</h1>
-        <p>
-          provides a simple interface to create KnockouJs observables.  It is designed for simplicity, efficiency, and speed.
-        </p>
+        <p>provides a simple interface to create KnockouJs observables.  It is designed for simplicity, efficiency, and speed.</p>
       </section>
     </div>
 

@@ -21,9 +21,11 @@ define(function(require, exports, module) {
 
 
     $(".jscode", widget.element).each(function( index, item ) {
-      var $target = $("<pre class='cm-s-monokai'>").appendTo(item);
       var $source = $("textarea", item);
-      CodeMirror.runMode($source[0].value, "application/javascript", $target[0]);
+      $source.each(function(index, textarea) {
+        var $target = $("<pre class='cm-s-monokai'>").appendTo(item);
+        CodeMirror.runMode(textarea.value, "application/javascript", $target[0]);
+      });
     });
   }
 
