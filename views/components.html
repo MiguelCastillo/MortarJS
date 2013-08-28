@@ -43,6 +43,7 @@
           <h3>1. Define your Widget</h3>
           <p>In this step, you define default options, constructor, and a destructor.  These are generally the only bits you will ever need when defining a Widget. But since the underlying engine is jQuery UI widget factory, you can specify other properties/methods that jQuery UI widget factory can use.  Please see <a href="http://jqueryui.com/widget/" target="jqueryui">jQuery UI widget factory</a> for more details.</p>
 
+          <div class="title">Widget definition</div>
           <textarea>
 widget("mortar.main", {
   // Default options
@@ -71,6 +72,7 @@ widget("mortar.main", {
           <h3>2. Instantiate your Widget</h3>
           <p>Since MortarJs Widgets are jQuery plugins, you would just use them as such.</p>
 
+          <div class="title">Widget instance on the document body</div>
           <textarea>
 $("body").main();
           </textarea>
@@ -78,9 +80,11 @@ $("body").main();
 
 
         <section class="jscode">
-          <h3>3. Give domain specific meaning to your Widget!</h3>
-          <p>An important part of modern Web Appplications is dynamically loading data from a server on demand. And in more advanced scenarios, dynamically loading html fargments, which we also call html templates that are used for rendering your data.  Both of these are fundamental aspects of a solid SPA (Single Page Application). MortarJs Widget makes this easy for you by loading both html fragments and server data, and then synchronizing these operations.</p>
+          <h3>3. Widgets in the wild!</h3>
+          <p>An important part of modern Web Appplications is to dynamically load data on demand, particularly from a remote source. And in more advanced scenarios, to dynamically load html fargments, also refered to as html templates. Both of these are fundamental aspects of a solid SPA (Single Page Application). MortarJs Widget makes this easy for you by loading both html fragments and server data, and then synchronizing these operations.</p>
+          <p><i>* Html fragments become very powerful when they contain KnockoutJs data-bind notation used for rendering data models, because Widget is designed to only apply the data model to the html fragment.  This prevents leaking data into other parts of the application, which is particularly important when creating nested Widgets.</i></p>
 
+          <div class="title">Configure an html fragment and data model</div>
           <textarea>
 widget("mortar.main", {
   // Default options
@@ -107,9 +111,10 @@ widget("mortar.main", {
         </section>
 
         <section class="jscode">
-          <p>When the _create function is called, all the relevant dynamic and asynchronous operations are finished and you are ready to add business logic to the Widget instance. Some very common operations are to add event listeners/handlers and to instantiate other Widgets and Views that are to be contained by a Widget instance.</p>
-          <p>In practice, a MortarJs Widget instance is a jQuery UI widget instance so, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</p>
+          <p>When the _create function is called, all the relevant asynchronous operations are finished and you are ready to add business logic to the Widget instance. Some very common operations are to add event listeners/handlers and to instantiate nested (children) Widgets.</p>
+          <p><i>* In practice, a MortarJs Widget instance is a jQuery UI widget instance so, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</i></p>
 
+          <div class="title">Add event handlers and create a nested widget</div>
           <textarea>
 function init( wInstance ) {
   // Add event handler
@@ -127,15 +132,6 @@ function init( wInstance ) {
 }
           </textarea>
         </section>
-
-
-        <section class="FYI">
-          <h4>FYI</h4>
-            <!--
-          <p>1. A common issue for KnockoutJs developers is knowing when to call ko.applyBindings and that it can be done <i>only</i> once.  MortarJs Widget takes care of this for you.</p>
-          <p>2. Another common problem when developing with KnockoutJs is cleanly separating view models, especially when dealing with nested UI components and view models are not supposed to cascade down.</p>
-            -->
-        </section>
       </section>
 
       <section id="view">
@@ -143,6 +139,7 @@ function init( wInstance ) {
         <p>MortarJs View is an extension of Widget where html fragments and style sheets are loaded automatically, without any special configuration.  Its purpose is to make authoring of UI components easier.  All rules in MortarJs Widgets and jQuery UI widget apply.</p>
 
         <section class="jscode">
+          <div class="title">Define main view</div>
           <textarea>
 view("mortar.main", {
   // Default options
@@ -162,10 +159,10 @@ view("mortar.main", {
 
         <section>
           <p><i>
-            * By simply defining a View, with very little effort you have created a place for your domain specific logic (JavaScript), your presentation (HTML), and look and feel (CSS)!
+            * With very little effort you have defined a View, which automatically creates a place for your domain specific logic (JavaScript), your presentation (HTML), and look and feel (CSS)!
           </i></p>
 
-          <p><i>Let's dissect this code...</i> The View in this example is called main (namespace is mortar). So when a main View is instantiated two things happen.</p>
+          <p>Let's dissect this code... The View in this example is called main (namespace is mortar). So when a main View is instantiated two things happen.</p>
           <p>
             1. A template with name "main.html" is loaded<br/>
             2. A style sheet with name "main.css" is loaded<br/>
@@ -174,11 +171,11 @@ view("mortar.main", {
         </section>
 
         <section>
-          <p><b>CSS note: </b>An important thing that happens when a View is instantiated is that its name (E.g. main) gets automatically added as a css class to the containing DOM element. This provides a very clean way to scope all the css rules in the css file for the View, which really helps avoid cross contamination with other UI components and their respective css.</p>
+          <p><b>CSS note: </b>An important thing that happens when a View is instantiated is that its name (E.g. main) is automatically added as a css class to the containing DOM element of the View. This provides a very clean way to scope all the css rules in the css file for the View, which really helps avoid cross contamination with other UI components and css.</p>
           <p>To illustrate this please consider two UI controls: menu and dropdown.  Generally both depend on a dom hierarchy with anchors containing user data.  If you want the anchors in the menus and dropdowns to look different, you would normally create css rules that target anchors in .menus and .dropdown.  If the menu and dropdown were views, you would simply use the menu.css and dropdown.css that are automatically loaded by the views.</p>
 
           <section class="jscode">
-
+            <div class="title">Define menu view</div>
             <textarea>
 view("mortar.menu", {
   // Default options
@@ -195,7 +192,8 @@ view("mortar.menu", {
 });
             </textarea>
           </section>
-          <section class="jscode">
+          <section class="csscode">
+            <div class="title">menu.css with custom anchor</div>
             <textarea>
 .menu a {
   color: blue;
@@ -206,6 +204,7 @@ view("mortar.menu", {
           <hr>
 
           <section class="jscode">
+            <div class="title">Define dropdown view</div>
             <textarea>
 view("mortar.dropdown", {
   // Default options
@@ -223,7 +222,8 @@ view("mortar.dropdown", {
             </textarea>
           </section>
 
-          <section class="jscode">
+          <section class="csscode">
+            <div class="title">dropdown.css with custom anchor</div>
             <textarea>
 .dropdown a {
   color: red;
@@ -233,11 +233,12 @@ view("mortar.dropdown", {
         </section>
 
         <section>
-          <p><b>KnockoutJs note: </b>When a model is loaded, it is <i>only</i> applied to the html of the View at the time of its creation.  This has a rather important implication, especially if you are loading dynamic html fragments.  View models do not propagate down into children Views, which is a very disired behavior in larger web applications.</p>
+          <p><b>KnockoutJs note: </b>When a model is loaded, it is <i>only</i> applied to the html content of the View at the time of its creation.  This has a rather important implication, especially if you are loading dynamic html fragments.  View models do not propagate down into children Views, which is a very disired behavior in larger web applications.</p>
           <p><i>* When view models don't propagate down to children Views, you can safely nest Views with independent view models.</i></p>
           <p>To illustrate, think of a web application with multiple sections (Views) where users can trigger server requests; Search and Email notifications. When a user triggers a request for Search, data for Email notifications really shouldn't be sent to the server. Using Views to break up Search and Email notifications allows you to have completely separate view models and event handlers.</p>
 
           <section class="jscode">
+            <div class="title">Define Search view</div>
             <textarea>
 view("mortar.search", {
   // Default options
@@ -277,6 +278,7 @@ function init(wInstance) {
           <hr/>
 
           <section class="jscode">
+            <div class="title">Define Email notification view</div>
             <textarea>
 view("mortar.emailNotifications", {
   // Default options
@@ -314,7 +316,7 @@ function init(wInstance) {
         </section>
 
         <section>
-          <p>* By default, your views are expected to be in a folder called views. In more advanced uses, you can configure a view factory where you can specify the folder where your views can be found.</p>
+          <p><i>* By default, your views are expected to be in a folder called views. In more advanced uses, you can configure a view factory where you can specify the folder for your views.</i></p>
         </section>
       </section>
 

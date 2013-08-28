@@ -36,11 +36,23 @@
   border-radius: 0px;
 }
 
-.components .jscode textarea {
+
+.components [class*='code'] textarea {
   display: none;
 }
 
-.components .jscode pre {
+.components [class*='code'] .title {
+  color: #696969;
+  border: 1px solid #c7c7c7;
+  border-radius: 4px 4px 0px 0px;
+  height: 32px;
+  overflow: visible;
+  padding: 4px;
+  margin: 0px;
+  margin-left: 2px;
+}
+
+.components [class*='code'] pre {
   font-size: 1em;
   margin: 0px;
   padding: 0px;

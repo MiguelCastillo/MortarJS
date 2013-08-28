@@ -20,7 +20,7 @@ define(function(require, exports, module) {
     }, 100);
 
 
-    $(".jscode", widget.element).each(function( index, item ) {
+    $(".jscode, .csscode", widget.element).each(function( index, item ) {
       var $source = $("textarea", item);
       $source.each(function(index, textarea) {
         var $target = $("<pre class='cm-s-monokai'>").appendTo(item);
