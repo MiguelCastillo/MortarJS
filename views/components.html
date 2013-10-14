@@ -35,7 +35,7 @@
       <section id="widget">
         <section>
           <h1 class="page-header">Widget</h1>
-          MortarJs Widget is a core component that integrates with jQuery's plugin ecosystem by leveraging jQuery UI widget factory. Its primary purpose is to gracefully handle asynchronous operations such as loading dynamic html fragments, data models, and style sheets in order to promote authoring of self contained modular components.
+          MortarJs Widget is a core component that integrates with jQuery's plugin ecosystem by leveraging jQuery UI widget factory.  Its primary purpose is to gracefully handle asynchronous operations such as loading dynamic html fragments, data models, and style sheets in order to promote authoring of self contained modular components.
           <h2>How do you use Widget?</h2>
         </section>
 
@@ -112,7 +112,7 @@ widget("mortar.main", {
 
         <section class="jscode">
           <p>When the _create function is called, all the relevant asynchronous operations are finished and you are ready to add business logic to the Widget instance. Some very common operations are to add event listeners/handlers and to instantiate nested (children) Widgets.</p>
-          <p><i>* In practice, a MortarJs Widget instance is a jQuery UI widget instance so, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</i></p>
+          <p><i>* A MortarJs Widget instance is a jQuery UI widget instance so, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</i></p>
 
           <div class="title">Add event handlers and create a nested widget</div>
           <textarea>
@@ -136,7 +136,7 @@ function init( wInstance ) {
 
       <section id="view">
         <h1 class="page-header">View</h1>
-        <p>MortarJs View is an extension of Widget where html fragments and style sheets are loaded automatically, without any special configuration.  Its purpose is to make authoring of UI components easier.  All rules in MortarJs Widgets and jQuery UI widget apply.</p>
+        <p>MortarJs View is an extension of Widget where html fragments and style sheets are loaded automatically, without any special configuration.  Its purpose is to make authoring of UI components easier.  All rules in MortarJs Widgets, and therefore jQuery UI widget apply.</p>
 
         <section class="jscode">
           <div class="title">Define main view</div>
@@ -171,7 +171,7 @@ view("mortar.main", {
         </section>
 
         <section>
-          <p><b>CSS note: </b>An important thing that happens when a View is instantiated is that its name (E.g. main) is automatically added as a css class to the containing DOM element of the View. This provides a very clean way to scope all the css rules in the css file for the View, which really helps avoid cross contamination with other UI components and css.</p>
+          <p><b>CSS note: </b>An important thing that happens when a View is instantiated is that its name (E.g. main) is automatically added as a css class to the DOM element containing the View. This provides a very clean way to scope all the css rules in the css file for the View, which really helps avoid cross contamination with other UI components and css.</p>
           <p>To illustrate this please consider two UI controls: menu and dropdown.  Generally both depend on a dom hierarchy with anchors containing user data.  If you want the anchors in the menus and dropdowns to look different, you would normally create css rules that target anchors in .menus and .dropdown.  If the menu and dropdown were views, you would simply use the menu.css and dropdown.css that are automatically loaded by the views.</p>
 
           <section class="jscode">
@@ -261,8 +261,8 @@ view("mortar.search", {
 });
 
 
-function init(wInstance) {
-  wInstance.on("click", ".getSearchResults", function(evt) {
+function init(_widget) {
+  _widget.element.on("click", ".getSearchResults", function(evt) {
     var data = ko.dataFor(this);
     data = ko.mapping.toJs(data);
 
@@ -299,8 +299,8 @@ view("mortar.emailNotifications", {
 });
 
 
-function init(wInstance) {
-  wInstance.on("click", ".getEmailNotifications", function(evt) {
+function init(_widget) {
+  _widget.element.on("click", ".getEmailNotifications", function(evt) {
     var data = ko.dataFor(this);
     data = ko.mapping.toJs(data);
 
