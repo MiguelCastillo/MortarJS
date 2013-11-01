@@ -35,13 +35,18 @@
       <section id="widget">
         <section>
           <h1 class="page-header">Widget</h1>
-          MortarJs Widget is a core component that integrates with the jQuery plugin ecosystem by leveraging the jQuery UI widget factory.  It provides features such as gracefully handling loading of html fragments, data model, and style sheets. And because it integrates with the jQuery ecosystem, any jQuery plugin can transparently can take advantage of these features.
+          MortarJs Widget is a core component that integrates with the jQuery plugin ecosystem by leveraging the jQuery UI widget factory.  It provides features such as gracefully handling loading of html fragments, data model, and style sheets. But because Widget integrates with the jQuery ecosystem, any jQuery plugin can transparently can take advantage of these features.
         </section>
 
         <section class="jscode">
           <h2>How do you use Widget?</h2>
           <h3>1. Define your Widget</h3>
           <p>In this step, you define default options, constructor, and a destructor.  These are generally the only bits you will ever need when defining a Widget. And since the underlying engine is jQuery UI widget factory, you can specify other properties/methods that jQuery UI widget factory can consume.  Please see <a href="http://api.jqueryui.com/jQuery.widget/" target="jqueryui">jQuery UI widget factory</a> for more details.</p>
+          <ul>
+            <li>options is available in each widget instance and can be overriden when instantiating the Widget.</li>
+            <li>_create is invoked when all asynchronous operations are finished.  This generally when domain logic is added to the widget. Aka. Setup of event listeners, creation of nested Widgets and so on.</li>
+            <li>_destroy is invoked when the method "destroy" is invoked on the Widget instance.  Use this to clean up after yourself.</li>
+          </ul>
 
           <div class="title">Widget definition</div>
           <textarea>
@@ -78,6 +83,10 @@ $("body").main();
           </textarea>
         </section>
 
+        <section>
+          <p>When the Widget is instantiated, the _create function that's the defined in step 1 is invoked.  At that point, all relevant asynchronous operations are finished and you are ready to add business logic to the Widget instance.</p>
+        </section>
+
 
         <section class="jscode">
           <h3>3. Widgets in the wild!</h3>
@@ -111,7 +120,6 @@ widget("mortar.main", {
         </section>
 
         <section class="jscode">
-          <p>When the _create function is called, all the relevant asynchronous operations are finished and you are ready to add business logic to the Widget instance. Some very common operations are to add event listeners/handlers and to instantiate nested (children) Widgets.</p>
           <p><i>* A MortarJs Widget instance is a jQuery UI widget instance. Therefore, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</i></p>
 
           <div class="title">Add event handlers and create a nested widget</div>
