@@ -35,13 +35,13 @@
       <section id="widget">
         <section>
           <h1 class="page-header">Widget</h1>
-          MortarJs Widget is a core component that integrates with jQuery's plugin ecosystem by leveraging jQuery UI widget factory.  Its primary purpose is to gracefully handle asynchronous operations such as loading dynamic html fragments, data models, and style sheets in order to promote authoring of self contained modular components.
-          <h2>How do you use Widget?</h2>
+          MortarJs Widget is a core component that integrates with the jQuery plugin ecosystem by leveraging the jQuery UI widget factory.  It provides features such as gracefully handling loading of html fragments, data model, and style sheets. And because it integrates with the jQuery ecosystem, any jQuery plugin can transparently can take advantage of these features.
         </section>
 
         <section class="jscode">
+          <h2>How do you use Widget?</h2>
           <h3>1. Define your Widget</h3>
-          <p>In this step, you define default options, constructor, and a destructor.  These are generally the only bits you will ever need when defining a Widget. But since the underlying engine is jQuery UI widget factory, you can specify other properties/methods that jQuery UI widget factory can use.  Please see <a href="http://jqueryui.com/widget/" target="jqueryui">jQuery UI widget factory</a> for more details.</p>
+          <p>In this step, you define default options, constructor, and a destructor.  These are generally the only bits you will ever need when defining a Widget. And since the underlying engine is jQuery UI widget factory, you can specify other properties/methods that jQuery UI widget factory can consume.  Please see <a href="http://api.jqueryui.com/jQuery.widget/" target="jqueryui">jQuery UI widget factory</a> for more details.</p>
 
           <div class="title">Widget definition</div>
           <textarea>
@@ -81,8 +81,8 @@ $("body").main();
 
         <section class="jscode">
           <h3>3. Widgets in the wild!</h3>
-          <p>An important part of modern Web Appplications is to dynamically load data on demand, particularly from a remote source. And in more advanced scenarios, to dynamically load html fargments, also refered to as html templates. Both of these are fundamental aspects of a solid SPA (Single Page Application). MortarJs Widget makes this easy for you by loading both html fragments and server data, and then synchronizing these operations.</p>
-          <p><i>* Html fragments become very powerful when they contain KnockoutJs data-bind notation used for rendering data models, because Widget is designed to only apply the data model to the html fragment.  This prevents leaking data into other parts of the application, which is particularly important when creating nested Widgets.</i></p>
+          <p>An important part of modern Web Appplications is to dynamically load data on demand, particularly from a remote source. And in more advanced scenarios, to dynamically load html fargments, also refered to as html templates. Both of these are fundamental aspects of a solid SPA (Single Page Application).</p>
+          <p>A MortarJs Widget makes this easy for you by synchronizing the process of loading the html fragments and data model, and then doing the data binding.  <i>Widgets will also transparently allow nesting of Widgets without view models butting into each other.</i></p>
 
           <div class="title">Configure an html fragment and data model</div>
           <textarea>
@@ -99,7 +99,7 @@ widget("mortar.main", {
 
   // Callback when widget is ready for business
   _create: function() {
-    console.log("Your html template and server data are loaded at this point");
+    console.log("Your html template and server data are loaded and properly bound at this point");
     init( this );
   },
 
@@ -112,13 +112,13 @@ widget("mortar.main", {
 
         <section class="jscode">
           <p>When the _create function is called, all the relevant asynchronous operations are finished and you are ready to add business logic to the Widget instance. Some very common operations are to add event listeners/handlers and to instantiate nested (children) Widgets.</p>
-          <p><i>* A MortarJs Widget instance is a jQuery UI widget instance so, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</i></p>
+          <p><i>* A MortarJs Widget instance is a jQuery UI widget instance. Therefore, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</i></p>
 
           <div class="title">Add event handlers and create a nested widget</div>
           <textarea>
-function init( wInstance ) {
+function init( _widget ) {
   // Add event handler
-  wInstance.element.on("click", ".cancel", function(evt) {
+  _widget.element.on("click", ".cancel", function(evt) {
     console.log("Handle click");
   })
   .on("submit", ".checkEmail", function(evt) {
@@ -128,7 +128,7 @@ function init( wInstance ) {
   });
 
   // Call another Widget or View.
-  wInstance.element.find(".anotherContainer").anotherWidget();
+  _widget.element.find(".anotherContainer").anotherWidget();
 }
           </textarea>
         </section>
@@ -232,107 +232,21 @@ view("mortar.dropdown", {
           </section>
         </section>
 
-        <section>
-          <p><b>KnockoutJs note: </b>When a model is loaded, it is <i>only</i> applied to the html content of the View at the time of its creation.  This has a rather important implication, especially if you are loading dynamic html fragments.  View models do not propagate down into children Views, which is a very disired behavior in larger web applications.</p>
-          <p><i>* When view models don't propagate down to children Views, you can safely nest Views with independent view models.</i></p>
-          <p>To illustrate, think of a web application with multiple sections (Views) where users can trigger server requests; Search and Email notifications. When a user triggers a request for Search, data for Email notifications really shouldn't be sent to the server. Using Views to break up Search and Email notifications allows you to have completely separate view models and event handlers.</p>
-
-          <section class="jscode">
-            <div class="title">Define Search view</div>
-            <textarea>
-view("mortar.search", {
-  // Default options
-  options: {
-    model: {
-      search: {
-        text: "Maverick"
-      }
-    }
-  },
-
-  // @constructor - callback when widget is ready for business
-  _create: function() {
-    init( this );
-  },
-
-  // @destructor
-  _destroy: function() {
-  }
-});
-
-
-function init(_widget) {
-  _widget.element.on("click", ".getSearchResults", function(evt) {
-    var data = ko.dataFor(this);
-    data = ko.mapping.toJs(data);
-
-    $.ajax({
-      url: "http://dummy/search",
-      data: data
-    });
-  });
-}
-            </textarea>
-          </section>
-
-          <hr/>
-
-          <section class="jscode">
-            <div class="title">Define Email notification view</div>
-            <textarea>
-view("mortar.emailNotifications", {
-  // Default options
-  options: {
-    model: {
-      when: "lastFiveHours"
-    }
-  },
-
-  // @constructor - callback when widget is ready for business
-  _create: function() {
-    init( this );
-  },
-
-  // @destructor
-  _destroy: function() {
-  }
-});
-
-
-function init(_widget) {
-  _widget.element.on("click", ".getEmailNotifications", function(evt) {
-    var data = ko.dataFor(this);
-    data = ko.mapping.toJs(data);
-
-    $.ajax({
-      url: "http://dummy/emailNotifications",
-      data: data
-    });
-  });
-}
-            </textarea>
-          </section>
-
-        </section>
-
-        <section>
-          <p><i>* By default, your views are expected to be in a folder called views. In more advanced uses, you can configure a view factory where you can specify the folder for your views.</i></p>
-        </section>
       </section>
 
       <section id="model">
         <section>
           <h1 class="page-header">Model</h1>
-          <p>MortarJs Model is an extension of Widget that provides a transparent system for loading data into your Widgets and Views.  Data can be loaded from a remote or local data source, and it is 100% KnockoutJs compatible.</p>
+          <p>MortarJs Model is an extension of Widget that provides a transparent system for loading data into your Widgets and Views.  Data can be loaded from a remote or local data source, and it is 100% KnockoutJs compatible. A Model guarantees that ko.applyBindings is only done once and that it is done at the appropriate time.</p>
         </section>
 
         <section class="jscode">
-          <p>You can configure Widgets and Views to have a default data model</p>
+          <div class="title">Configure Widgets and Views with a default data model</div>
           <textarea>
 View("mortar.main", {
   options: {
     model: {
-      say: "Hello World"
+      say: "Hello World v1"
     },
   }
 });
@@ -340,36 +254,35 @@ View("mortar.main", {
         </section>
 
         <section class="jscode">
-          <p>You can also just load data when instantiating a Widget or View.</p>
-          <p>Loading a model into a Widget or View instance has the added benefit that it guarantees that ko.applyBindings is only done once, even if you invoke model multiple times.</p>
+          <div class="title">You can also define a model while instantiating a Widget or a View.</div>
           <textarea>
 $("body").main({
   model: {
-    say: "Hello World"
+    say: "Hello World v2"
   },
 });
           </textarea>
         </section>
 
+
         <section class="jscode">
-          <p>Another feature of model is that it <i>only</i> applies the binding to the specific Widget or View DOM; it does not apply the binding to the entire document.</p>
+          <div class="title">Since Model is an extension of Widget, it is a jQuery plugin. Hence, you can invoke model on any jQuery object.</div>
+          <textarea>
+$("body").model({
+  say: "Hello World v3"
+});
+          </textarea>
+        </section>
+
+
+        <section class="jscode">
+          <p>MortarJs models <i>only</i> applies the binding to the specific Widget or View DOM; it does not apply the binding to the entire document.</p>
           <textarea>
 // This
 ko.applyBindings(model, $element);
 
 // instead of
 ko.applyBindings(model);
-          </textarea>
-        </section>
-
-
-
-        <section class="jscode">
-          <p>Since Model is an extension of Widget, it is a jQuery plugin.  Hence, you can call model on any jQuery object.</p>
-          <textarea>
-$("body").model({
-  say: "Hello World"
-});
           </textarea>
         </section>
       </section>

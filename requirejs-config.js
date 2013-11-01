@@ -20,6 +20,7 @@ var requirejsConfig = {
     "codemirror/addon/runmode/runmode": ["codemirror/lib/codemirror"],
     "codemirror/addon/runmode/colorize": ["codemirror/lib/codemirror"]
   },
+  packages: ["app", "components", "examples"],
   waitSeconds: 15
 };
 
