@@ -4,29 +4,48 @@
  */
 
 
-define(function(require, exports, module) {
+define(["mortar/fragment"], function(fragment) {
 
-  var template = require("mortar/fragment");
+  describe("Fragment tests", function() {
 
-  template({
-    url: "tests/tmpl/simple.html"
-  })
-  .done(function(html) {
-    console.log("simple", html);
-  });
+    it("basic fragment", function(done) {
+      fragment({
+        url: "tests/tmpl/simple.html"
+      })
+      .done(function(html) {
+        // Get content
+        var result = $("<div>").append(html).html();
 
-  template({
-    url: "tests/tmpl/multiple.html"
-  })
-  .done(function(html) {
-    console.log("multiple", html);
-  });
+        // [^]* to process newline boundaries
+        expect(/^(<h1>Only one child<\/h1>)[^]*(<h1>Layer 1<\/h1><\/div>)$/.test(result)).toBe(true);
+        done();
+      });
+    });
 
-  template({
-    url: "tests/tmpl/deep.html"
-  })
-  .done(function(html) {
-    console.log("deep", html);
+
+    it("multiple fragments", function(done) {
+      fragment({
+        url: "tests/tmpl/multiple.html"
+      })
+      .done(function(html) {
+        var result = $("<div>").append(html).html();
+        expect(/^(<h1>Multiple layers deep<\/h1>)[^]*(<h1>Layer 1<\/h1><\/div><\/div>)$/.test(result)).toBe(true);
+        done();
+      });
+    });
+
+
+    it("deeply nested fragments", function(done) {
+      fragment({
+        url: "tests/tmpl/deep.html"
+      })
+      .done(function(html) {
+        var result = $("<div>").append(html).html();
+        expect(/^(<h1>Deep multiple layers<\/h1>)[^]*(<h1>Layer 1<\/h1><\/div><\/div><\/div><\/div>)$/.test(result)).toBe(true);
+        done();
+      });
+    });
+
   });
 
 });

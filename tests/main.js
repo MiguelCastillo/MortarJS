@@ -20,10 +20,6 @@ define(function(require, exports, module) {
   });
 
 
-
-  var view = require("mortar/view");
-
-
   function create() {
     var _self = this;
 
@@ -32,7 +28,8 @@ define(function(require, exports, module) {
       // Get tests...
       require([
         "tests/extender",
-        "tests/view"
+        "tests/view",
+        "tests/fragment"
       ], function() {
         jasmine.htmlReporter.initialize();
         jasmine.env.execute();
@@ -41,7 +38,7 @@ define(function(require, exports, module) {
   }
 
 
-  return view.extend({
+  return require("mortar/view").extend({
     className: "tests",
     events: {
       "view:ready": create
