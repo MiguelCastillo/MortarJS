@@ -11,8 +11,9 @@
     // Browser globals
     this.mortar.events = factory();
   }
-}) (function() {
-
+})
+(function() {
+  "use strict";
 
   // Converters is a hash of the different type of events we can
   // take in order to create events handlers.  Extend this if you

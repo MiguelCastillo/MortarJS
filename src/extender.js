@@ -11,7 +11,9 @@
     // Browser globals
     this.mortar.extender = factory();
   }
-}) (function() {
+})
+(function() {
+  "use strict";
 
   function extender(/* extend* */) {
     this.extend.apply(this, arguments);
