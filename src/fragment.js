@@ -1,78 +1,67 @@
 /*
  * Copyright (c) 2013 Miguel Castillo.
- *
  * Licensed under MIT
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
  */
 
-define(function(require, exports, module) {
+
+(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(["mortar/resource"], factory);
+  } else {
+    // Browser globals
+    this.mortar.fragment = factory(this.mortar.resource);
+  }
+})
+(function( resource ) {
   "use strict";
 
-  var mortar = require("mortar/namespace"),
-      widget = require("mortar/widget"),
-      infuser = require("infuser");
 
-  function fragment(settings) {
+  function fragment(settings, selector) {
     settings = settings || {};
-    var deferred = $.Deferred(),
-        options = settings.options || settings;
+    selector = selector || fragment.selector;
 
-    if (typeof options === "string") {
-      deferred.resolve(options);
+    var deferred = $.Deferred(),
+        attrSelector = "[" + selector + "]";
+
+    if (typeof settings.url === "string" ) {
+      fragment.loader(settings)
+        .done(deferred.resolve)
+        .fail(deferred.reject);
     }
-    else if (typeof options.url === "string") {
-      infuser.get({
-          "templateId": options.url,
-          "templateSuffix": "",
-          "ajax": {
-          }
-        }, function( rc_fragment ) {
-          deferred.resolve(rc_fragment);
-        });
-    }
-    else if (options.html) {
-      deferred.resolve(options.html);
+    else if (typeof settings.html === "string"
+             || settings.html instanceof jQuery === true ) {
+      deferred.resolve(settings.html);
     }
     else {
-      deferred.reject("No suitable option");
+      deferred.resolve(settings);
     }
 
-    return deferred;
+    // Handle nested fragment loading
+    return deferred.then(function(tmpl) {
+      var $tmpl = $(tmpl);
+
+      var done = $tmpl.filter(attrSelector)
+        .add($tmpl.children(attrSelector))
+        .add($tmpl.find(attrSelector))
+        .map(function() {
+          var $this = $(this);
+          return fragment({
+              "url": $this.attr(selector)
+            })
+            .done(function(_tmpl){
+              $this.append($(_tmpl));
+            });
+        });
+
+      return $.when.apply($, done).then(function() {
+        return $tmpl;
+      });
+    });
   }
 
 
-  widget("mortar.fragment", {
-    options: {
-    },
-
-    _create: function() {
-      var _fragment = new fragment(this);
-      this.element.data("fragment", _fragment);
-      this.fragment = _fragment;
-    },
-
-    _destroy: function() {
-
-    }
-  });
-
-  mortar.fragment = fragment;
+  fragment.selector = "mjs-fragment";
+  fragment.loader = resource;
   return fragment;
 });
