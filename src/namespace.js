@@ -4,8 +4,16 @@
  */
 
 
-define(function(require, exports, module) {
+(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define([], factory);
+  } else {
+    // Browser globals
+    this.mortar = factory();
+  }
+})
+(function() {
   "use strict";
-  window.mortar = {};
-  return window.mortar;
+  return {};
 });

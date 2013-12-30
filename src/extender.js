@@ -3,6 +3,7 @@
  * Licensed under MIT
  */
 
+
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
@@ -14,6 +15,7 @@
 })
 (function() {
   "use strict";
+
 
   function extender(/* extend* */) {
     this.extend.apply(this, arguments);
@@ -29,7 +31,7 @@
       iextension = extensions.shift();
 
       if ( iextension.constructor === Function ) {
-        function extension() {}
+        var extension = function() {};
         extension.prototype = iextension.prototype;
         $.extend(this, new extension);
       }
