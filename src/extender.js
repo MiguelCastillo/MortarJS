@@ -31,17 +31,21 @@
       iextension = extensions.shift();
 
       if ( iextension.constructor === Function ) {
-        var extension = function() {};
-        extension.prototype = iextension.prototype;
-        $.extend(this, new extension);
+        extender.extension.prototype = iextension.prototype;
+        _.extend(this, new extender.extension);
       }
       else {
-        $.extend(this, iextension);
+        _.extend(this, iextension);
       }
     }
 
     return this;
   }
+
+
+  // Base dummy extension to use the prototype as a placeholder when
+  // establishing inheritance.
+  extender.extension = function() {}
 
 
   extender.expand = function() {
@@ -62,15 +66,25 @@
   }
 
 
-  extender.extend = function( /* extend+ */ ) {
-    // Setup base class to be able to setup inheritance below
-    function extension() {}
+  // Works similar to Object.create, but this takes into account passing in
+  // constructors.
+  extender.extend = function() {
+    var obj;
 
-    if ( this.constructor === Function ) {
-      extension.prototype = this.prototype;
+    // extender.extend( obj || function, obj || function * )
+    if ( this === extender ) {
+      obj = Array.prototype.slice.call(arguments).shift();
     }
     else {
-      extension.prototype = this;
+      obj = this;
+    }
+
+    // Setup extension class to be able to setup inheritance
+    if ( obj && obj.constructor === Function ) {
+      extender.extension.prototype = obj.prototype;
+    }
+    else {
+      extender.extension.prototype = obj;
     }
 
     // Setup a function the we can instantiate and properly call the
@@ -79,9 +93,9 @@
       this.constructor.apply(this, arguments);
     }
 
-    base.prototype = new extension;
-    base.__super__ = this.prototype;
-    extender.expand.apply(this, [base].concat.apply(base, arguments));
+    base.prototype = new extender.extension;
+    base.__super__ = obj.prototype;
+    extender.expand.apply(obj, [base].concat.apply(base, arguments));
     return base;
   }
 

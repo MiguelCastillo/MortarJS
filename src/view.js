@@ -91,7 +91,7 @@ define([
     var settings = baseview.configure.apply(this, arguments);
 
     // Mixin options
-    $.extend(this, settings.options);
+    _.extend(this, settings.options);
 
     // Setup the target element and events
     this.$el.addClass(_self.className);
@@ -132,7 +132,6 @@ define([
   extender.expand(baseview, {
     tagName: "div",
     className: "view",
-    events: {},
     _init: $.noop,
     _create: $.noop,
     _destroy: $.noop
@@ -198,11 +197,11 @@ define([
       options = { $el: options };
     }
     else {
-      options = $.extend({}, options);
+      options = _.extend({}, options);
     }
 
     // Keep events separate so that we dont override events when creating instances.
-    var events = $.extend({}, options.events);
+    var events = _.extend({}, options.events);
     delete options.events;
 
     var tagName = options.tagName || this.tagName;

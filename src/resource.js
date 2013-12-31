@@ -7,13 +7,13 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(["jquery"], factory);
+    define([], factory);
   } else {
     // Browser globals
-    this.mortar.resource = factory(this.$);
+    this.mortar.resource = factory();
   }
 })
-(function( $ ) {
+(function( ) {
   "use strict";
 
   var cache = {};
@@ -33,7 +33,7 @@
 
     // If the item is cached, we will just return that.
     if ( settings.url in cache === false || settings.refresh === true ) {
-      var $ajax = $.extend({
+      var $ajax = _.extend({
         url: settings.url,
         cache: false
       }, settings.ajax);

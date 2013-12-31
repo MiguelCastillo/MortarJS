@@ -9,11 +9,8 @@ define(["mortar/extender"], function(extender) {
       function base() {}
       base.prototype.yes = function() {}
 
-      // Setup extender
-      base.extend = extender.extend;
-
       // Extend base class
-      var extbase1 = base.extend({
+      var extbase1 = extender.extend(base, {
         no: function() {
         }
       });
@@ -35,7 +32,7 @@ define(["mortar/extender"], function(extender) {
       base.prototype.yes = function() {
       }
 
-      // Setup extender
+      // Setup extender but this time to use base as the extending context
       base.extend = extender.extend;
 
       // Extend base class

@@ -3,6 +3,7 @@
  * Licensed under MIT
  */
 
+
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
@@ -135,6 +136,11 @@
   // Event system
   function events() {
   }
+
+
+  _.extend(events.prototype,{
+    events: {}
+  });
 
 
   events.prefix     = "mortar";
