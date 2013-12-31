@@ -29,7 +29,9 @@ define(function(require, exports, module) {
       require([
         "tests/extender",
         "tests/view",
-        "tests/fragment"
+        "tests/fragment",
+        "tests/model",
+        "tests/rv.binder"
       ], function() {
         jasmine.htmlReporter.initialize();
         jasmine.env.execute();
