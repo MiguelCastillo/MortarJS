@@ -7,17 +7,22 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(["mortar/model", "ko"], factory);
+    define(["mortar/model", "mortar/ko.factory", "ko"], factory);
   } else {
     // Browser globals
-    this.mortar.kobinder = factory(this.mortar.model, this.ko);
+    this.mortar.kobinder = factory(this.mortar.model, this.mortar.koFactory, this.ko);
   }
 })
-(function( model, ko ) {
+(function( model, factory, ko ) {
   "use strict";
 
 
   function binder() {
+  }
+
+
+  binder.prototype.serialize = function() {
+    return factory.toJS(this.data);
   }
 
 
@@ -29,12 +34,19 @@
       };
     }
 
+    var _self = this;
+
     // Make sure we use the document as the default recipient of the binding
     options.$el = options.$el || $(document);
 
+    if ( options.convert !== false && this.__koConverted !== true ) {
+      this.__koConverted = true;
+      this.data = factory.fromJS(this.data);
+    }
+
     // Do the binding
-    options.$el.each(function(el) {
-      ko.applyBinding(this.data, el);
+    options.$el.each(function(index, el) {
+      ko.applyBindings(_self.data, el);
     });
   }
 

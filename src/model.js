@@ -29,13 +29,13 @@
     switch( type.toLocaleLowerCase() ) {
       case "post":
       case "put": {
-        _data = _.result({data: data || this.data}, "data");
+        _data = _.result({data: data || this.serialize}, "data");
         settings.data = (_data && JSON.stringify(_data));
         settings.contentType = "application/json; charset=utf-8";
         break;
       }
       default: {
-        _data = _.result({data: data || this.data}, "data");
+        _data = _.result({data: data || this.serialize}, "data");
         settings.data = (_data && JSON.stringify(_data));
         break;
       }
@@ -88,6 +88,11 @@
   // Assign request factory to model for direct access.  You can override
   // request or request.send in order to customize how data is transfered.
   model.request = request;
+
+
+  model.prototype.serialize = function() {
+    return this.data;
+  };
 
 
   // Gets current value of a model propertry

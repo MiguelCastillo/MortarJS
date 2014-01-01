@@ -77,7 +77,6 @@ define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
       });
     });
 
-
   });
 
 });

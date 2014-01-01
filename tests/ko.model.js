@@ -4,10 +4,10 @@ define(["mortar/ko.model", "mortar/resource"], function(model, resource) {
 
     it("simple get", function() {
       var _model = new model({
-        "sample": "data"
+        "hello": "world"
       });
 
-      expect(_model.data.sample).toBe("data");
+      expect(_model.data.hello).toBe("world");
     });
 
 
