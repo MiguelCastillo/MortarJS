@@ -2,7 +2,16 @@ define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
 
   describe("rv model", function() {
 
-    it("simple get", function( done ) {
+    it("basic model", function( ) {
+      var _model = new model({
+        "hello": "world"
+      });
+
+      expect(_model.data.hello).toBe("world")
+    });
+
+
+    it("hello world with HTML", function( done ) {
       var _model = new model({
         "hello": "world"
       });
@@ -15,6 +24,7 @@ define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
 
         // Make sure data is in the model...
         expect(_model.get("hello")).toBe("world");
+        expect($hello.html()).toBe("world");
 
         // jasmine Test is done
         done();
@@ -22,7 +32,7 @@ define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
     });
 
 
-    it("form test", function( done ) {
+    it("form test with HTML", function( done ) {
       var _model = new model({
         "hello": "world",
         "username": "manchagnu",
