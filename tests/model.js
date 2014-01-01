@@ -4,24 +4,22 @@ define(["mortar/model"], function(model) {
 
     it("simple get", function() {
       var _model = new model({
-        "_data": {
-          "sample": "data"
-        }
+        "sample": "data"
       });
 
-      expect(_model._data.sample).toBe("data");
+      expect(_model.get("sample")).toBe("data");
     });
 
 
     it("get url", function(done) {
-      var _model = new model({
+      var _model = new model({}, {
         "url": "tests/json/simple.json"
       });
 
       _model.read()
         .done(function(data) {
           expect(this instanceof model).toBe(true);
-          expect(this._data.hello).toBe("world");
+          expect(this.get("hello")).toBe("world");
           expect(data.hello).toBe("world");
           done();
         });
@@ -30,9 +28,8 @@ define(["mortar/model"], function(model) {
 
     it("simple update", function(done) {
       var _model = new model({
-        "_data": {
-          "sample": "data"
-        },
+        "sample": "data"
+      }, {
         "url": "tests/json/simple.json"
       });
 

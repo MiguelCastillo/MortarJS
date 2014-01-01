@@ -31,7 +31,7 @@ define(function(require, exports, module) {
         "tests/view",
         "tests/fragment",
         "tests/model",
-        "tests/rv.binder"
+        "tests/rv.model"
       ], function() {
         jasmine.htmlReporter.initialize();
         jasmine.env.execute();

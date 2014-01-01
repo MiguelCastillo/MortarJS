@@ -7,13 +7,13 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(["rivets"], factory);
+    define(["mortar/model", "rivets"], factory);
   } else {
     // Browser globals
-    this.mortar.rvbinder = factory(this.rivets);
+    this.mortar.rvmodel = factory(this.mortar.model, this.rivets);
   }
 })
-(function( rivets ) {
+(function( model, rivets ) {
   "use strict";
 
 
@@ -30,7 +30,7 @@
     }
 
     options.$el = options.$el || $(document);
-    rivets.bind(options.$el, this._data);
+    rivets.bind(options.$el, this.data);
   }
 
 
@@ -38,6 +38,5 @@
   }
 
 
-  return binder;
-
+  return model.extend(binder);
 });

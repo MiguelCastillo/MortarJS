@@ -17,11 +17,49 @@
   "use strict";
 
 
-  function model( ) {
+  function request(type, data, options) {
+    options = options || {};
+    var _data,
+        settings = {
+          context: this,
+          type: type,
+          url: _.result({url: options.url || this.url}, "url")
+        };
+
+    switch( type.toLocaleLowerCase() ) {
+      case "post":
+      case "put": {
+        _data = _.result({data: data || this.data}, "data");
+        settings.data = (_data && JSON.stringify(_data));
+        settings.contentType = "application/json; charset=utf-8";
+        break;
+      }
+      default: {
+        _data = _.result({data: data || this.data}, "data");
+        settings.data = (_data && JSON.stringify(_data));
+        break;
+      }
+    }
+
+    _.extend(settings, this.ajax, options.ajax);
+    return request.send(settings);
+  }
+
+
+  request.send = function(settings) {
+    return $.ajax(settings);
+  }
+
+
+  function model( data, options ) {
     var settings = model.configure.apply(this, arguments);
-    $.extend(this, settings.options);
-    this._data = this._data || {};
     this.on(this.events).on(settings.events);
+
+    // Init the data
+    this.data = _.extend({}, this.data, data);
+
+    // Add data to the model...
+    _.extend(this, settings.options);
   }
 
 
@@ -34,98 +72,64 @@
   }, events);
 
 
-  model.configure = function(options) {
+  model.configure = function( data, options ) {
     options = _.extend({}, options);
     var events = options.events || {};
     delete options.events;
 
     return {
+      data: data,
       events: events,
       options: options
     };
   };
 
 
-  model.request = function(settings) {
-    return $.ajax(settings);
-  };
+  // Assign request factory to model for direct access.  You can override
+  // request or request.send in order to customize how data is transfered.
+  model.request = request;
 
 
-  model.xconfigure = function(type, data, options) {
-    options = options || {};
-    var settings = {
-      context: this,
-      type: type,
-      url: _.result({url: options.url || this.url}, "url")
-    }, _data;
-
-    switch( type.toLocaleLowerCase() ) {
-      case "post":
-      case "put": {
-        _data = _.result({data: data || this.data}, "data");
-        settings.data = _data ? JSON.stringify(_data) : null;
-        settings.contentType = "application/json; charset=utf-8";
-        break;
-      }
-      default: {
-        _data = _.result({data: data || this.data}, "data");
-        settings.data = _data ? JSON.stringify(_data) : null;
-        break;
-      }
-    }
-
-    return _.extend(settings, this.ajax, options.ajax);
-  };
-
-
-  // Gets current value
+  // Gets current value of a model propertry
   model.prototype.get = function(property) {
-    return this._data[property];
+    return this.data[property];
   };
 
 
-  // Sets the new value
+  // Sets the new value of a model property
   model.prototype.set = function(property, value) {
-    this._data[property] = value;
+    this.data[property] = value;
   };
 
 
+  // Create item in the server
   model.prototype.create = function(data, options) {
-    var _self    = this,
-        settings = model.xconfigure.call(this, "post", data, options);
-
-    return model.request.call(this, settings).then(function(data){
+    return model.request.call(this, "post", data, options).then(function(data){
       return data;
     });
   };
 
 
+  // Create item from the server
   model.prototype.read = function(data, options) {
-    var _self = this,
-        settings = model.xconfigure.call(this, "get", data, options);
-
-    return model.request.call(this, settings).then(function(data){
-      _.extend(this._data, data);
+    return model.request.call(this, "get", data, options).then(function(data){
+      _.extend(this.data, data);
       return data;
     });
   };
 
 
+  // Update item in the server
   model.prototype.update = function(data, options) {
-    var _self = this,
-        settings = model.xconfigure.call(this, "put", data, options);
-
-    return model.request.call(this, settings).then(function(data){
+    return model.request.call(this, "put", data, options).then(function(data){
       return data;
     });
   };
 
 
+  // Remove item from the server
   model.prototype.remove = function(data, options) {
-    var _self = this,
-        settings = model.xconfigure.call(this, "delete", data, options);
-
-    return model.request.call(this, settings).then(function(data){
+    return model.request.call(this, "delete", data, options).then(function(data){
       return data;
     });
   };

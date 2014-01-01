@@ -1,16 +1,10 @@
-define(["mortar/model", "mortar/rv.binder", "mortar/resource"], function(model, binder, resource) {
+define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
 
-  model = model.extend(binder);
-
-  describe("rv binder", function() {
+  describe("rv model", function() {
 
     it("simple get", function( done ) {
       var _model = new model({
-        "_data": {
-          "hello": "world",
-          "username": "manchagnu",
-          "password": "tryagain"
-        }
+        "hello": "world"
       });
 
       resource("tests/tmpl/rv.hello.html").done(function(html) {
@@ -30,11 +24,9 @@ define(["mortar/model", "mortar/rv.binder", "mortar/resource"], function(model, 
 
     it("form test", function( done ) {
       var _model = new model({
-        "_data": {
-          "hello": "world",
-          "username": "manchagnu",
-          "password": "tryagain"
-        }
+        "hello": "world",
+        "username": "manchagnu",
+        "password": "tryagain"
       });
 
       resource("tests/tmpl/rv.form.html").done(function(html) {
