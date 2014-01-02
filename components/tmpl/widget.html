@@ -1,0 +1,115 @@
+<section>
+  <h1 class="page-header">Widget</h1>
+  MortarJs Widget is a core component that integrates with the jQuery plugin ecosystem by leveraging the jQuery UI widget factory.  It provides features such as gracefully handling loading of html fragments, data model, and style sheets. But because Widget integrates with the jQuery ecosystem, any jQuery plugin can transparently can take advantage of these features.
+</section>
+
+<section class="jscode">
+  <h2>How do you use Widget?</h2>
+  <h3>1. Define your Widget</h3>
+  <p>In this step, you define default options, constructor, and a destructor.  These are generally the only bits you will ever need when defining a Widget. And since the underlying engine is jQuery UI widget factory, you can specify other properties/methods that jQuery UI widget factory can consume.  Please see <a href="http://api.jqueryui.com/jQuery.widget/" target="jqueryui">jQuery UI widget factory</a> for more details.</p>
+  <ul>
+    <li>options is available in each widget instance and can be overriden when instantiating the Widget.</li>
+    <li>_create is invoked when all asynchronous operations are finished.  This generally when domain logic is added to the widget. Aka. Setup of event listeners, creation of nested Widgets and so on.</li>
+    <li>_destroy is invoked when the method "destroy" is invoked on the Widget instance.  Use this to clean up after yourself.</li>
+  </ul>
+
+  <div class="title">Widget definition</div>
+  <textarea>
+
+widget("mortar.main", {
+  // Default options
+  options: {
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+
+  </textarea>
+</section>
+
+
+<section class="FYI">
+  <h4>FYI</h4>
+  <p><i>1. MortarJs Widget provides the same core interfaces as jQuery UI widget factory to enable a migration path from existing jQuery systems.</i></p>
+  <p>2. Widget names must conform to the namespace.name requirement imposed by jQuery UI widget factory.  So, a valid widget name is "mortar.main", but not "main" or "mortar".</p>
+</section>
+
+<section class="jscode">
+  <h3>2. Instantiate your Widget</h3>
+  <p>Since MortarJs Widgets are jQuery plugins, you would just use them as such.</p>
+
+  <div class="title">Widget instance on the document body</div>
+  <textarea>
+
+$("body").main();
+
+  </textarea>
+</section>
+
+<section>
+  <p>When the Widget is instantiated, the _create function that's the defined in step 1 is invoked.  At that point, all relevant asynchronous operations are finished and you are ready to add business logic to the Widget instance.</p>
+</section>
+
+
+<section class="jscode">
+  <h3>3. Widgets in the wild!</h3>
+  <p>An important part of modern Web Appplications is to dynamically load data on demand, particularly from a remote source. And in more advanced scenarios, to dynamically load html fargments, also refered to as html templates. Both of these are fundamental aspects of a solid SPA (Single Page Application).</p>
+  <p>A MortarJs Widget makes this easy for you by synchronizing the process of loading the html fragments and data model, and then doing the data binding.  <i>Widgets will also transparently allow nesting of Widgets without view models butting into each other.</i></p>
+
+  <div class="title">Configure an html fragment and data model</div>
+  <textarea>
+
+widget("mortar.main", {
+  // Default options
+  options: {
+    template: {
+      "url": "http://template.html"
+    },
+    model: {
+      "url": "http://data.json"
+    }
+  },
+
+  // Callback when widget is ready for business
+  _create: function() {
+    console.log("Your html template and server data are loaded and properly bound at this point");
+    init( this );
+  },
+
+  // Destructor
+  _destroy: function() {
+  }
+});
+
+  </textarea>
+</section>
+
+<section class="jscode">
+  <p><i>* A MortarJs Widget instance is a jQuery UI widget instance. Therefore, everything that a jQuery UI widget instance provides is also available in a MortarJs Widget instance.</i></p>
+
+  <div class="title">Add event handlers and create a nested widget</div>
+  <textarea>
+
+function init( _widget ) {
+  // Add event handler
+  _widget.element.on("click", ".cancel", function(evt) {
+    console.log("Handle click");
+  })
+  .on("submit", ".checkEmail", function(evt) {
+    console.log("Send request to check email");
+    evt.stopPropagation();
+    return false;
+  });
+
+  // Call another Widget or View.
+  _widget.element.find(".anotherContainer").anotherWidget();
+}
+
+  </textarea>
+</section>

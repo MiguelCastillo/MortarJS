@@ -1,18 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>MortarJs</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="Miguel Castillo">
 
+    <link rel="shortcut icon" type="image/png" href="lib/jasmine-2.0.0/jasmine_favicon.png">
     <link rel="stylesheet" type="text/css" href="lib/jasmine-2.0.0/jasmine.css">
 
     <script src="requirejs-config.js"></script>
-    <script data-main="app" src="lib/js/require.js"></script>
+    <script src="lib/js/require.js"></script>
+    <script>
+      require(["tests"], function(tests) {
+        $(function() {
+          new tests($("body"));
+        });
+      });
+    </script>
   </head>
 
   <body>
   </body>
 </html>
+

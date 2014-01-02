@@ -1,0 +1,58 @@
+<section>
+  <h1 class="page-header">Model</h1>
+  <p>MortarJs Model is an extension of Widget that provides a transparent system for loading data into your Widgets and Views.  Data can be loaded from a remote or local data source, and it is 100% KnockoutJs compatible. A Model guarantees that ko.applyBindings is only done once and that it is done at the appropriate time.</p>
+</section>
+
+<section class="jscode">
+  <div class="title">Configure Widgets and Views with a default data model</div>
+  <textarea>
+
+View("mortar.main", {
+  options: {
+    model: {
+      say: "Hello World v1"
+    },
+  }
+});
+
+  </textarea>
+</section>
+
+<section class="jscode">
+  <div class="title">You can also define a model while instantiating a Widget or a View.</div>
+  <textarea>
+
+$("body").main({
+  model: {
+    say: "Hello World v2"
+  },
+});
+
+  </textarea>
+</section>
+
+
+<section class="jscode">
+  <div class="title">Since Model is an extension of Widget, it is a jQuery plugin. Hence, you can invoke model on any jQuery object.</div>
+  <textarea>
+
+$("body").model({
+  say: "Hello World v3"
+});
+
+  </textarea>
+</section>
+
+
+<section class="jscode">
+  <p>MortarJs models <i>only</i> applies the binding to the specific Widget or View DOM; it does not apply the binding to the entire document.</p>
+  <textarea>
+
+// This
+ko.applyBindings(model, $element);
+
+// instead of
+ko.applyBindings(model);
+
+  </textarea>
+</section>

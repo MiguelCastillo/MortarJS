@@ -1,0 +1,16 @@
+<div>
+  <h1>Rivets JS</h1>
+  <table class="table">
+    <tbody>
+      <tr rv-each-artist="artists">
+        <td rv-text="artist.name"></td>
+        <td rv-text="artist.lastname"></td>
+        <td>
+          <div rv-each-art="artist.art">
+            <span rv-text="art.name"></span>&nbsp;<span rv-text="art.year"></span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

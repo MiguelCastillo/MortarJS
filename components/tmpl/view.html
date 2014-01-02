@@ -1,0 +1,106 @@
+<h1 class="page-header">View</h1>
+<p>MortarJs View is an extension of Widget where html fragments and style sheets are loaded automatically, without any special configuration.  Its purpose is to make authoring of UI components easier.  All rules in MortarJs Widgets, and therefore jQuery UI widget apply.</p>
+
+<section class="jscode">
+  <div class="title">Define main view</div>
+  <textarea>
+
+view("mortar.main", {
+  // Default options
+  options: {
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+
+  </textarea>
+</section>
+
+<section>
+  <p><i>
+    * With very little effort you have defined a View, which automatically creates a place for your domain specific logic (JavaScript), your presentation (HTML), and look and feel (CSS)!
+  </i></p>
+
+  <p>Let's dissect this code... The View in this example is called main (namespace is mortar). So when a main View is instantiated two things happen.</p>
+  <p>
+    1. A template with name "main.html" is loaded<br/>
+    2. A style sheet with name "main.css" is loaded<br/>
+  </p>
+  <p>The name of the html fragment and style sheet is derived from the name of the View itself, hence main.html and main.css.</p>
+</section>
+
+<section>
+  <p><b>CSS note: </b>An important thing that happens when a View is instantiated is that its name (E.g. main) is automatically added as a css class to the DOM element containing the View. This provides a very clean way to scope all the css rules in the css file for the View, which really helps avoid cross contamination with other UI components and css.</p>
+  <p>To illustrate this please consider two UI controls: menu and dropdown.  Generally both depend on a dom hierarchy with anchors containing user data.  If you want the anchors in the menus and dropdowns to look different, you would normally create css rules that target anchors in .menus and .dropdown.  If the menu and dropdown were views, you would simply use the menu.css and dropdown.css that are automatically loaded by the views.</p>
+
+  <section class="jscode">
+    <div class="title">Define menu view</div>
+    <textarea>
+
+view("mortar.menu", {
+  // Default options
+  options: {
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+
+  </textarea>
+</section>
+<section class="csscode">
+  <div class="title">menu.css with custom anchor</div>
+  <textarea>
+
+.menu a {
+  color: blue;
+}
+
+  </textarea>
+</section>
+
+<hr>
+
+<section class="jscode">
+  <div class="title">Define dropdown view</div>
+  <textarea>
+
+view("mortar.dropdown", {
+  // Default options
+  options: {
+  },
+
+  // @constructor - callback when widget is ready for business
+  _create: function() {
+  },
+
+  // @destructor
+  _destroy: function() {
+  }
+});
+
+  </textarea>
+</section>
+
+<section class="csscode">
+  <div class="title">dropdown.css with custom anchor</div>
+  <textarea>
+
+.dropdown a {
+  color: red;
+}
+
+    </textarea>
+  </section>
+</section>
