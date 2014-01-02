@@ -1,6 +1,12 @@
-/**
-* jasmine boot expansion to provide AMD support
-*/
+/*
+ * Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ *
+ * https://github.com/MiguelCastillo/rjasmine
+ *
+ * jasmine boot expansion to provide AMD support
+ */
+
 
 
 /** Original note from jasmine boot.js */
@@ -43,7 +49,7 @@
     };
   }
 
-}) (function(jasmineRequire) {
+}) (function(jasmine) {
 
   /**
    * Setting up timing functions to be able to be overridden. Certain browsers (Safari, IE 8, phantomjs) require this hack.
@@ -82,12 +88,12 @@
      *
      * Require Jasmine's core files. Specifically, this requires and attaches all of Jasmine's code to the `jasmine` reference.
      */
-    var core = jasmineRequire.core(jasmineRequire);
+    var core = jasmine.core(jasmine);
 
     /**
      * Since this is being run in a browser and the results should populate to an HTML page, require the HTML-specific Jasmine code, injecting the same reference.
      */
-    jasmineRequire.html(core);
+    jasmine.html(core);
 
     /**
      * Create the Jasmine environment. This is used to run all specs in a project.
@@ -210,16 +216,18 @@
     // Intialize the reporter to get things ready to just run the tests
     reporter.initialize();
 
-    this._api = api;
-    this._core = core;
-    this._env = env;
-    this._reporter = reporter;
-    this.execute = env.execute;
-    this.extend = extend;
-    extend(this, api);
+    // Extend the instance to include important bits from jasmine
+    rjasmine.extend(this, api, {
+      _api: api,
+      _core: core,
+      _env: env,
+      _reporter: reporter,
+      execute: env.execute,
+      extend: extend
+    });
   }
 
-  // Easy access to extend
+  // Easy access to extend.  Override if you want to customize extend
   rjasmine.extend = extend;
   return rjasmine;
 });
