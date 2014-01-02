@@ -1,26 +1,8 @@
 /*
  * Copyright (c) 2013 Miguel Castillo.
- *
  * Licensed under MIT
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
  */
+
 
 define(function(require, exports, module) {
   "use strict";
@@ -28,8 +10,8 @@ define(function(require, exports, module) {
   require("jquery.widget");
 
   var mortar  = require("mortar/namespace"),
-      ko      = require("ko");
-  var $widget = $.widget;
+      ko      = require("ko"),
+      $widget = $.widget;
 
   function widget( name, base, prototype ) {
     base = base || {};
@@ -45,7 +27,7 @@ define(function(require, exports, module) {
       };
     }
 
-    if (typeof _create === 'function') {
+    if (typeof _create === "function") {
       base._create = function() {
         var _self = this, args = arguments;
         $.when(handleOptions.apply(_self, [_self.options])).always(function() {
@@ -54,7 +36,7 @@ define(function(require, exports, module) {
       };
     }
 
-    if (typeof _destroy === 'function') {
+    if (typeof _destroy === "function") {
       base._destroy = function() {
         if (this.hasOwnProperty("style")) {
           this.element.removeClass(this.widgetName);
@@ -73,9 +55,9 @@ define(function(require, exports, module) {
     var resources = [null, null, null];
 
     if ( infuser ) {
-      if ( options.fragment && mortar.fragment ) {
-        options.fragment.element = options.fragment.element || _self.element;
-        resources[0] = mortar.fragment(options.fragment);
+      if ( options.template && mortar.template ) {
+        options.template.element = options.template.element || _self.element;
+        resources[0] = mortar.template(options.template);
       }
 
       if ( options.style && mortar.style ) {
@@ -89,10 +71,10 @@ define(function(require, exports, module) {
       }
     }
 
-    return $.when.apply($, resources).then(function(fragment, style, model) {
-      if ( fragment ) {
-        _self.fragment = fragment;
-        _self.element.html( $(fragment) );
+    return $.when.apply($, resources).then(function(template, style, model) {
+      if ( template ) {
+        _self.template = template;
+        _self.element.html( $(template) );
       }
 
       if ( style !== null ) {
@@ -108,7 +90,7 @@ define(function(require, exports, module) {
       }
 
       return {
-        fragment: fragment,
+        template: template,
         style: style,
         model: model
       };

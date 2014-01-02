@@ -1,0 +1,16 @@
+<div>
+  <h1>Knockout JS</h1>
+  <table class="table">
+    <tbody data-bind="foreach: artists">
+      <tr>
+        <td data-bind="text: name"></td>
+        <td data-bind="text: lastname"></td>
+        <td data-bind="foreach: art">
+          <div>
+            <span data-bind="text: name"></span>&nbsp;<span data-bind="text: year"></span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
