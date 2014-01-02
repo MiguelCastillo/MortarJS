@@ -28,6 +28,9 @@ define(function(require, exports, module) {
 
     // Get rjasmine
     jasmineRequire(["tests/rjasmine"], function(rjasmine) {
+
+      // Instantiate rjasmine and override the getContainer function in the
+      // reporter to customize where the test results go.
       var jasmine = new rjasmine({
         reporter: {
           getContainer: function() {
@@ -36,7 +39,8 @@ define(function(require, exports, module) {
         }
       });
 
-      // Update window's jasmine public api
+      // Update window's jasmine public api.  This will make jasmine's test api
+      // created by rjasmine to be globally accessible.
       rjasmine.extend(window, jasmine._api);
 
       // Get tests...
@@ -48,6 +52,9 @@ define(function(require, exports, module) {
         "tests/rv.model",
         "tests/ko.model"
       ], function() {
+
+        // Iterate through each test and run it so that each test can register
+        // its test specs
         $.each(Array.prototype.slice.call(arguments), function(i, test) {
           test();
         });
