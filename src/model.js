@@ -29,13 +29,13 @@
     switch( type.toLocaleLowerCase() ) {
       case "post":
       case "put": {
-        _data = _.result({data: data || this.serialize}, "data");
+        _data = _.result({data: data || this.deserialize}, "data");
         settings.data = (_data && JSON.stringify(_data));
         settings.contentType = "application/json; charset=utf-8";
         break;
       }
       default: {
-        _data = _.result({data: data || this.serialize}, "data");
+        _data = _.result({data: data || this.deserialize}, "data");
         settings.data = (_data && JSON.stringify(_data));
         break;
       }
@@ -98,7 +98,7 @@
   model.request = request;
 
 
-  model.prototype.serialize = function() {
+  model.prototype.deserialize = function() {
     return this.data;
   };
 

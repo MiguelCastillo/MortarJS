@@ -19,7 +19,7 @@ define(["mortar/ko.model", "mortar/resource"], function(model, resource) {
         _model.bind($html);
 
         // Serialized data.
-        var modelData = _model.serialize();
+        var modelData = _model.deserialize();
         done();
       });
     });

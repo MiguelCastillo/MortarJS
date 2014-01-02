@@ -114,13 +114,13 @@
   *                 or will be merged into target.
   * @param <Object> target - optional object where data will be copied into.
   */
-  factory.fromJS = function(data, target, settings) {
+  factory.serialize = function(data, target, settings) {
     var type = factory.getType(data);
     return factory[type](data, target, settings);
   };
 
 
-  factory.toJS = function(data) {
+  factory.deserialize = function(data) {
     return ko.toJS(data);
   };
 

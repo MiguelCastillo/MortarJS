@@ -21,8 +21,8 @@
   }
 
 
-  binder.prototype.serialize = function() {
-    return factory.toJS(this.data);
+  binder.prototype.deserialize = function() {
+    return factory.deserialize(this.data);
   }
 
 
@@ -41,7 +41,7 @@
 
     if ( options.convert !== false && this.__koConverted !== true ) {
       this.__koConverted = true;
-      this.data = factory.fromJS(this.data);
+      this.data = factory.serialize(this.data);
     }
 
     // Do the binding
