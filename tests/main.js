@@ -6,6 +6,9 @@
 
 define(function(require, exports, module) {
 
+  //
+  // Create requirejs config to shim jasmine and define module names
+  //
   var jasmineRequire = requirejs.config({
     "paths": {
       "jasmine": "lib/jasmine-2.0.0/jasmine",
@@ -24,7 +27,18 @@ define(function(require, exports, module) {
     var _self = this;
 
     // Get rjasmine
-    jasmineRequire(["tests/rjasmine"], function(jasmine) {
+    jasmineRequire(["tests/rjasmine"], function(rjasmine) {
+      var jasmine = new rjasmine({
+        reporter: {
+          getContainer: function() {
+            return _self.$el[0];
+          }
+        }
+      });
+
+      // Update window's jasmine public api
+      rjasmine.extend(window, jasmine._api);
+
       // Get tests...
       require([
         "tests/extender",
@@ -34,8 +48,12 @@ define(function(require, exports, module) {
         "tests/rv.model",
         "tests/ko.model"
       ], function() {
-        jasmine.htmlReporter.initialize();
-        jasmine.env.execute();
+        $.each(Array.prototype.slice.call(arguments), function(i, test) {
+          test();
+        });
+
+        // Run the tests
+        jasmine.execute();
       });
     });
   }
