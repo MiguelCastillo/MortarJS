@@ -1,31 +1,20 @@
 /*
  * Copyright (c) 2013 Miguel Castillo.
- *
  * Licensed under MIT
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
  */
 
-define(function(require, exports, module) {
-  "use strict";
 
-  var ko = require('ko');
+(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(["ko"], factory);
+  } else {
+    // Browser globals
+    this.mortar.koFactory = factory(this.ko);
+  }
+})
+(function( ko ) {
+  "use strict";
 
 
   function factory() {
@@ -125,13 +114,14 @@ define(function(require, exports, module) {
   *                 or will be merged into target.
   * @param <Object> target - optional object where data will be copied into.
   */
-  factory.fromJS = function(data, target, settings) {
+  factory.serialize = function(data, target, settings) {
     var type = factory.getType(data);
     return factory[type](data, target, settings);
   };
 
 
-  factory.toJS = function(data) {
+  factory.deserialize = function(data) {
+    return ko.toJS(data);
   };
 
 
