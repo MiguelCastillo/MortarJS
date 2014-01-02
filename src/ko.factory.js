@@ -121,6 +121,7 @@
 
 
   factory.toJS = function(data) {
+    return ko.toJS(data);
   };
 
 

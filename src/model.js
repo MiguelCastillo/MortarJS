@@ -73,7 +73,15 @@
 
 
   model.configure = function( data, options ) {
-    options = _.extend({}, options);
+    if ( typeof options === "string" ) {
+      options = {
+        "url": options
+      };
+    }
+    else {
+      options = _.extend({}, options);
+    }
+
     var events = options.events || {};
     delete options.events;
 
@@ -109,7 +117,7 @@
 
   // Create item in the server
   model.prototype.create = function(data, options) {
-    return model.request.call(this, "post", data, options).then(function(data){
+    return model.request.call(this, "post", data, options).done(function(data){
       return data;
     });
   };
@@ -117,7 +125,7 @@
 
   // Create item from the server
   model.prototype.read = function(data, options) {
-    return model.request.call(this, "get", data, options).then(function(data){
+    return model.request.call(this, "get", data, options).done(function(data){
       _.extend(this.data, data);
       return data;
     });
@@ -126,7 +134,7 @@
 
   // Update item in the server
   model.prototype.update = function(data, options) {
-    return model.request.call(this, "put", data, options).then(function(data){
+    return model.request.call(this, "put", data, options).done(function(data){
       return data;
     });
   };
@@ -134,7 +142,7 @@
 
   // Remove item from the server
   model.prototype.remove = function(data, options) {
-    return model.request.call(this, "delete", data, options).then(function(data){
+    return model.request.call(this, "delete", data, options).done(function(data){
       return data;
     });
   };

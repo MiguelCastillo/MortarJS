@@ -11,6 +11,20 @@ define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
     });
 
 
+    it("model url/serialize", function( done ) {
+      var _model = new model({}, "tests/json/artists.json");
+
+      $.when.apply($, [_model.read(), resource("tests/tmpl/rv.artists.html")]).done(function(data, html) {
+        var $html = $(html[0]);//.appendTo("body");
+        _model.bind($html);
+
+        // Serialized data.
+        var modelData = _model.serialize();
+        done();
+      });
+    });
+
+
     it("hello world with HTML", function( done ) {
       var _model = new model({
         "hello": "world"

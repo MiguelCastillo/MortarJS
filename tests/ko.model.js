@@ -2,12 +2,26 @@ define(["mortar/ko.model", "mortar/resource"], function(model, resource) {
 
   describe("ko model", function() {
 
-    it("simple get", function() {
+    it("basic get", function() {
       var _model = new model({
         "hello": "world"
       });
 
       expect(_model.data.hello).toBe("world");
+    });
+
+
+    it("model url/serialize", function( done ) {
+      var _model = new model({}, "tests/json/artists.json");
+
+      $.when.apply($, [_model.read(), resource("tests/tmpl/ko.artists.html")]).done(function(data, html) {
+        var $html = $(html[0]);//.appendTo("body");
+        _model.bind($html);
+
+        // Serialized data.
+        var modelData = _model.serialize();
+        done();
+      });
     });
 
 
