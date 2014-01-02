@@ -20,7 +20,13 @@
     define(["jasmine", "jasmine-html"], factory);
   }
   else {
-    var rjasmine = factory(this.jasmineRequire);
+    var rjasmine = factory(this.jasmineRequire),
+        _rjasmine = new rjasmine();
+
+    /**
+     * Add all of the Jasmine global/public interface to the proper global, so a project can use the public interface directly. For example, calling `describe` in specs instead of `jasmine.getEnv().describe`.
+     */
+    rjasmine.extend(this, _rjasmine._api);
 
     /**
      * ## Execution
@@ -33,15 +39,8 @@
       if (currentWindowOnload) {
         currentWindowOnload();
       }
-      rjasmine.reporter.initialize();
-      rjasmine.env.execute();
+      _rjasmine.execute();
     };
-
-
-    /**
-     * Add all of the Jasmine global/public interface to the proper global, so a project can use the public interface directly. For example, calling `describe` in specs instead of `jasmine.getEnv().describe`.
-     */
-    rjasmine.extend(this, rjasmine.api);
   }
 
 }) (function(jasmineRequire) {
