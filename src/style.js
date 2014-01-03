@@ -36,6 +36,10 @@
 
 
   function style(options) {
+    if (this instanceof style === false) {
+      return new style(options);
+    }
+
     var deferred = $.Deferred();
     options = options || {};
 
