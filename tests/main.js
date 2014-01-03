@@ -47,7 +47,7 @@ define(function(require, exports, module) {
       require([
         "tests/extender",
         "tests/view",
-        "tests/fragment",
+        "tests/tmpl",
         "tests/model",
         "tests/rv.model",
         "tests/ko.model"

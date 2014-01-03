@@ -4,14 +4,14 @@
  */
 
 
-define(["mortar/fragment"], function(fragment) {
+define(["mortar/tmpl"], function(tmpl) {
 
   return function() {
 
-    describe("Fragment tests", function() {
+    describe("tmpl tests", function() {
 
-      it("basic fragment", function(done) {
-        fragment({
+      it("basic tmpl", function(done) {
+        tmpl({
           url: "tests/tmpl/simple.html"
         })
         .done(function(html) {
@@ -25,8 +25,8 @@ define(["mortar/fragment"], function(fragment) {
       });
 
 
-      it("multiple fragments", function(done) {
-        fragment({
+      it("multiple tmpls", function(done) {
+        tmpl({
           url: "tests/tmpl/multiple.html"
         })
         .done(function(html) {
@@ -37,8 +37,8 @@ define(["mortar/fragment"], function(fragment) {
       });
 
 
-      it("deeply nested fragments", function(done) {
-        fragment({
+      it("deeply nested tmpls", function(done) {
+        tmpl({
           url: "tests/tmpl/deep.html"
         })
         .done(function(html) {

@@ -6,14 +6,14 @@
 define([
   "mortar/extender",
   "mortar/events",
-  "mortar/fragment",
+  "mortar/tmpl",
   "mortar/model",
   "mortar/style"
-], function(extender, events, fragment, model, style) {
+], function(extender, events, tmpl, model, style) {
   "use strict";
 
   var handlers = {
-    "tmpl": fragment,
+    "tmpl": tmpl,
     "model": model,
     "style": style
   };
