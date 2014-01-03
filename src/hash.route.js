@@ -9,13 +9,13 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(["jquery"], factory);
+    define([], factory);
   } else {
     // Browser globals
-    this.mortar.hash = factory(this.$);
+    this.mortar.hash = factory();
   }
 })
-(function( $ ) {
+(function( ) {
   "use strict";
 
   var oldHash = "",
