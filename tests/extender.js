@@ -91,7 +91,7 @@ define(["mortar/extender"], function(extender) {
         function base() {}
 
         // Setup extender
-        extender.expand(base, {
+        extender.mixin(base, {
           yes: function() {
           }
         });

@@ -48,7 +48,7 @@
   extender.extension = function() {}
 
 
-  extender.expand = function() {
+  extender.mixin = function() {
     var _extender = new extender(),
         args = Array.prototype.slice.call(arguments),
         base = args.shift();
@@ -71,7 +71,7 @@
   extender.extend = function() {
     var obj;
 
-    // extender.extend( obj || function, obj || function * )
+    // extender.extend( obj || function, (obj || function) * )
     if ( this === extender ) {
       obj = Array.prototype.slice.call(arguments).shift();
     }
@@ -95,7 +95,7 @@
 
     base.prototype = new extender.extension;
     base.__super__ = obj.prototype;
-    extender.expand.apply(obj, [base].concat.apply(base, arguments));
+    extender.mixin.apply(obj, [base].concat.apply(base, arguments));
     return base;
   }
 

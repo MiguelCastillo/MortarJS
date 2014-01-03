@@ -73,7 +73,7 @@
   }
 
 
-  extender.expand(model, {
+  extender.mixin(model, {
     ajax: {
       dataType: "json"
     },

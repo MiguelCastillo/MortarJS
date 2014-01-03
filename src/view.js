@@ -143,7 +143,7 @@ define([
 
 
   // Extend the prototype for baseview
-  extender.expand(baseview, {
+  extender.mixin(baseview, {
     tagName: "div",
     className: "view",
     _init: $.noop,
