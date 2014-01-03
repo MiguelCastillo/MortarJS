@@ -52,6 +52,10 @@
 
 
   function model( data, options ) {
+    if ( this instanceof model === false ) {
+      return new model( data, options );
+    }
+
     var settings = model.configure.apply(this, arguments);
     this.on(this.events).on(settings.events);
 

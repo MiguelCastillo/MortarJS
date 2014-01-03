@@ -110,15 +110,17 @@ define(["mortar/view"], function(view) {
       it("view with resources", function() {
         var _view = new view({
           resources: {
-            "tmpl": "html!<div>hash content</div>",
-            "model": "hello world"
+            "tmpl": "<div>has content</div>",
+            "model": {
+              "hello": "world"
+            }
           },
         });
 
         // Test base properties
         expect(_view instanceof view).toBe(true);
         expect(_view.$el instanceof $).toBe(true);
-        expect(_view.$el.html()).toBe("<div>hash content</div>");
+        expect(_view.$el.html()).toBe("<div>has content</div>");
       });
 
 
@@ -126,7 +128,7 @@ define(["mortar/view"], function(view) {
         new view({
           path: "tests/tmpl/deep",
           resources: {
-            "tmpl": "url!"
+            "tmpl!url": ""
           },
           events: {
             "view:ready": function() {

@@ -12,15 +12,20 @@ define([
 ], function(extender, events, tmpl, model, style) {
   "use strict";
 
-  var handlers = {
+
+  function resources () {
+  }
+
+
+  resources.handlers = {
     "tmpl": tmpl,
     "model": model,
     "style": style
   };
 
 
-  function getResource(resource, handler) {
-    if (!handler || !handlers[handler]) {
+  resources.get = function(resource, handler) {
+    if (!handler || !resources.handlers[handler]) {
       return;
     }
 
@@ -40,41 +45,50 @@ define([
       }
     }
 
-    return handlers[handler](resource);
+    return resources.handlers[handler](resource);
   }
 
 
-  function loadResources(resources) {
+  resources.load = function(items) {
     // wire up to requirejs
-    var _self = this;
-    var resource, parts, data, config, handler, result = {};
+    var _self = this, deferred = $.Deferred();
+    var resource, parts, config, type, result = {};
 
-    for ( var i in resources ) {
-      resource = resources[i];
+    for ( var handler in items ) {
+      resource = items[handler];
 
-      // Handle url items
-      if ( /^[url|html|data|css|less]+!/.test(resource) ) {
-        parts     = /^(\w+)!(.*)/.exec(resource);
-        data      = parts.pop();
-        config    = {}, config[parts.pop()] = data || _self.path;
-        result[i] = getResource( config, i );
+      // Handle items with directives
+      if ( /\w+!.*/.test(handler) ) {
+        parts    = /(\w+)!(.*)/.exec(handler);
+        type     = parts.pop();
+        handler  = parts.pop();
+        config   = {}, config[type] = resource || _self.path;
+        resource = config;
       }
-      else {
-        result[i] = resource;
-      }
+
+      result[handler] = resources.get(resource, handler);
     }
 
-    return $.when(result["tmpl"], result["style"], result["model"])
-      .then(function(tmpl, style, model) {
+    return $.when(result["tmpl"], result["model"], result["style"])
+      .then(function(tmpl, model, style) {
         if ( tmpl ) {
           _self.$el.empty().append($(tmpl));
         }
 
-        if ( style ) {
-          // Nothing. The style just gets loaded and we are done.
-        }
-
         if ( model ) {
+          _self.model = model;
+
+          // If the model is remote, then we will load the data automatically
+          // and them do the binding once the data is loaded in the model
+          if ( _.result(model, "url") ) {
+            return model.read().then(function(){
+              model.bind(_self.$el);
+              return result;
+            });
+          }
+          else {
+            model.bind(_self.$el);
+          }
         }
 
         return result;
@@ -116,7 +130,7 @@ define([
     //
     $.when(_self._init(options))
     .then(function() {
-      return loadResources.call(_self, _self.resources);
+      return baseview.resources.load.call(_self, _self.resources);
     })
     .then(function() {
       return $.when(_self._create(options));
@@ -147,6 +161,10 @@ define([
 
     // Remove dom element
     this.$el.remove();
+
+    if ( this.model ) {
+      this.model.unbind();
+    }
   }
 
 
@@ -228,6 +246,10 @@ define([
       options: options
     };
   }
+
+
+  // Resources
+  baseview.resources = resources;
 
 
   return baseview;
