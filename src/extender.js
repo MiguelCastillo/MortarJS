@@ -69,34 +69,34 @@
   // Works similar to Object.create, but this takes into account passing in
   // constructors.
   extender.extend = function() {
-    var obj;
+    var base;
 
-    // extender.extend( obj || function, (obj || function) * )
+    // extender.extend( base, (object || function) * )
     if ( this === extender ) {
-      obj = Array.prototype.slice.call(arguments).shift();
+      base = Array.prototype.slice.call(arguments).shift();
     }
     else {
-      obj = this;
+      base = this;
     }
 
     // Setup extension class to be able to setup inheritance
-    if ( obj && obj.constructor === Function ) {
-      extender.extension.prototype = obj.prototype;
+    if ( base && base.constructor === Function ) {
+      extender.extension.prototype = base.prototype;
     }
     else {
-      extender.extension.prototype = obj;
+      extender.extension.prototype = base;
     }
 
     // Setup a function the we can instantiate and properly call the
     // proper constructor
-    function base() {
+    function extension() {
       this.constructor.apply(this, arguments);
     }
 
-    base.prototype = new extender.extension;
-    base.__super__ = obj.prototype;
-    extender.mixin.apply(obj, [base].concat.apply(base, arguments));
-    return base;
+    extension.prototype = new extender.extension;
+    extension.__super__ = base.prototype;
+    extender.mixin.apply(base, [extension].concat.apply(extension, arguments));
+    return extension;
   }
 
 
