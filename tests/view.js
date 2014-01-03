@@ -107,24 +107,21 @@ define(["mortar/view"], function(view) {
       });
 
 
-      it("view with resources", function() {
+      it("view with local html tmpl", function() {
         var _view = new view({
           resources: {
-            "tmpl": "<div>has content</div>",
-            "model": {
-              "hello": "world"
-            }
+            "tmpl": "<div>hash content</div>"
           },
         });
 
         // Test base properties
         expect(_view instanceof view).toBe(true);
         expect(_view.$el instanceof $).toBe(true);
-        expect(_view.$el.html()).toBe("<div>has content</div>");
+        expect(_view.$el.html()).toBe("<div>hash content</div>");
       });
 
 
-      it("view with remote resources", function(done) {
+      it("view with remote html tmpl", function(done) {
         new view({
           path: "tests/tmpl/deep",
           resources: {
@@ -145,7 +142,6 @@ define(["mortar/view"], function(view) {
     });
 
   };
-
 
 });
 
