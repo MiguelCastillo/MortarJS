@@ -42,7 +42,13 @@
     }
 
     _.extend(settings, this.ajax, options.ajax);
-    return request.send(settings);
+
+    if ( settings.url ) {
+      return request.send(settings);
+    }
+    else {
+      throw "Must provide a url in order to make ajax calls";
+    }
   }
 
 
@@ -60,7 +66,7 @@
     this.on(this.events).on(settings.events);
 
     // Init the data
-    this.data = _.extend({}, this.data, data);
+    this.data = _.extend({}, this.data, settings.data);
 
     // Add data to the model...
     _.extend(this, settings.options);
@@ -77,13 +83,47 @@
 
 
   model.configure = function( data, options ) {
-    if ( typeof options === "string" ) {
-      options = {
-        "url": options
-      };
+    data = data || {};
+
+    // Working through some hoops to provide a flexible way to specify a url.
+    // 1. data is a string, then data is the url
+    // 2. data.url is a string and no options are provided, then data.url is the url.
+    //    This particular point is where I bend the rules a bit.  How do we tell if url
+    //    is the actual url for the model or just a property in the model data?
+    //    So, if data.url exists and options does not, then we assume data.url is the
+    //    model's url.  If data.url exists and also options, then data.url is a proeprty
+    //    in the model's data.  This gives me the most flexible approach
+    // 3. options is a string, then options is the url.
+    // 4. options.url is a string, then options.url is the url.
+    var _url;
+
+    if ( typeof data === "string" ) {
+      _url = data;
+      data = {};
     }
-    else {
-      options = _.extend({}, options);
+    else if ( typeof options === "string" ) {
+      _url = options;
+      options = {};
+    }
+    else if ( typeof data.url === "string" && !options ) {
+      _url = data;
+      delete data.url;
+    }
+    // If data has a property data and no options are passed in, then we will treat data
+    // as the options and extract data.data as the actual data for the model.  This is a
+    // way to pass in a single object with options and data in all in one object.
+    else if ( typeof data.data === "object" && !options ) {
+      options = _.extend({}, data);
+      delete options.data;
+      data = data.data;
+    }
+
+    // Ensure valid options object
+    options = options || {};
+
+    // Ensure valid url, if one is provided
+    if (_url) {
+      options.url = _url;
     }
 
     var events = options.events || {};

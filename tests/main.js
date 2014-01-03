@@ -50,6 +50,7 @@ define(function(require, exports, module) {
         "tests/tmpl",
         "tests/model",
         "tests/rv.model",
+        "tests/rv.view",
         "tests/ko.model"
       ], function() {
 
