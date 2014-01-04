@@ -42,7 +42,7 @@
       return;
     }
 
-    var settings = {evts: {}}
+    var settings = {evts: {}},
 
         // Handle multiple comma delimited events
         evts = evts.split(","),
