@@ -60,6 +60,52 @@
   datasource.transaction = $.ajax;
 
 
+  //
+  // CRUD interfaces
+  //
+  function crud() {
+  }
+
+
+  // Create item in datasource
+  crud.prototype.create = function(data, options) {
+    return $.when(this.datasource("post", data, options)).then(function(data){
+      return data;
+    });
+  };
+
+
+  // Read item from datasource
+  crud.prototype.read = function(data, options) {
+    return $.when(this.datasource("get", data, options)).then(function(data) {
+      this.serialize(data);
+      return data;
+    });
+  };
+
+
+  // Update item in the server
+  crud.prototype.update = function(data, options) {
+    return $.when(this.datasource("put", data, options)).then(function(data){
+      return data;
+    });
+  };
+
+
+  // Delete item from the server
+  crud.prototype.remove = function(data, options) {
+    return $.when(this.datasource("delete", data, options)).then(function(data){
+      return data;
+    });
+  };
+
+
+
+
+  //
+  // Model definition
+  //
+
   function model( data, options ) {
     if ( this instanceof model === false ) {
       return new model( data, options );
@@ -79,13 +125,19 @@
   }
 
 
+
+  // Assign request factory to model for direct access.  You can override
+  // request or request.send in order to customize how data is transfered.
+  model.datasource = datasource;
+
+
   extender.mixin(model, {
     ajax: {
       dataType: "json"
     },
     bind: $.noop,
     unbind: $.noop
-  }, events);
+  }, events, crud);
 
 
   /*
@@ -156,10 +208,6 @@
   };
 
 
-  // Assign request factory to model for direct access.  You can override
-  // request or request.send in order to customize how data is transfered.
-  model.datasource = datasource;
-
 
   //
   // Interfaces below are for converting data suitable for datasource consumption
@@ -206,44 +254,6 @@
   // Sets the new value of a model property
   model.prototype.set = function(property, value) {
     this.data[property] = value;
-  };
-
-
-
-  //
-  // Four interfaces below are for CRUD operations.
-  //
-
-  // Create item in datasource
-  model.prototype.create = function(data, options) {
-    return $.when(this.datasource("post", data, options)).then(function(data){
-      return data;
-    });
-  };
-
-
-  // Read item from datasource
-  model.prototype.read = function(data, options) {
-    return $.when(this.datasource("get", data, options)).then(function(data) {
-      this.serialize(data);
-      return data;
-    });
-  };
-
-
-  // Update item in the server
-  model.prototype.update = function(data, options) {
-    return $.when(this.datasource("put", data, options)).then(function(data){
-      return data;
-    });
-  };
-
-
-  // Delete item from the server
-  model.prototype.remove = function(data, options) {
-    return $.when(this.datasource("delete", data, options)).then(function(data){
-      return data;
-    });
   };
 
 
