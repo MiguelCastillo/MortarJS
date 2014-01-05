@@ -17,7 +17,10 @@
   "use strict";
 
 
-  function request(type, data, options) {
+  //
+  // Datasource is an interface for providing CRUD capabilities
+  //
+  function datasource(type, data, options) {
     options = options || {};
     var _data,
         settings = {
@@ -44,17 +47,17 @@
     _.extend(settings, this.ajax, options.ajax);
 
     if ( settings.url ) {
-      return request.send(settings);
+      return $.when(datasource.transaction(settings));
     }
     else {
-      throw "Must provide a url in order to make ajax calls";
+      throw "Must provide a url in order to make ajax calls.  Optionally, you can override or provide a custom data source that does not require a url.";
     }
   }
 
 
-  request.send = function(settings) {
-    return $.ajax(settings);
-  }
+  // Replace this interface if you wish to only override the point at which
+  // the ajax request happens
+  datasource.transaction = $.ajax;
 
 
   function model( data, options ) {
@@ -62,14 +65,17 @@
       return new model( data, options );
     }
 
+    // Configure model
     var settings = model.configure.apply(this, arguments);
+
+    // Setup events
     this.on(this.events).on(settings.events);
 
-    // Init the data
-    this.data = _.extend({}, this.data, settings.data);
-
-    // Add data to the model...
+    // Mixin all the options
     _.extend(this, settings.options);
+
+    // Serialize
+    this.serialize(this.defaultdata);
   }
 
 
@@ -82,10 +88,15 @@
   }, events);
 
 
+  /*
+  * When options are passed in, then data is exlusively data model.  Otherwise,
+  * we will pluck properties out of data to configure the model.  E.g. data.data
+  * and data.url
+  */
   model.configure = function( data, options ) {
-    data = data || {};
+    var _url;
 
-    // Working through some hoops to provide a flexible way to specify a url.
+    // Working through some hoops to provide a flexible way to specify a url and data.
     // 1. data is a string, then data is the url
     // 2. data.url is a string and no options are provided, then data.url is the url.
     //    This particular point is where I bend the rules a bit.  How do we tell if url
@@ -95,31 +106,39 @@
     //    in the model's data.  This gives me the most flexible approach
     // 3. options is a string, then options is the url.
     // 4. options.url is a string, then options.url is the url.
-    var _url;
 
-    if ( typeof data === "string" ) {
+    if ( typeof data === "string" || typeof data === "function" ) {
       _url = data;
-      data = {};
+
+      // data will be initialized when fetching from the datasource.  At that point
+      // the proper data type will be set
+      data = null;
     }
-    else if ( typeof options === "string" ) {
+    else if ( typeof options === "string" || typeof options === "function" ) {
       _url = options;
-      options = {};
+      options = null;
     }
-    else if ( typeof data.url === "string" && !options ) {
-      _url = data;
-      delete data.url;
+    else if ( !options && data ) {
+      // Items that can be used as options in a data object when an options object is
+      // not explicitly provided.
+      if ( data.data || data.url || data.events || data.datasource ) {
+        options = _.extend({}, data);
+
+        // Setup direct access to the data.  data.data could be undefined or null, which is
+        // fine because the data and its type will be properly setup during serialization
+        data = data.data;
+      }
     }
-    // If data has a property data and no options are passed in, then we will treat data
-    // as the options and extract data.data as the actual data for the model.  This is a
-    // way to pass in a single object with options and data in all in one object.
-    else if ( typeof data.data === "object" && !options ) {
-      options = _.extend({}, data);
-      delete options.data;
-      data = data.data;
-    }
+
 
     // Ensure valid options object
     options = options || {};
+
+    // Default data
+    options.defaultdata = data;
+
+    // Datasource to deal with data persistence
+    options.datasource = options.datasource || model.datasource
 
     // Ensure valid url, if one is provided
     if (_url) {
@@ -139,13 +158,44 @@
 
   // Assign request factory to model for direct access.  You can override
   // request or request.send in order to customize how data is transfered.
-  model.request = request;
+  model.datasource = datasource;
 
 
+  //
+  // Interfaces below are for converting data suitable for datasource consumption
+  // and UI consumption.
+  //
+
+  // Interface to take data from a datasource and converting to a format that's
+  // suitable for the UI
+  model.prototype.serialize = function(data, options) {
+    // Init the data
+    if ( !this.data ) {
+      this.data = data;
+    }
+    else {
+      if ( this.data instanceof Array ) {
+        //this.data.splice.apply(this.data, [0, this.data.length].concat(data));
+        this.data.splice(0, this.data.length); // Clean array
+        this.data.push.apply(this, data);      // Add new data
+      }
+      else {
+        _.extend(this.data, data);
+      }
+    }
+  }
+
+
+  // Interface to convert model data to something suitable for consumption by the
+  // datasrouce.  E.g. http request, local storage, cookie...
   model.prototype.deserialize = function() {
     return this.data;
   };
 
+
+  //
+  // Interfaces below are for data access
+  //
 
   // Gets current value of a model propertry
   model.prototype.get = function(property) {
@@ -159,18 +209,23 @@
   };
 
 
-  // Create item in the server
+
+  //
+  // Four interfaces below are for CRUD operations.
+  //
+
+  // Create item in datasource
   model.prototype.create = function(data, options) {
-    return model.request.call(this, "post", data, options).done(function(data){
+    return $.when(this.datasource("post", data, options)).then(function(data){
       return data;
     });
   };
 
 
-  // Create item from the server
+  // Read item from datasource
   model.prototype.read = function(data, options) {
-    return model.request.call(this, "get", data, options).done(function(data){
-      _.extend(this.data, data);
+    return $.when(this.datasource("get", data, options)).then(function(data) {
+      this.serialize(data);
       return data;
     });
   };
@@ -178,15 +233,15 @@
 
   // Update item in the server
   model.prototype.update = function(data, options) {
-    return model.request.call(this, "put", data, options).done(function(data){
+    return $.when(this.datasource("put", data, options)).then(function(data){
       return data;
     });
   };
 
 
-  // Remove item from the server
+  // Delete item from the server
   model.prototype.remove = function(data, options) {
-    return model.request.call(this, "delete", data, options).done(function(data){
+    return $.when(this.datasource("delete", data, options)).then(function(data){
       return data;
     });
   };
