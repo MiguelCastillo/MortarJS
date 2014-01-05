@@ -7,13 +7,13 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define([], factory);
+    define(["mortar/extender"], factory);
   } else {
     // Browser globals
-    this.mortar.events = factory();
+    this.mortar.events = factory(this.mortar.extender);
   }
 })
-(function() {
+(function(extender) {
   "use strict";
 
   // Converters is a hash of the different type of events we can
@@ -22,35 +22,35 @@
   var converters = {};
 
 
-  converters.object = function(evts, context) {
+  converters.object = function(events, context) {
     if ( typeof arguments[0] !== "object" ) {
       return;
     }
 
-    var settings = {evts: {}};
+    var settings = {events: {}};
 
-    for ( var evt in evts ) {
-      settings.evts[evt] = factory.normalize.apply(this, [evt, evts[evt], evts[evt].context || context]);
+    for ( var evt in events ) {
+      settings.events[evt] = factory.normalize.apply(this, [evt, events[evt], events[evt].context || context]);
     }
 
     return settings;
   }
 
 
-  converters.string = function(evts, cb, context) {
+  converters.string = function(events, cb, context) {
     if ( typeof arguments[0] !== "string" ) {
       return;
     }
 
-    var settings = {evts: {}},
+    var settings = {events: {}},
 
         // Handle multiple comma delimited events
-        evts = evts.split(","),
-        i = 0,
-        length = evts.length;
+        events = events.split(","),
+        length = events.length,
+        i = 0;
 
     for ( ; i < length; i++ ) {
-      settings.evts[evts[i]] = factory.normalize.apply(this, [evts[i], cb, context]);
+      settings.events[events[i]] = factory.normalize.apply(this, [events[i], cb, context]);
     }
 
     return settings;
@@ -59,15 +59,8 @@
 
   //
   // Event factory...
-  // Replace events.factory if you want to customize how the events are built.
-  // E.g. call your own converters in a custom way like using instanceof instead
-  // of typeof.
   //
   function factory() {
-    var converter = events.converters[typeof arguments[0]];
-    if ( converter ) {
-      return converter.apply(this, arguments);
-    }
   }
 
 
@@ -99,8 +92,8 @@
 
   factory.bind = function() {
     var $this    = $(this);
-    var settings = events.factory.apply(this, arguments),
-        _events  = settings.evts || {},
+    var settings = events.configure.apply(this, arguments),
+        _events  = settings.events || {},
         _evt;
 
     // Handle jQuery type of hash events
@@ -138,7 +131,7 @@
   }
 
 
-  _.extend(events.prototype,{
+  extender.mixin(events, {
     events: {}
   });
 
@@ -148,13 +141,24 @@
   events.converters = converters;
 
 
+  // Replace events.configure if you want to customize how the events are built.
+  // E.g. call your own converters in a custom way like using instanceof instead
+  // of typeof.
+  events.configure = function() {
+    var converter = events.converters[typeof arguments[0]];
+    if ( converter ) {
+      return converter.apply(this, arguments);
+    }
+  }
+
+
   events.prototype.on = function() {
-    return factory.bind.apply(this, arguments);
+    return events.factory.bind.apply(this, arguments);
   }
 
 
   events.prototype.off = function() {
-    return factory.unbind.apply(this, arguments);
+    return events.factory.unbind.apply(this, arguments);
   }
 
 
