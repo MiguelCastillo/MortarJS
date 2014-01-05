@@ -136,7 +136,7 @@ define([
       return $.when(_self._create(options));
     })
     .then(function() {
-      _self.trigger("view:ready", [_self, options]);
+      _self.trigger("_create").trigger("view:ready", [_self, options]);
       deferred.resolve(_self);
     });
   }
