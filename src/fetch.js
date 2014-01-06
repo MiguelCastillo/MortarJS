@@ -10,7 +10,7 @@
     define([], factory);
   } else {
     // Browser globals
-    this.mortar.resource = factory();
+    this.mortar.fetch = factory();
   }
 })
 (function( ) {
