@@ -1,4 +1,4 @@
-define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
+define(["mortar/rv.model", "mortar/fetch"], function(model, fetch) {
 
   return function() {
 
@@ -16,7 +16,7 @@ define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
       it("model url/serialize", function( done ) {
         var _model = new model({}, "tests/json/artists.json");
 
-        $.when.apply($, [_model.read(), resource("tests/tmpl/rv.artists.html")]).done(function(data, html) {
+        $.when.apply($, [_model.read(), fetch("tests/tmpl/rv.artists.html")]).done(function(data, html) {
           var $html = $(html[0]);//.appendTo("body");
           _model.bind($html);
 
@@ -32,7 +32,7 @@ define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
           "hello": "world"
         });
 
-        resource("tests/tmpl/rv.hello.html").done(function(html) {
+        fetch("tests/tmpl/rv.hello.html").done(function(html) {
           var $html  = $(html),
               $hello = $(".hello", $html);
 
@@ -55,7 +55,7 @@ define(["mortar/rv.model", "mortar/resource"], function(model, resource) {
           "password": "tryagain"
         });
 
-        resource("tests/tmpl/rv.form.html").done(function(html) {
+        fetch("tests/tmpl/rv.form.html").done(function(html) {
           var $html     = $(html),
               $hello    = $(".hello", $html),
               $username = $(".username", $html),

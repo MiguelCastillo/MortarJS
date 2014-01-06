@@ -7,13 +7,13 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(["mortar/resource"], factory);
+    define(["mortar/fetch"], factory);
   } else {
     // Browser globals
-    this.mortar.tmpl = factory(this.mortar.resource);
+    this.mortar.tmpl = factory(this.mortar.fetch);
   }
 })
-(function( resource ) {
+(function( fetch ) {
   "use strict";
 
 
@@ -66,6 +66,6 @@
 
 
   tmpl.selector = "mjs-tmpl";
-  tmpl.loader = resource;
+  tmpl.loader = fetch;
   return tmpl;
 });

@@ -18,7 +18,7 @@
 
   var cache = {};
 
-  function resource( settings ) {
+  function fetch( settings ) {
     var deferred;
 
     if ( !settings ) {
@@ -57,25 +57,25 @@
   }
 
 
-  resource.get = function( url ) {
+  fetch.get = function( url ) {
     return cache[url];
   }
 
 
-  resource.remove = function( url ) {
+  fetch.remove = function( url ) {
     if ( url in cache ) {
       delete cache[url];
     }
   }
 
 
-  resource.clear = function() {
+  fetch.clear = function() {
     for ( var i in cache ) {
       delete cache[i];
     }
   }
 
 
-  return resource;
+  return fetch;
 });
 

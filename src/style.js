@@ -7,13 +7,13 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(["mortar/resource"], factory);
+    define(["mortar/fetch"], factory);
   } else {
     // Browser globals
-    this.mortar.style = factory(this.mortar.resource);
+    this.mortar.style = factory(this.mortar.fetch);
   }
 })
-(function( resource ) {
+(function( fetch ) {
   "use strict";
 
 
@@ -26,7 +26,7 @@
 
 
   function loader(url, dataType) {
-    return resource({
+    return fetch({
       "url": url,
       "ajax": {
         dataType: dataType
