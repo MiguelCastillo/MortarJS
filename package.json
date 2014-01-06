@@ -1,0 +1,24 @@
+{
+  "name": "mortar",
+  "version": "0.0.5",
+  "license": "MIT",
+  "author": "Miguel Castillo <mahchagnu@gmail.com>",
+  "title": "MortarJs",
+  "description": "MVC JavaScript framework to make crafting web applicaiton very simple",
+  "homepage": "https://github.com/MiguelCastillo/MortarJs",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/MiguelCastillo/MortarJs.git"
+  },
+  "bugs": {
+    "email": "manchagnu@gmail.com",
+    "url": "https://github.com/MiguelCastillo/MortarJs/issues"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-contrib-jasmine": "~0.5.2"
+  },
+  "private": true
+}
