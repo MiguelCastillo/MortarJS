@@ -7,13 +7,13 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(["mortar/model", "mortar/ko.factory", "ko"], factory);
+    define(["mortar/model", "mortar/ko.factory"], factory);
   } else {
     // Browser globals
-    this.mortar.kobinder = factory(this.mortar.model, this.mortar.koFactory, this.ko);
+    this.mortar.kobinder = factory(this.mortar.model, this.mortar.koFactory);
   }
 })
-(function( model, factory, ko ) {
+(function( model, factory ) {
   "use strict";
 
 
@@ -45,9 +45,7 @@
     }
 
     // Do the binding
-    options.$el.each(function(index, el) {
-      ko.applyBindings(_self.data, el);
-    });
+    factory.bind(_self.data, options.$el);
   }
 
 
@@ -61,10 +59,7 @@
 
     // If no el is provided, then
     options.$el = options.$el || $(this._els);
-
-    options.$el.each(function(el) {
-      ko.cleanNode(el);
-    });
+    factory.unbind(options.$el);
   }
 
 

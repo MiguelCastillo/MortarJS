@@ -125,6 +125,20 @@
   };
 
 
+  factory.bind = function( data, $el ) {
+    $($el).each(function(index, el) {
+      ko.applyBindings(data, el);
+    });
+  };
+
+
+  factory.unbind = function( $el ) {
+    $($el).each(function(index, el) {
+      ko.cleanNode(el);
+    });
+  };
+
+
   return factory;
 
 });
