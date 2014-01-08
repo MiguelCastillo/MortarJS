@@ -4,7 +4,9 @@
  */
 
 
-define(["mortar/tmpl"], function(tmpl) {
+define(["mortar"], function(Mortar) {
+
+  var tmpl = Mortar.tmpl;
 
   return function() {
 

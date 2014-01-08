@@ -4,13 +4,14 @@
  */
 
 
-define(function(require, exports, module) {
+define(["mortar"], function(Mortar) {
 
   //
   // Create requirejs config to shim jasmine and define module names
   //
   var jasmineRequire = requirejs.config({
     "paths": {
+      "mortar": "src",
       "jasmine": "lib/jasmine-2.0.0/jasmine",
       "jasmine-html": "lib/jasmine-2.0.0/jasmine-html"
     },
@@ -44,7 +45,7 @@ define(function(require, exports, module) {
       rjasmine.extend(window, jasmine._api);
 
       // Get tests...
-      require([
+      jasmineRequire([
         "tests/extender",
         "tests/view",
         "tests/tmpl",
@@ -52,6 +53,7 @@ define(function(require, exports, module) {
         "tests/rv.model",
         "tests/rv.view",
         "tests/ko.model"
+        //,"tests/regex"
       ], function() {
 
         // Iterate through each test and run it so that each test can register
@@ -67,7 +69,7 @@ define(function(require, exports, module) {
   }
 
 
-  return require("mortar/view").extend({
+  return Mortar.view.extend({
     className: "tests",
     events: {
       "view:ready": create

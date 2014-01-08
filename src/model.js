@@ -1,19 +1,7 @@
-/*
- * Copyright (c) 2014 Miguel Castillo.
- * Licensed under MIT
- */
-
-
-(function(factory) {
-  if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module.
-    define(["mortar/extender", "mortar/events"], factory);
-  } else {
-    // Browser globals
-    this.mortar.model = factory(this.mortar.extender, this.mortar.events);
-  }
-})
-(function(extender, events, resource) {
+define([
+  "mortar/extender",
+  "mortar/events"
+],function(extender, events) {
   "use strict";
 
 

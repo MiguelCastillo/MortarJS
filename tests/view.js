@@ -1,4 +1,6 @@
-define(["mortar/view"], function(view) {
+define(["mortar"], function(Mortar) {
+
+  var view = Mortar.view;
 
   return function() {
 

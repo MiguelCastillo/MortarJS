@@ -1,21 +1,4 @@
-/*
- * Copyright (c) 2014 Miguel Castillo.
- * Licensed under MIT
- *
- * https://github.com/MiguelCastillo/hash.route.js
- */
-
-
-(function(factory) {
-  if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module.
-    define([], factory);
-  } else {
-    // Browser globals
-    this.mortar.hash = factory();
-  }
-})
-(function( ) {
+define([], function() {
   "use strict";
 
   var oldHash = "",
@@ -257,7 +240,11 @@
     // the initial value when event handlers are registered.
     //
     var _onEvent = instance.on;
-    function onEvent(evt, selector, callback) {
+    function onEvent(/*evt, selector, callback*/) {
+      var evt      = arguments[0],
+          selector = arguments[1],
+          callback = arguments[2];
+
       if (typeof selector === "function") {
         callback = selector;
         selector = '';

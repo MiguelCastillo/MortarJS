@@ -1,4 +1,7 @@
-define(["mortar/extender"], function(extender) {
+define(["mortar"], function(Mortar) {
+
+  var extender = Mortar.extender;
+
 
   return function() {
 

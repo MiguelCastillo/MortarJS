@@ -1,19 +1,4 @@
-/*
- * Copyright (c) 2014 Miguel Castillo.
- * Licensed under MIT
- */
-
-
-(function(factory) {
-  if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module.
-    define(["mortar/extender"], factory);
-  } else {
-    // Browser globals
-    this.mortar.events = factory(this.mortar.extender);
-  }
-})
-(function(extender) {
+define(["mortar/extender"], function(extender) {
   "use strict";
 
   // Converters is a hash of the different type of events we can

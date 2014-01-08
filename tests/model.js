@@ -1,4 +1,6 @@
-define(["mortar/model"], function(model) {
+define(["mortar"], function(Mortar) {
+
+  var model = Mortar.model;
 
   return function() {
 

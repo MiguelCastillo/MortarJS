@@ -1,19 +1,4 @@
-/*
- * Copyright (c) 2013 Miguel Castillo.
- * Licensed under MIT
- */
-
-
-(function(factory) {
-  if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module.
-    define(["ko"], factory);
-  } else {
-    // Browser globals
-    this.mortar.koFactory = factory(this.ko);
-  }
-})
-(function( ko ) {
+define(["ko"], function( ko ) {
   "use strict";
 
 
