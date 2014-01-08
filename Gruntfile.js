@@ -31,8 +31,8 @@ module.exports = function(grunt) {
           optimize: "none",
           preserveLicenseComments: true,
           wrap: {
-              startFile: ['build/license.frag', 'build/start.frag'],
-              endFile: 'build/end.frag'
+              startFile: ['buildinfo/license.frag', 'buildinfo/start.frag'],
+              endFile: 'buildinfo/end.frag'
           }
         }
       },
@@ -48,8 +48,8 @@ module.exports = function(grunt) {
           optimize: "uglify",
           preserveLicenseComments: true,
           wrap: {
-              startFile: ['build/license.frag', 'build/start.frag'],
-              endFile: 'build/end.frag'
+              startFile: ['buildinfo/license.frag', 'buildinfo/start.frag'],
+              endFile: 'buildinfo/end.frag'
           }
         }
       },
@@ -64,7 +64,7 @@ module.exports = function(grunt) {
           optimize: "none",
           preserveLicenseComments: true,
           wrap: {
-              startFile: 'build/license.frag'
+              startFile: 'buildinfo/license.frag'
           }
         }
       },
@@ -79,7 +79,7 @@ module.exports = function(grunt) {
           optimize: "uglify",
           preserveLicenseComments: true,
           wrap: {
-              startFile: 'build/license.frag'
+              startFile: 'buildinfo/license.frag'
           }
         }
       }
