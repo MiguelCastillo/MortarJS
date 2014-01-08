@@ -27,12 +27,59 @@ module.exports = function(grunt) {
           },
           name: 'lib/js/almond',
           include: ['mortar/core'],
-          out: 'dist/mortar.js',
+          out: 'dist/mortar-debug.js',
           optimize: "none",
-          preserveLicenseComments: false,
+          preserveLicenseComments: true,
           wrap: {
-              startFile: 'build/start.frag',
+              startFile: ['build/license.frag', 'build/start.frag'],
               endFile: 'build/end.frag'
+          }
+        }
+      },
+      minified: {
+        options: {
+          baseUrl: '.',
+          paths: {
+            "mortar": "src"
+          },
+          name: 'lib/js/almond',
+          include: ['mortar/core'],
+          out: 'dist/mortar-min.js',
+          optimize: "uglify",
+          preserveLicenseComments: true,
+          wrap: {
+              startFile: ['build/license.frag', 'build/start.frag'],
+              endFile: 'build/end.frag'
+          }
+        }
+      },
+      amddebug: {
+        options: {
+          baseUrl: '.',
+          paths: {
+            "mortar": "src"
+          },
+          include: ['mortar/core'],
+          out: 'dist/mortar-amd-debug.js',
+          optimize: "none",
+          preserveLicenseComments: true,
+          wrap: {
+              startFile: 'build/license.frag'
+          }
+        }
+      },
+      amdminified: {
+        options: {
+          baseUrl: '.',
+          paths: {
+            "mortar": "src"
+          },
+          include: ['mortar/core'],
+          out: 'dist/mortar-amd-min.js',
+          optimize: "uglify",
+          preserveLicenseComments: true,
+          wrap: {
+              startFile: 'build/license.frag'
           }
         }
       }
