@@ -11,7 +11,7 @@ define([
 
   binder.prototype.deserialize = function() {
     return factory.deserialize(this.data);
-  }
+  };
 
 
   binder.prototype.bind = function( options ) {
@@ -34,7 +34,7 @@ define([
 
     // Do the binding
     factory.bind(_self.data, options.$el);
-  }
+  };
 
 
   binder.prototype.unbind = function( options ) {
@@ -48,7 +48,7 @@ define([
     // If no el is provided, then
     options.$el = options.$el || $(this._els);
     factory.unbind(options.$el);
-  }
+  };
 
 
   return model.extend(binder);

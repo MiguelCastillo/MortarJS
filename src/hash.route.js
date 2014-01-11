@@ -34,15 +34,15 @@ define([], function() {
   //
   // Enable the entire hashing operation
   //
-  hash.enable = function(val) {
+  hash.enable = function() {
     if ( enabled ) {
       return;
     }
 
     enabled = true;
 
-    if ( "onhashchange" in self ) {
-      $(self).on("hashchange", throttlechange);
+    if ( "onhashchange" in window ) {
+      $(window).on("hashchange", throttlechange);
       interval = setTimeout(hashchange, hash.refreshRate);
     }
     else {
@@ -61,8 +61,8 @@ define([], function() {
 
     enabled = false;
 
-    if ( "onhashchange" in self ) {
-      $(self).off("hashchange", throttlechange);
+    if ( "onhashchange" in window ) {
+      $(window).off("hashchange", throttlechange);
       clearTimeout(interval);
     }
     else {
@@ -185,9 +185,7 @@ define([], function() {
         return false;
       }
 
-      var matches = matchUri(uri),
-          lastMatch = "",
-          lastUrl = "";
+      var matches = matchUri(uri);
 
       if ( matches ) {
         // Javascript regex match will put the match input in the beginning
@@ -241,8 +239,7 @@ define([], function() {
     //
     var _onEvent = instance.on;
     function onEvent(/*evt, selector, callback*/) {
-      var evt      = arguments[0],
-          selector = arguments[1],
+      var selector = arguments[1],
           callback = arguments[2];
 
       if (typeof selector === "function") {
@@ -271,7 +268,7 @@ define([], function() {
     instance.pattern = options.pattern;
     instance.on = onEvent;
     return instance;
-  };
+  }
 
 
   hash.patternMatch = patternMatch;

@@ -19,11 +19,11 @@ define([
 
     options.$el = options.$el || $(document);
     rivets.bind(options.$el, this.data);
-  }
+  };
 
 
   binder.prototype.unbind = function( ) {
-  }
+  };
 
 
   return model.extend(binder);

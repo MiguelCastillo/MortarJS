@@ -17,7 +17,7 @@ define([], function() {
 
       if ( iextension.constructor === Function ) {
         extender.extension.prototype = iextension.prototype;
-        _.extend(this, new extender.extension);
+        _.extend(this, new extender.extension());
       }
       else {
         _.extend(this, iextension);
@@ -25,12 +25,12 @@ define([], function() {
     }
 
     return this;
-  }
+  };
 
 
   // Base dummy extension to use the prototype as a placeholder when
   // establishing inheritance.
-  extender.extension = function() {}
+  extender.extension = function() {};
 
 
   extender.mixin = function() {
@@ -48,7 +48,7 @@ define([], function() {
     base.prototype.extend = _extender.extend;
     base.extend = extender.extend;
     return base;
-  }
+  };
 
 
   // Works similar to Object.create, but this takes into account passing in
@@ -78,11 +78,11 @@ define([], function() {
       this.constructor.apply(this, arguments);
     }
 
-    extension.prototype = new extender.extension;
+    extension.prototype = new extender.extension();
     extension.__super__ = base.prototype;
     extender.mixin.apply(base, [extension].concat.apply(extension, arguments));
     return extension;
-  }
+  };
 
 
   return extender;

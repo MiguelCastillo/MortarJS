@@ -41,12 +41,12 @@ define([
     }
 
     return resources.handlers[handler](resource);
-  }
+  };
 
 
   resources.load = function(items) {
     // wire up to requirejs
-    var _self = this, deferred = $.Deferred();
+    var _self = this;
     var resource, parts, config, type, result = {};
 
     for ( var handler in items ) {
@@ -57,15 +57,16 @@ define([
         parts    = /(\w+)!(.*)/.exec(handler);
         type     = parts.pop();
         handler  = parts.pop();
-        config   = {}, config[type] = resource || _self.path;
+        config   = {};
+        config[type] = resource || _self.path;
         resource = config;
       }
 
       result[handler] = resources.get(resource, handler);
     }
 
-    return $.when(result["tmpl"], result["model"], result["style"])
-      .then(function(tmpl, model, style) {
+    return $.when(result.tmpl, result.model, result.style)
+      .then(function(tmpl, model /*, style*/) {
         if ( tmpl ) {
           _self.$el.empty().append($(tmpl));
         }
@@ -88,7 +89,7 @@ define([
 
         return result;
       });
-  }
+  };
 
 
   //
@@ -97,21 +98,21 @@ define([
   function baseview(options) {
     var _self = this;
     var deferred = $.Deferred();
-    var settings = baseview.configure.apply(this, arguments);
+    var settings = baseview.configure.apply(_self, arguments);
 
     // Mixin options
-    _.extend(this, settings.options);
+    _.extend(_self, settings.options);
 
     // Setup the target element and events
-    this.$el.addClass(_self.className);
+    _self.$el.addClass(_self.className);
 
     // Bind base events and optional events for the view and the dom element container
-    this.on(this.events).on(settings.events);
-    this.on.call(this.$el, this.events, this);
-    this.on.call(this.$el, settings.events, this);
+    _self.on(_self.events).on(settings.events);
+    _self.on.call(_self.$el, _self.events, _self);
+    _self.on.call(_self.$el, settings.events, _self);
 
     // Add ready callback so that it is possible to know when a view is ready
-    this.ready = deferred.done;
+    _self.ready = deferred.done;
 
     // Before anything is done, I am calling init with the $el in place
     // in case there is a need to setup anything on the dom before loading
@@ -160,7 +161,7 @@ define([
     if ( this.model ) {
       this.model.unbind();
     }
-  }
+  };
 
 
   baseview.prototype.transition = function (view, selector) {
@@ -178,8 +179,8 @@ define([
       lastView.trigger("view:leave", [this]);
 
       // Destroy the view?
-      if ( this.managed !== false
-          && typeof lastView.destroy === "function" ) {
+      if ( this.managed !== false &&
+          typeof lastView.destroy === "function" ) {
         lastView.destroy();
       }
     }
@@ -197,7 +198,7 @@ define([
     }
 
     view.trigger("view:enter", [this]);
-  }
+  };
 
 
   //
@@ -240,7 +241,7 @@ define([
       // persisted in the view instance.
       options: options
     };
-  }
+  };
 
 
   // Resources

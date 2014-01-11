@@ -4,8 +4,6 @@ define([], function() {
   var cache = {};
 
   function fetch( settings ) {
-    var deferred;
-
     if ( !settings ) {
       throw "Invalid settings";
     }
@@ -44,21 +42,21 @@ define([], function() {
 
   fetch.get = function( url ) {
     return cache[url];
-  }
+  };
 
 
   fetch.remove = function( url ) {
     if ( url in cache ) {
       delete cache[url];
     }
-  }
+  };
 
 
   fetch.clear = function() {
     for ( var i in cache ) {
       delete cache[i];
     }
-  }
+  };
 
 
   return fetch;

@@ -19,7 +19,7 @@ define(["mortar/extender"], function(extender) {
     }
 
     return settings;
-  }
+  };
 
 
   converters.string = function(events, cb, context) {
@@ -27,10 +27,10 @@ define(["mortar/extender"], function(extender) {
       return;
     }
 
-    var settings = {events: {}},
+    // Handle multiple comma delimited events
+    events = events.split(",");
 
-        // Handle multiple comma delimited events
-        events = events.split(","),
+    var settings = {events: {}},
         length = events.length,
         i = 0;
 
@@ -39,7 +39,7 @@ define(["mortar/extender"], function(extender) {
     }
 
     return settings;
-  }
+  };
 
 
   //
@@ -58,7 +58,7 @@ define(["mortar/extender"], function(extender) {
         custom    = type.split(":").length !== 1;
 
     if ( typeof handler === "string" ) {
-      handle = this[handler];
+      handler = this[handler];
     }
 
     // Bind a context if one is provided
@@ -72,7 +72,7 @@ define(["mortar/extender"], function(extender) {
       cb: handler,
       custom: custom
     };
-  }
+  };
 
 
   factory.bind = function() {
@@ -93,7 +93,7 @@ define(["mortar/extender"], function(extender) {
     }
 
     return this;
-  }
+  };
 
 
   factory.unbind = function() {
@@ -107,7 +107,7 @@ define(["mortar/extender"], function(extender) {
     }
 
     return this;
-  }
+  };
 
 
 
@@ -134,34 +134,33 @@ define(["mortar/extender"], function(extender) {
     if ( converter ) {
       return converter.apply(this, arguments);
     }
-  }
+  };
 
 
   events.prototype.on = function() {
     return events.factory.bind.apply(this, arguments);
-  }
+  };
 
 
   events.prototype.off = function() {
     return events.factory.unbind.apply(this, arguments);
-  }
+  };
 
 
-  events.prototype.trigger = function(type) {
+  events.prototype.trigger = function() {
     var $this = $(this);
     $this.trigger.apply($this, arguments);
     return this;
-  }
+  };
 
 
-  events.prototype.triggerHandler = function(type) {
+  events.prototype.triggerHandler = function() {
     var $this = $(this);
     $this.triggerHandler.apply($this, arguments);
     return this;
-  }
+  };
 
 
   return events;
 });
-
 

@@ -18,8 +18,8 @@ define(["mortar/fetch"], function( fetch ) {
         .done(deferred.resolve)
         .fail(deferred.reject);
     }
-    else if (typeof options.html === "string"
-             || options.html instanceof jQuery === true ) {
+    else if (typeof options.html === "string" ||
+             options.html instanceof jQuery === true ) {
       deferred.resolve(options.html);
     }
     else {

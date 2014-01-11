@@ -10,12 +10,12 @@ define([
   //
   function datasource(type, data, options) {
     options = options || {};
-    var _data,
-        settings = {
-          context: this,
-          type: type,
-          url: _.result({url: options.url || this.url}, "url")
-        };
+    var _data;
+    var settings = {
+      context: this,
+      type: type,
+      url: _.result({url: options.url || this.url}, "url")
+    };
 
     switch( type.toLocaleLowerCase() ) {
       case "post":
