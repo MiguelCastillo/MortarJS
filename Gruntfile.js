@@ -23,16 +23,16 @@ module.exports = function(grunt) {
         options: {
           baseUrl: '.',
           paths: {
-            "mortar": "src"
+            mortar: 'src'
           },
           name: 'lib/js/almond',
           include: ['mortar/core'],
           out: 'dist/mortar-debug.js',
-          optimize: "none",
+          optimize: 'none',
           preserveLicenseComments: true,
           wrap: {
-              startFile: ['buildinfo/license.frag', 'buildinfo/start.frag'],
-              endFile: 'buildinfo/end.frag'
+            startFile: ['buildinfo/license.frag', 'buildinfo/module-start.frag'],
+            endFile: 'buildinfo/module-end.frag'
           }
         }
       },
@@ -40,55 +40,47 @@ module.exports = function(grunt) {
         options: {
           baseUrl: '.',
           paths: {
-            "mortar": "src"
+            mortar: 'src'
           },
           name: 'lib/js/almond',
           include: ['mortar/core'],
-          out: 'dist/mortar-min.js',
-          optimize: "uglify",
+          out: 'dist/mortar.js',
+          optimize: 'uglify',
           preserveLicenseComments: true,
           wrap: {
-              startFile: ['buildinfo/license.frag', 'buildinfo/start.frag'],
-              endFile: 'buildinfo/end.frag'
-          }
-        }
-      },
-      amddebug: {
-        options: {
-          baseUrl: '.',
-          paths: {
-            "mortar": "src"
-          },
-          include: ['mortar/core'],
-          out: 'dist/mortar-amd-debug.js',
-          optimize: "none",
-          preserveLicenseComments: true,
-          wrap: {
-              startFile: 'buildinfo/license.frag'
-          }
-        }
-      },
-      amdminified: {
-        options: {
-          baseUrl: '.',
-          paths: {
-            "mortar": "src"
-          },
-          include: ['mortar/core'],
-          out: 'dist/mortar-amd-min.js',
-          optimize: "uglify",
-          preserveLicenseComments: true,
-          wrap: {
-              startFile: 'buildinfo/license.frag'
+            startFile: ['buildinfo/license.frag', 'buildinfo/module-start.frag'],
+            endFile: 'buildinfo/module-end.frag'
           }
         }
       }
     },
     jasmine: {
       all: {
-        src: "dist/mortar.js",
         options: {
-          specs: "tests/*.js"
+          specs: ["tests/specs/*.js"],
+          helpers: ["lib/js/jquery-1.10.1.js", "lib/js/underscore.js"],
+          template: require("grunt-template-jasmine-requirejs"),
+          templateOptions: {
+            requireConfig: {
+              "paths": {
+                "mortar": "src",
+                "underscore": "lib/js/underscore",
+                "jquery": "lib/js/jquery-1.10.1",
+                "rivets": "lib/js/rivets",
+                "ko": "lib/js/knockout-3.0.0"
+              }
+            }
+          }
+        }
+      }
+    },
+    watch: {
+      scripts: {
+        files: ['src/**/*.js', 'tests/specs/*.js'],
+        //tasks: ['jasmine'],
+        options: {
+          spawn: false,
+          livereload: true
         }
       }
     }
@@ -98,8 +90,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('default', ['requirejs']);
-  grunt.registerTask('build', ['requirejs']);
-  grunt.registerTask('tests', ['jasmine']);
+  grunt.registerTask('dev', ['watch']);
 };

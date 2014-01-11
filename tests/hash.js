@@ -1,9 +1,7 @@
 // Hash will ignore starting and trailing slashes in the url to
 // do its matches.
 
-define(["mortar"], function(Mortar) {
-
-  var hash = Mortar.hash;
+define(["mortar/hash.route"], function(hash) {
 
   // Match empty route
   hash("").on("change", function(evt) {

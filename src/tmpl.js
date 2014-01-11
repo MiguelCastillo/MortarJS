@@ -43,7 +43,12 @@ define(["mortar/fetch"], function( fetch ) {
             });
         });
 
-      return $.when.apply($, done).then(function() {
+      // If there is no nested
+      if (!done.length) {
+        return $tmpl;
+      }
+
+      return $.when.apply(tmpl, done).then(function() {
         return $tmpl;
       });
     });

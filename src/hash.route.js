@@ -279,7 +279,7 @@ define([], function() {
 
 
   // Let's start things enabled
-  hash.enable(true);
+  hash.enable();
   return hash;
 });
 

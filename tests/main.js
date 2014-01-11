@@ -6,12 +6,9 @@
 
 define(["mortar"], function(Mortar) {
 
-  //
   // Create requirejs config to shim jasmine and define module names
-  //
   var jasmineRequire = requirejs.config({
     "paths": {
-      "mortar": "src",
       "jasmine": "lib/jasmine-2.0.0/jasmine",
       "jasmine-html": "lib/jasmine-2.0.0/jasmine-html"
     },
@@ -22,6 +19,15 @@ define(["mortar"], function(Mortar) {
       "jasmine-html": ["jasmine"]
     }
   });
+
+
+  // Configure testsRequire where all the tests are going to get their resources from
+  var testsRequire = requirejs.config({
+    "paths": {
+      "mortar": "src"
+    }
+  });
+
 
 
   function create() {
@@ -45,26 +51,15 @@ define(["mortar"], function(Mortar) {
       rjasmine.extend(window, jasmine._api);
 
       // Get tests...
-      jasmineRequire([
-        "tests/extender",
-        "tests/view",
-        "tests/tmpl",
-        "tests/model",
-        "tests/rv.model",
-        "tests/rv.view",
-        "tests/ko.model"
-        //,"tests/regex"
-      ], function() {
-
-        // Iterate through each test and run it so that each test can register
-        // its test specs
-        $.each(Array.prototype.slice.call(arguments), function(i, test) {
-          test();
-        });
-
-        // Run the tests
-        jasmine.execute();
-      });
+      testsRequire([
+        "tests/specs/extender",
+        "tests/specs/view",
+        "tests/specs/tmpl",
+        "tests/specs/model",
+        "tests/specs/rv.model",
+        "tests/specs/rv.view",
+        "tests/specs/ko.model"
+      ], jasmine.execute);
     });
   }
 
@@ -76,3 +71,4 @@ define(["mortar"], function(Mortar) {
     }
   });
 });
+
