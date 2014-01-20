@@ -11,26 +11,25 @@ define(["mortar/ko.model", "mortar/fetch"], function(model, fetch) {
     });
 
 
-    it("model url/serialize", function( done ) {
+    it("model url/serialize", function( ) {
       var _model = new model({}, "tests/json/artists.json");
 
-      $.when.apply($, [_model.read(), fetch("tests/tmpl/ko.artists.html")]).done(function(data, html) {
+      return $.when.apply($, [_model.read(), fetch("tests/tmpl/ko.artists.html")]).done(function(data, html) {
         var $html = $(html[0]);//.appendTo("body");
         _model.bind($html);
 
         // Serialized data.
         var modelData = _model.deserialize();
-        done();
       });
     });
 
 
-    it("hello world with HTML", function( done ) {
+    it("hello world with HTML", function( ) {
       var _model = new model({
         "hello": "world"
       });
 
-      fetch("tests/tmpl/ko.hello.html").done(function(html) {
+      return fetch("tests/tmpl/ko.hello.html").done(function(html) {
         var $html  = $(html),
             $hello = $(".hello", $html);
 
@@ -39,21 +38,18 @@ define(["mortar/ko.model", "mortar/fetch"], function(model, fetch) {
         // Make sure data is in the model...
         expect(_model.data.hello()).toBe("world");
         expect($hello.html()).toBe("world");
-
-        // jasmine Test is done
-        done();
       });
     });
 
 
-    it("form test with HTML", function( done ) {
+    it("form test with HTML", function( ) {
       var _model = new model({
         "hello": "world",
         "username": "manchagnu",
         "password": "tryagain"
       });
 
-      fetch("tests/tmpl/ko.form.html").done(function(html) {
+      return fetch("tests/tmpl/ko.form.html").done(function(html) {
         var $html     = $(html),
             $hello    = $(".hello", $html),
             $username = $(".username", $html),
@@ -84,9 +80,6 @@ define(["mortar/ko.model", "mortar/fetch"], function(model, fetch) {
         expect($username.val()).toBe("newusername");
         // Verify the value in the model
         expect(_model.data.username()).toBe("newusername");
-
-        // jasmine Test is done
-        done();
       });
     });
 

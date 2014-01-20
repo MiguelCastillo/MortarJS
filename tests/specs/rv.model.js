@@ -11,26 +11,25 @@ define(["mortar/rv.model", "mortar/fetch"], function(model, fetch) {
     });
 
 
-    it("model url/serialize", function( done ) {
+    it("model url/serialize with jquery promises", function( ) {
       var _model = new model({}, "tests/json/artists.json");
 
-      $.when.apply($, [_model.read(), fetch("tests/tmpl/rv.artists.html")]).done(function(data, html) {
+      return $.when.apply($, [_model.read(), fetch("tests/tmpl/rv.artists.html")]).done(function(data, html) {
         var $html = $(html[0]);//.appendTo("body");
         _model.bind($html);
 
         // Serialized data.
         var modelData = _model.deserialize();
-        done();
       });
     });
 
 
-    it("hello world with HTML", function( done ) {
+    it("hello world with HTML", function( ) {
       var _model = new model({
         "hello": "world"
       });
 
-      fetch("tests/tmpl/rv.hello.html").done(function(html) {
+      return fetch("tests/tmpl/rv.hello.html").done(function(html) {
         var $html  = $(html),
             $hello = $(".hello", $html);
 
@@ -39,21 +38,18 @@ define(["mortar/rv.model", "mortar/fetch"], function(model, fetch) {
         // Make sure data is in the model...
         expect(_model.get("hello")).toBe("world");
         expect($hello.html()).toBe("world");
-
-        // jasmine Test is done
-        done();
       });
     });
 
 
-    it("form test with HTML", function( done ) {
+    it("form test with HTML", function( ) {
       var _model = new model({
         "hello": "world",
         "username": "manchagnu",
         "password": "tryagain"
       });
 
-      fetch("tests/tmpl/rv.form.html").done(function(html) {
+      return fetch("tests/tmpl/rv.form.html").done(function(html) {
         var $html     = $(html),
             $hello    = $(".hello", $html),
             $username = $(".username", $html),
@@ -78,16 +74,13 @@ define(["mortar/rv.model", "mortar/fetch"], function(model, fetch) {
         // Test that the value is in the dom
         expect($username.val()).toBe("tempusername");
 
-        // Change the value of the input.  Must call change to simulate an actual
-        // user input change in the browser.
+        // Change the value of the input.  Must call change to simulate an
+        // actual user input change in the browser.
         $username.val("newusername").change();
         // Varify the value of the input
         expect($username.val()).toBe("newusername");
         // Verify the value in the model
         expect(_model.get("username")).toBe("newusername");
-
-        // jasmine Test is done
-        done();
       });
     });
 

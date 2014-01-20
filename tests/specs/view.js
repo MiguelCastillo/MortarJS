@@ -109,32 +109,30 @@ define(["mortar/view"], function(view) {
       var _view = new view({
         resources: {
           "tmpl": "<div>hash content</div>"
-        },
-      });
-
-      // Test base properties
-      expect(_view instanceof view).toBe(true);
-      expect(_view.$el instanceof $).toBe(true);
-      expect(_view.$el.html()).toBe("<div>hash content</div>");
-    });
-
-
-    it("view with remote html tmpl", function(done) {
-      new view({
-        path: "tests/tmpl/deep",
-        resources: {
-          "tmpl!url": ""
-        },
-        events: {
-          "view:ready": function() {
-            // Test base properties
-            expect(this instanceof view).toBe(true);
-            expect(this.$el instanceof $).toBe(true);
-            done();
-          }
         }
       });
 
+      return _view.ready(function() {
+        // Test base properties
+        expect(_view instanceof view).toBe(true);
+        expect(_view.$el instanceof $).toBe(true);
+        expect(_view.$el.html()).toBe("<div>hash content</div>");
+      });
+    });
+
+
+    it("view with remote html tmpl", function() {
+      var _view = new view({
+        path: "tests/tmpl/deep",
+        resources: {
+          "tmpl!url": ""
+        }
+      });
+
+      return _view.ready(function() {
+        expect(this instanceof view).toBe(true);
+        expect(this.$el instanceof $).toBe(true);
+      });
     });
 
   });

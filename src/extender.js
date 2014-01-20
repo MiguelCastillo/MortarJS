@@ -40,12 +40,12 @@ define([], function() {
 
     if ( base.constructor === Function ) {
       _extender.extend.apply(base.prototype, args);
+      base.prototype.extend = _extender.extend;
     }
     else {
       _extender.extend.apply(base, args);
     }
 
-    base.prototype.extend = _extender.extend;
     base.extend = extender.extend;
     return base;
   };

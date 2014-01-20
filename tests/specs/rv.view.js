@@ -11,13 +11,16 @@ define(["mortar/view", "mortar/model", "mortar/rv.model"], function(view, model,
           "model": {
             "hello": "world"
           }
+        },
+        events: {
+          "view:ready": function() {
+            // Test base properties
+            expect(_view instanceof view).toBe(true);
+            expect(_view.$el instanceof $).toBe(true);
+            expect(_view.$el.html()).toBe('<div rv-text="hello">world</div>');
+          }
         }
       });
-
-      // Test base properties
-      expect(_view instanceof view).toBe(true);
-      expect(_view.$el instanceof $).toBe(true);
-      expect(_view.$el.html()).toBe('<div rv-text="hello">world</div>');
     });
 
 
@@ -38,7 +41,6 @@ define(["mortar/view", "mortar/model", "mortar/rv.model"], function(view, model,
           }
         }
       });
-
     });
 
   });

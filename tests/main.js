@@ -1,65 +1,56 @@
 /*
- * Copyright (c) 2013 Miguel Castillo.
+ * MortarJs Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
  */
 
 
 define(["mortar"], function(Mortar) {
 
-  // Create requirejs config to shim jasmine and define module names
-  var jasmineRequire = requirejs.config({
-    "paths": {
-      "jasmine": "lib/jasmine-2.0.0/jasmine",
-      "jasmine-html": "lib/jasmine-2.0.0/jasmine-html"
-    },
-    "shim": {
-      "jasmine": {
-        "exports": "jasmineRequire"
-      },
-      "jasmine-html": ["jasmine"]
-    }
-  });
-
-
   // Configure testsRequire where all the tests are going to get their resources from
-  var testsRequire = requirejs.config({
+  require.config({
     "paths": {
-      "mortar": "src"
+      "mortar": "src",
+      "rjasmine": "tests/libs/js/rjasmine"
     }
   });
-
 
 
   function create() {
     var _self = this;
 
     // Get rjasmine
-    jasmineRequire(["tests/rjasmine"], function(rjasmine) {
-
+    require(["rjasmine"], function(rjasmine) {
       // Instantiate rjasmine and override the getContainer function in the
       // reporter to customize where the test results go.
-      var jasmine = new rjasmine({
-        reporter: {
-          getContainer: function() {
-            return _self.$el[0];
+      var _rjasmine = new rjasmine({
+        reporters: {
+          html_reporter: {
+            getContainer: function() {
+              return _self.$el[0];
+            }
           }
         }
       });
 
       // Update window's jasmine public api.  This will make jasmine's test api
       // created by rjasmine to be globally accessible.
-      rjasmine.extend(window, jasmine._api);
+      rjasmine.extend(window, _rjasmine._api);
+      window.jasmine = rjasmine.jasmine;
 
-      // Get tests...
-      testsRequire([
-        "tests/specs/extender",
-        "tests/specs/view",
-        "tests/specs/tmpl",
-        "tests/specs/model",
-        "tests/specs/rv.model",
-        "tests/specs/rv.view",
-        "tests/specs/ko.model"
-      ], jasmine.execute);
+      _rjasmine.ready(function() {
+        require([
+          "tests/specs/promise",
+          "tests/specs/extender",
+          "tests/specs/view",
+          "tests/specs/tmpl",
+          "tests/specs/model",
+          "tests/specs/rv.model",
+          "tests/specs/rv.view",
+          "tests/specs/ko.model"
+        ], function() {
+          _rjasmine.execute();
+        });
+      });
     });
   }
 
@@ -70,5 +61,6 @@ define(["mortar"], function(Mortar) {
       "view:ready": create
     }
   });
+
 });
 

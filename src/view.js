@@ -3,8 +3,9 @@ define([
   "mortar/events",
   "mortar/tmpl",
   "mortar/model",
-  "mortar/style"
-], function(extender, events, tmpl, model, style) {
+  "mortar/style",
+  "mortar/promise"
+], function(extender, events, tmpl, model, style, promise) {
   "use strict";
 
 
@@ -65,7 +66,7 @@ define([
       result[handler] = resources.get(resource, handler);
     }
 
-    return $.when(result.tmpl, result.model, result.style)
+    return promise.when(result.tmpl, result.model, result.style)
       .then(function(tmpl, model /*, style*/) {
         if ( tmpl ) {
           _self.$el.empty().append($(tmpl));
@@ -97,7 +98,7 @@ define([
   //
   function baseview(options) {
     var _self = this;
-    var deferred = $.Deferred();
+    var deferred = new promise();
     var settings = baseview.configure.apply(_self, arguments);
 
     // Mixin options
@@ -124,12 +125,12 @@ define([
     // Let the thread continue to execute without blocking while the view
     // is initialized.
     //
-    $.when(_self._init(options))
+    promise.when(_self._init(options))
     .then(function() {
       return baseview.resources.load.call(_self, _self.resources);
     })
     .then(function() {
-      return $.when(_self._create(options));
+      return promise.when(_self._create(options));
     })
     .then(function() {
       _self.trigger("_create").trigger("view:ready", [_self, options]);

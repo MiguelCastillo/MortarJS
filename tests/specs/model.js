@@ -27,7 +27,6 @@ define(["mortar/model"], function(model) {
     });
 
 
-
     // In order to be able ot have reserved properties in a model data, you will
     // need to specify an options object.  This is so that Mortar model uses the
     // first parameter as data rather than possibly config options
@@ -48,76 +47,53 @@ define(["mortar/model"], function(model) {
     });
 
 
-
-    it("single url param for object", function(done) {
+    it("single url param for object", function() {
       var _model = new model("tests/json/simple.json");
 
-      _model.read()
+      return _model.read()
         .done(function(data) {
           expect(this instanceof model).toBe(true);
           expect(typeof this.data === "object").toBe(true);
           expect(this.get("hello")).toBe("world");
           expect(data.hello).toBe("world");
-          done();
         });
     });
 
 
-    it("single url param for array", function(done) {
+    it("single url param for array", function() {
       var _model = new model("tests/json/array.json");
 
-      _model.read()
+      return _model.read()
         .done(function(data) {
           expect(this instanceof model).toBe(true);
           expect(this.data instanceof Array).toBe(true);
           expect(this.data[0].name).toBe("Pablo");
-          done();
         });
     });
 
 
-    it("empty object model and url param", function(done) {
+    it("empty object model and url param", function() {
       var _model = new model({}, "tests/json/simple.json");
 
-      _model.read()
+      return _model.read()
         .done(function(data) {
           expect(this instanceof model).toBe(true);
           expect(this.get("hello")).toBe("world");
           expect(data.hello).toBe("world");
-          done();
         });
     });
 
 
-
-    it("get default empty model and options url", function(done) {
+    it("get default empty model and options url", function() {
       var _model = new model({}, {
         "url": "tests/json/simple.json"
       });
 
-      _model.read()
+      return _model.read()
         .done(function(data) {
           expect(this instanceof model).toBe(true);
           expect(this.get("hello")).toBe("world");
           expect(data.hello).toBe("world");
-          done();
-        });
-    });
-
-
-    it("simple update", function(done) {
-      var _model = new model({
-        "sample": "data"
-      }, {
-        "url": "tests/json/simple.json"
-      });
-
-      _model.update()
-        .done(function(data) {
-          done();
-        })
-        .fail(function() {
-          done();
         });
     });
 

@@ -6,8 +6,9 @@ define([
   "mortar/fetch",
   "mortar/style",
   "mortar/tmpl",
-  "mortar/view"
-], function(extender, events, hash, model, fetch, style, tmpl, view) {
+  "mortar/view",
+  "mortar/promise"
+], function(extender, events, hash, model, fetch, style, tmpl, view, promise) {
 
   return {
     extender: extender,
@@ -17,7 +18,8 @@ define([
     fetch: fetch,
     style: style,
     tmpl: tmpl,
-    view: view
+    view: view,
+    promise: promise
   };
 
 });

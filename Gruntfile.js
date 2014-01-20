@@ -25,9 +25,11 @@ module.exports = function(grunt) {
           paths: {
             mortar: 'src'
           },
+
           name: 'lib/js/almond',
           include: ['mortar/core'],
           out: 'dist/mortar-debug.js',
+
           optimize: 'none',
           preserveLicenseComments: true,
           wrap: {
@@ -36,15 +38,17 @@ module.exports = function(grunt) {
           }
         }
       },
-      minified: {
+      minify: {
         options: {
           baseUrl: '.',
           paths: {
             mortar: 'src'
           },
+
           name: 'lib/js/almond',
           include: ['mortar/core'],
           out: 'dist/mortar.js',
+
           optimize: 'uglify',
           preserveLicenseComments: true,
           wrap: {
@@ -77,7 +81,7 @@ module.exports = function(grunt) {
     watch: {
       scripts: {
         files: ['src/**/*.js', 'tests/specs/*.js'],
-        //tasks: ['jasmine'],
+        tasks: ['jshint'],
         options: {
           spawn: false,
           livereload: true
