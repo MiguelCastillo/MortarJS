@@ -1,7 +1,8 @@
 define([
   "mortar/extender",
-  "mortar/events"
-],function(extender, events) {
+  "mortar/events",
+  "mortar/promise"
+],function(extender, events, promise) {
   "use strict";
 
 
@@ -35,7 +36,7 @@ define([
     _.extend(settings, this.ajax, options.ajax);
 
     if ( settings.url ) {
-      return $.when(datasource.transaction(settings));
+      return datasource.transaction(settings);
     }
     else {
       throw "Must provide a url in order to make ajax calls.  Optionally, you can override or provide a custom data source that does not require a url.";
@@ -57,7 +58,7 @@ define([
 
   // Create item in datasource
   crud.prototype.create = function(data, options) {
-    return $.when(this.datasource("post", data, options)).then(function(data){
+    return promise.when(this.datasource("post", data, options)).then(function(data){
       return data;
     });
   };
@@ -65,7 +66,7 @@ define([
 
   // Read item from datasource
   crud.prototype.read = function(data, options) {
-    return $.when(this.datasource("get", data, options)).then(function(data) {
+    return promise.when(this.datasource("get", data, options)).then(function(data) {
       this.serialize(data);
       return data;
     });
@@ -74,7 +75,7 @@ define([
 
   // Update item in the server
   crud.prototype.update = function(data, options) {
-    return $.when(this.datasource("put", data, options)).then(function(data){
+    return promise.when(this.datasource("put", data, options)).then(function(data){
       return data;
     });
   };
@@ -82,7 +83,7 @@ define([
 
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
-    return $.when(this.datasource("delete", data, options)).then(function(data){
+    return promise.when(this.datasource("delete", data, options)).then(function(data){
       return data;
     });
   };
@@ -211,7 +212,6 @@ define([
     }
     else {
       if ( this.data instanceof Array ) {
-        //this.data.splice.apply(this.data, [0, this.data.length].concat(data));
         this.data.splice(0, this.data.length); // Clean array
         this.data.push.apply(this, data);      // Add new data
       }
@@ -219,7 +219,7 @@ define([
         _.extend(this.data, data);
       }
     }
-  }
+  };
 
 
   // Interface to convert model data to something suitable for consumption by the

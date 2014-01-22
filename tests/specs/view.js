@@ -130,8 +130,8 @@ define(["mortar/view"], function(view) {
       });
 
       return _view.ready(function() {
-        expect(this instanceof view).toBe(true);
-        expect(this.$el instanceof $).toBe(true);
+        expect(_view instanceof view).toBe(true);
+        expect(_view.$el instanceof $).toBe(true);
       });
     });
 

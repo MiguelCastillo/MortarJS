@@ -2882,7 +2882,7 @@ define('rjasmine/extender',[],function() {
 define('rjasmine/promise',[
   "rjasmine/extender"
 ], function(extender) {
-  "usr strict";
+  
 
   var states = {
     "pending": 0,
@@ -2906,8 +2906,9 @@ define('rjasmine/promise',[
 
   function scpromise( target ) {
     target = target || {}; // Make sure we have a target object
-    var _state  = states.pending, // Current state
-        _queues = {
+    var _state   = states.pending, // Current state
+        _context = this,
+        _queues  = {
           always: [],             // Always list of callbacks
           resolved: [],           // Success list of callbacks
           rejected: []            // Failue list of callbacks
@@ -2917,18 +2918,18 @@ define('rjasmine/promise',[
     // Then promise interface
     function then( onFulfilled, onRejected ) {
       // Create a new promise to properly create a promise chain
-      var promise = new scpromise();
+      var promise = scpromise();
 
       setTimeout(function() {
         try {
           // Handle done callback
           target.done(function() {
-            _thenResolver( promise, actions.resolve, onFulfilled, arguments );
+            _thenResolver.call( this, promise, actions.resolve, onFulfilled, arguments );
           });
 
           // Handle fail callback
           target.fail(function() {
-            _thenResolver( promise, actions.reject, onRejected, arguments );
+            _thenResolver.call( this, promise, actions.reject, onRejected, arguments );
           });
         }
         catch( ex ) {
@@ -2965,7 +2966,8 @@ define('rjasmine/promise',[
         throw "Promise is already resolved";
       }
 
-      _updateState( states.resolved, Array.prototype.slice.call(arguments) );
+      _context = this;
+      _updateState( states.resolved, arguments );
       return target;
     }
 
@@ -2975,7 +2977,8 @@ define('rjasmine/promise',[
         throw "Promise is already resolved";
       }
 
-      _updateState( states.rejected, Array.prototype.slice.call(arguments) );
+      _context = this;
+      _updateState( states.rejected, arguments );
       return target;
     }
 
@@ -3013,10 +3016,7 @@ define('rjasmine/promise',[
       resolve: resolve,
       reject: reject,
       then: then,
-      state: state,
-      isResolved: isResolved,
-      isRejected: isRejected,
-      isPending: isPending
+      state: state
     });
 
 
@@ -3038,7 +3038,7 @@ define('rjasmine/promise',[
       }
       else if((queues.resolved === type && isResolved()) ||
               (queues.rejected === type && isRejected())) {
-        cb.apply(_value[0], _value);
+        cb.apply(_context, _value);
       }
     }
 
@@ -3047,7 +3047,7 @@ define('rjasmine/promise',[
     function _notify( queue ) {
       var i, length;
       for ( i = 0, length = queue.length; i < length; i++ ) {
-        queue[i].apply(_value[0], _value);
+        queue[i].apply(_context, _value);
       }
 
       // Empty out the array
@@ -3066,21 +3066,24 @@ define('rjasmine/promise',[
 
     // Routine to resolve a thenable
     function _thenResolver( promise, action, handler, data ) {
-      var result = (handler && handler.apply(data[0], data)) || data;
+      var result = (handler && handler.apply( this, data ));
 
+      // Make sure we handle the promise object being the same as the
+      // returned value of the handler.
+      if ( handler && result === promise ) {
+        throw new TypeError();
+      }
       // Handle thenable chains
-      if ( handler && result && typeof result.then === "function" ) {
-        // Make sure we set the data as the context for then
-        result.then.call( data[0], function() {
-          promise.resolve.apply( arguments, arguments );
-        }, function () {
-          promise.reject.apply( arguments, arguments );
+      else if ( handler && result && typeof result.then === "function" ) {
+        result.then.call(data, function(){
+          promise.resolve.apply(this, arguments);
+        }, function() {
+          promise.reject.apply(this, arguments);
         });
       }
       // Handle direct callbacks
       else {
-        result = (result && [result]);
-        promise[action].apply( result, result );
+        promise[action].apply( this, ((result && [result]) || data) );
       }
     }
   }
@@ -3091,9 +3094,10 @@ define('rjasmine/promise',[
   */
   scpromise.when = function( ) {
     // The input is the queue of items that need to be resolved.
-    var queue   = Array.prototype.slice.call(arguments).slice(0),
-        promise = new scpromise(),
-        i, length, item, remaining;
+    var queue   = Array.prototype.slice.call(arguments),
+        promise = scpromise(),
+        context = this,
+        i, item, remaining, queueLength;
 
     if ( !queue.length ) {
       return promise.resolve(null);
@@ -3109,27 +3113,29 @@ define('rjasmine/promise',[
       }
 
       if ( !remaining ) {
-        promise.resolve.apply(queue, queue);
+        promise.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
       }
     }
 
     // Wrap the resolution to keep track of the proper index in the closure
     function resolve( index ) {
-      return function(result) {
+      return function() {
         // We will replace the item in the queue with result to make
-        // it easy to send all the data into the resolve interface
-        queue[index] = result;
+        // it easy to send all the data into the resolve interface.
+        queue[index] = arguments;
+        context = this;
         checkPending();
       };
     }
 
     function reject() {
-      promise.reject.apply(arguments, arguments);
+      promise.reject.apply(this, arguments);
     }
 
     function processQueue() {
       try {
-        for ( i = 0, length = queue.length, remaining = queue.length; i < length; i++ ) {
+        queueLength = remaining = queue.length;
+        for ( i = 0; i < queueLength; i++ ) {
           item = queue[i];
 
           if ( item && typeof item.then === "function" ) {
@@ -3150,6 +3156,10 @@ define('rjasmine/promise',[
     setTimeout(processQueue, 1);
     return promise;
   };
+
+
+  // Expose enums for the states
+  scpromise.states = states;
 
 
   return scpromise;
@@ -3432,7 +3442,7 @@ define('rjasmine/core',[
 
 
   /**
-   * Simple extend interface to copy properties from multiple sources into a single target output
+   * Exposes important bits that users might want to consume directly
    */
   rjasmine.extend    = extender;
   rjasmine.timer     = timer;

@@ -1,4 +1,4 @@
-define(["mortar/rv.model", "mortar/fetch"], function(model, fetch) {
+define(["mortar/rv.model", "mortar/fetch", "mortar/promise"], function(model, fetch, promise) {
 
   describe("rv model", function() {
 
@@ -14,7 +14,7 @@ define(["mortar/rv.model", "mortar/fetch"], function(model, fetch) {
     it("model url/serialize with jquery promises", function( ) {
       var _model = new model({}, "tests/json/artists.json");
 
-      return $.when.apply($, [_model.read(), fetch("tests/tmpl/rv.artists.html")]).done(function(data, html) {
+      return promise.when.apply($, [_model.read(), fetch("tests/tmpl/rv.artists.html")]).done(function(data, html) {
         var $html = $(html[0]);//.appendTo("body");
         _model.bind($html);
 

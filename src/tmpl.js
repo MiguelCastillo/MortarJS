@@ -1,4 +1,7 @@
-define(["mortar/fetch"], function( fetch ) {
+define([
+  "mortar/fetch",
+  "mortar/promise"
+], function( fetch, promise ) {
   "use strict";
 
 
@@ -10,24 +13,24 @@ define(["mortar/fetch"], function( fetch ) {
     options = options || {};
     selector = selector || options.selector || tmpl.selector;
 
-    var deferred = $.Deferred(),
+    var _promise = promise(),
         attrSelector = "[" + selector + "]";
 
     if (typeof options.url === "string" ) {
       tmpl.loader(options)
-        .done(deferred.resolve)
-        .fail(deferred.reject);
+        .done(_promise.resolve)
+        .fail(_promise.reject);
     }
     else if (typeof options.html === "string" ||
              options.html instanceof jQuery === true ) {
-      deferred.resolve(options.html);
+      _promise.resolve(options.html);
     }
     else {
-      deferred.resolve(options);
+      _promise.resolve(options);
     }
 
     // Handle nested tmpl loading
-    return deferred.then(function(_tmpl) {
+    return _promise.then(function(_tmpl) {
       var $tmpl = $(_tmpl);
 
       var done = $tmpl.filter(attrSelector)
@@ -48,7 +51,7 @@ define(["mortar/fetch"], function( fetch ) {
         return $tmpl;
       }
 
-      return $.when.apply(tmpl, done).then(function() {
+      return promise.when.apply(tmpl, done).then(function() {
         return $tmpl;
       });
     });

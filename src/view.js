@@ -69,11 +69,11 @@ define([
     return promise.when(result.tmpl, result.model, result.style)
       .then(function(tmpl, model /*, style*/) {
         if ( tmpl ) {
-          _self.$el.empty().append($(tmpl));
+          _self.$el.empty().append($(tmpl[0]));
         }
 
         if ( model ) {
-          _self.model = model;
+          _self.model = model[0];
 
           // If the model is remote, then we will load the data automatically
           // and them do the binding once the data is loaded in the model
@@ -98,7 +98,7 @@ define([
   //
   function baseview(options) {
     var _self = this;
-    var deferred = new promise();
+    var deferred = promise();
     var settings = baseview.configure.apply(_self, arguments);
 
     // Mixin options

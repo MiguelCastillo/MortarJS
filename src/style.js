@@ -1,4 +1,7 @@
-define(["mortar/fetch"], function( fetch ) {
+define([
+  "mortar/fetch",
+  "mortar/promise"
+], function( fetch, promise ) {
   "use strict";
 
 
@@ -25,31 +28,31 @@ define(["mortar/fetch"], function( fetch ) {
       return new style(options);
     }
 
-    var deferred = $.Deferred();
+    var _promise = promise();
     options = options || {};
 
     if (typeof options.url === "string") {
       options.type = options.type || getType(options.url);
       var handler = style.handler[options.type];
       if (handler) {
-        handler.load(options, deferred);
+        handler.load(options, _promise);
       }
     }
     else {
-      deferred.reject("No suitable option");
+      _promise.reject("No suitable option");
     }
 
-    return deferred;
+    return _promise;
   }
 
 
   style.handler = {
     "css": {
       dataType: "text",
-      load: function(options, deferred){
+      load: function(options, _promise){
         loader(options.url, "text").done(function(rc_style){
           $("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
-          deferred.resolve( rc_style );
+          _promise.resolve( rc_style );
         });
 
         /*
@@ -62,26 +65,26 @@ define(["mortar/fetch"], function( fetch ) {
         cssLink.setAttribute("type", "text/css");
         cssLink.setAttribute("href", options.url);
         head.appendChild(cssLink);
-        deferred.resolve(cssLink);
+        _promise.resolve(cssLink);
         */
       }
     },
     "$css": {
-      load: function(options, deferred) {
+      load: function(options, _promise) {
         loader(options.url, "json").done(function(rc_style){
           if( options.element instanceof jQuery ){
             options.element.css(rc_style);
           }
-          deferred.resolve( rc_style );
+          _promise.resolve( rc_style );
         });
       }
     },
     "less": {
-      load: function(options, deferred) {
+      load: function(options, _promise) {
         loader(options.url, "text").done(function(rc_style){
           //Process less content and then add it to the document as regular css
           //$("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
-          deferred.resolve( rc_style );
+          _promise.resolve( rc_style );
         });
       }
     }
