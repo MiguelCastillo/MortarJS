@@ -2844,36 +2844,6 @@ define("jasmine", (function (global) {
  */
 
 
-define('src/extender',[],function() {
-  
-
-  function extender(/*target, [source]+ */) {
-    var sources = Array.prototype.slice.call(arguments),
-        target  = sources.shift();
-
-    for ( var source in sources ) {
-      source = sources[source];
-
-      // Copy properties
-      for (var property in source) {
-        target[property] = source[property];
-      }
-    }
-
-    return target;
-  }
-
-  extender.mixin = extender;
-  return extender;
-});
-
-
-/**
- * spromise Copyright (c) 2014 Miguel Castillo.
- * Licensed under MIT
- */
-
-
 define( 'src/async',[],function() {
 
   /**
@@ -2930,10 +2900,7 @@ define( 'src/async',[],function() {
  */
 
 
-define('src/promise',[
-  "src/extender",
-  "src/async"
-], function(extender, async) {
+define('src/promise',["src/async"], function(async) {
   
 
   var states = {
@@ -2994,8 +2961,8 @@ define('src/promise',[
     function then( onResolved, onRejected ) {
       // Create a new promise to properly create a promise chain
       var promise2 = promise();
-      promise1.done(_thenHandler( promise2, actions.resolve, onResolved ));
-      promise1.fail(_thenHandler( promise2, actions.reject, onRejected ));
+      promise1.done(_thenHandler(promise2, actions.resolve, onResolved));
+      promise1.fail(_thenHandler(promise2, actions.reject, onRejected));
       return promise2;
     }
 
@@ -3046,15 +3013,14 @@ define('src/promise',[
     /**
     * Promise API
     */
-    return extender.mixin(promise1, {
-      always: always,
-      done: done,
-      fail: fail,
-      resolve: resolve,
-      reject: reject,
-      then: then,
-      state: state
-    });
+    promise1.always = always;
+    promise1.done = done;
+    promise1.fail = fail;
+    promise1.resolve = resolve;
+    promise1.reject = reject;
+    promise1.then = then;
+    promise1.state = state;
+    return promise1;
 
 
     /**
@@ -3100,7 +3066,14 @@ define('src/promise',[
     function _thenHandler ( promise2, action, handler ) {
       return function thenHadler( ) {
         try {
-          var data = (isFunction(handler) && handler.apply(this, arguments)) || undefined;
+          var data;
+
+          if ( handler && isFunction(handler) ) {
+            data = handler.apply(this, arguments);
+          }
+
+          // Setting the data to arguments when data is undefined isn't compliant.  But I have
+          // found that this behavior is much more desired when chaining promises.
           data = (data !== undefined && [data]) || arguments;
           _resolver.call( this, promise2, data, action );
         }
@@ -3435,6 +3408,36 @@ define('src/boot',[
 
 
   return boot;
+});
+
+
+/**
+ * rjasmine Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ */
+
+
+define('src/extender',[],function() {
+  
+
+  function extender(/*target, [source]+ */) {
+    var sources = Array.prototype.slice.call(arguments),
+        target  = sources.shift();
+
+    for ( var source in sources ) {
+      source = sources[source];
+
+      // Copy properties
+      for (var property in source) {
+        target[property] = source[property];
+      }
+    }
+
+    return target;
+  }
+
+  extender.mixin = extender;
+  return extender;
 });
 
 
