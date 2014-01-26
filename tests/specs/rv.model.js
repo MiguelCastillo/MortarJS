@@ -1,4 +1,4 @@
-define(["mortar/rv.model", "mortar/fetch", "mortar/promise"], function(model, fetch, promise) {
+define(["src/rv.model", "src/fetch", "src/scpromise"], function(model, fetch, promise) {
 
   describe("rv model", function() {
 

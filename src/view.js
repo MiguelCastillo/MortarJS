@@ -1,10 +1,10 @@
 define([
-  "mortar/extender",
-  "mortar/events",
-  "mortar/tmpl",
-  "mortar/model",
-  "mortar/style",
-  "mortar/promise"
+  "src/extender",
+  "src/events",
+  "src/tmpl",
+  "src/model",
+  "src/style",
+  "src/scpromise"
 ], function(extender, events, tmpl, model, style, promise) {
   "use strict";
 

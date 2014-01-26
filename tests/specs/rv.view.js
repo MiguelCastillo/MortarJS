@@ -1,4 +1,4 @@
-define(["mortar/view", "mortar/model", "mortar/rv.model"], function(view, model, rvmodel) {
+define(["src/view", "src/model", "src/rv.model"], function(view, model, rvmodel) {
 
   model.prototype.extend(rvmodel);
 

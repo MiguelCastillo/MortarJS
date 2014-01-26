@@ -2,6 +2,9 @@
 // http://24ways.org/2013/grunt-is-not-weird-and-hard/
 //
 module.exports = function(grunt) {
+
+  var Browser = require("zombie");
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
@@ -23,11 +26,10 @@ module.exports = function(grunt) {
         options: {
           baseUrl: '.',
           paths: {
-            mortar: 'src'
           },
 
           name: 'lib/js/almond',
-          include: ['mortar/core'],
+          include: ['src/mortar'],
           out: 'dist/mortar-debug.js',
 
           optimize: 'none',
@@ -42,11 +44,10 @@ module.exports = function(grunt) {
         options: {
           baseUrl: '.',
           paths: {
-            mortar: 'src'
           },
 
           name: 'lib/js/almond',
-          include: ['mortar/core'],
+          include: ['src/mortar'],
           out: 'dist/mortar.js',
 
           optimize: 'uglify',
@@ -78,10 +79,15 @@ module.exports = function(grunt) {
         }
       }
     },
+    rjasmine: {
+      anything: {
+
+      }
+    },
     watch: {
       scripts: {
         files: ['src/**/*.js', 'tests/specs/*.js'],
-        tasks: ['jshint'],
+        tasks: ['rjasmine'],
         options: {
           spawn: false,
           livereload: true
@@ -95,6 +101,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+
+  grunt.registerTask('rjasmine', 'unit tests', function() {
+    // Load the page from localhost
+    browser = new Browser();
+    //browser.visit("file://" + __dirname + "/tests.html", { silent: false });
+    browser.visit("http://mcastillo_macbook/MortarJs/tests.html", { silent: false });
+  });
 
   grunt.registerTask('default', ['requirejs']);
   grunt.registerTask('dev', ['watch']);

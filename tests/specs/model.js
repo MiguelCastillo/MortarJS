@@ -1,4 +1,4 @@
-define(["mortar/model"], function(model) {
+define(["src/model"], function(model) {
 
   describe("Model.", function() {
 

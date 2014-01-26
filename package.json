@@ -21,7 +21,8 @@
     "grunt-contrib-jasmine": "~0.5.2",
     "grunt-contrib-jshint": "~0.8.0",
     "grunt-contrib-watch": "~0.5.3",
-    "grunt-template-jasmine-requirejs": "~0.1.8"
+    "grunt-template-jasmine-requirejs": "~0.1.8",
+    "zombie": "~2.0.0-alpha24"
   },
   "private": true
 }

@@ -1,4 +1,4 @@
-define(["mortar/view"], function(view) {
+define(["src/view"], function(view) {
 
   describe("View", function() {
 

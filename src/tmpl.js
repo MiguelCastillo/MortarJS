@@ -1,6 +1,6 @@
 define([
-  "mortar/fetch",
-  "mortar/promise"
+  "src/fetch",
+  "src/scpromise"
 ], function( fetch, promise ) {
   "use strict";
 

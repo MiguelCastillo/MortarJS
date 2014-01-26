@@ -1,13 +1,13 @@
 define([
-  "mortar/extender",
-  "mortar/events",
-  "mortar/hash.route",
-  "mortar/model",
-  "mortar/fetch",
-  "mortar/style",
-  "mortar/tmpl",
-  "mortar/view",
-  "mortar/promise"
+  "src/extender",
+  "src/events",
+  "src/hash.route",
+  "src/model",
+  "src/fetch",
+  "src/style",
+  "src/tmpl",
+  "src/view",
+  "src/scpromise"
 ], function(extender, events, hash, model, fetch, style, tmpl, view, promise) {
 
   return {

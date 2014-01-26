@@ -1,6 +1,6 @@
 define([
-  "mortar/model",
-  "mortar/ko.factory"
+  "src/model",
+  "src/ko.factory"
 ], function( model, factory ) {
   "use strict";
 

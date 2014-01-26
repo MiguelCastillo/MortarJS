@@ -1,4 +1,4 @@
-define(["mortar/extender"], function(extender) {
+define(["src/extender"], function(extender) {
 
   describe("Extender", function() {
 

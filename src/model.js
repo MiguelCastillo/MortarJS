@@ -1,7 +1,7 @@
 define([
-  "mortar/extender",
-  "mortar/events",
-  "mortar/promise"
+  "src/extender",
+  "src/events",
+  "src/scpromise"
 ],function(extender, events, promise) {
   "use strict";
 

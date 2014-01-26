@@ -1,4 +1,4 @@
-define(["mortar/extender"], function(extender) {
+define(["src/extender"], function(extender) {
   "use strict";
 
   // Converters is a hash of the different type of events we can

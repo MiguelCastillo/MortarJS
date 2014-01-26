@@ -1,3 +1,3 @@
 
-  return require('mortar/core');
+  return require('src/core');
 }));

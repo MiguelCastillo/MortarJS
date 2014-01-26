@@ -1,4 +1,4 @@
-define(["mortar/tmpl"], function(tmpl) {
+define(["src/tmpl"], function(tmpl) {
 
   describe("tmpl tests", function() {
 

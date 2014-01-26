@@ -1,5 +1,5 @@
 define([
-  "mortar/model",
+  "src/model",
   "rivets"
 ], function( model, rivets ) {
   "use strict";

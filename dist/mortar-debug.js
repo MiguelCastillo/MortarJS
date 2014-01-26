@@ -429,7 +429,7 @@ var requirejs, require, define;
 
 define("lib/js/almond", function(){});
 
-define('mortar/extender',[], function() {
+define('src/extender',[],function() {
   
 
 
@@ -520,7 +520,7 @@ define('mortar/extender',[], function() {
 });
 
 
-define('mortar/events',["mortar/extender"], function(extender) {
+define('src/events',["src/extender"], function(extender) {
   
 
   // Converters is a hash of the different type of events we can
@@ -687,7 +687,7 @@ define('mortar/events',["mortar/extender"], function(extender) {
 });
 
 
-define('mortar/hash.route',[], function() {
+define('src/hash.route',[],function() {
   
 
   var oldHash = "",
@@ -970,10 +970,414 @@ define('mortar/hash.route',[], function() {
 });
 
 
-define('mortar/model',[
-  "mortar/extender",
-  "mortar/events"
-],function(extender, events) {
+/**
+ * scpromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ */
+
+
+define( 'src/async',[],function() {
+
+  /**
+  * Handle exceptions in a setTimeout.
+  * @func <function> to be called when timeout finds cycles to execute it
+  * @err  <function> to be called when there is an exception thrown.  If
+  *  no function is provided then the exception will be rethrown outside
+  *  of the setTimeout scope
+  */
+  function async( ) {
+    var args     = Array.prototype.slice.call(arguments),
+        func     = args.shift(),
+        context  = this,
+        error    = function(){};
+
+
+    function runner() {
+      return function() {
+        try {
+          func.apply(context, args[0]);
+        }
+        catch( ex ) {
+          setTimeout(thrown(ex), 1);
+        }
+      };
+    }
+
+    function thrown(err) {
+      return function() {
+        error(err);
+      };
+    }
+
+    function fail(cb) {
+      error = cb;
+    }
+
+    // Schedule for running...
+    setTimeout(runner(), 1);
+
+    return {
+      fail: fail
+    };
+  }
+
+
+  return async;
+
+});
+
+/**
+ * scpromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ *
+ * Simple Compliant Promise
+ * https://github.com/MiguelCastillo/scpromise
+ */
+
+
+define('src/promise',[
+  "src/extender",
+  "src/async"
+], function(extender, async) {
+  
+
+  var states = {
+    "pending": 0,
+    "resolved": 1,
+    "rejected": 2
+  };
+
+  var actions = {
+    resolve: "resolve",
+    reject: "reject"
+  };
+
+  var queues = {
+    always: "always",
+    resolved: "resolved",
+    rejected: "rejected"
+  };
+
+  function isFunction( func ) {
+    return typeof func === "function";
+  }
+
+  function isObject( obj ) {
+    return typeof obj === "object";
+  }
+
+  function isResolved( state ) {
+    return state === states.resolved;
+  }
+
+  function isRejected( state ) {
+    return state === states.rejected;
+  }
+
+  function isPending( state ) {
+    return state === states.pending;
+  }
+
+
+  /**
+  * Simple Compliant Promise
+  */
+  function scpromise( promise1 ) {
+    promise1 = promise1 || {}; // Make sure we have a promise1promise1 object
+    var _state   = states.pending, // Current state
+        _context = this,
+        _queues  = {
+          always: [],             // Always list of callbacks
+          resolved: [],           // Success list of callbacks
+          rejected: []            // Failue list of callbacks
+        }, _value;                // Resolved/Rejected value.
+
+
+    /**
+    * Then promise interface
+    */
+    function then( onResolved, onRejected ) {
+      // Create a new promise to properly create a promise chain
+      var promise2 = scpromise();
+      promise1.done(_thenHandler( promise2, actions.resolve, onResolved ));
+      promise1.fail(_thenHandler( promise2, actions.reject, onRejected ));
+      return promise2;
+    }
+
+    function done( cb ) {
+      if ( !isRejected(_state) ) {
+        _queue( queues.resolved, cb );
+      }
+
+      return promise1;
+    }
+
+    function fail( cb ) {
+      if ( !isResolved(_state) ) {
+        _queue( queues.rejected, cb );
+      }
+
+      return promise1;
+    }
+
+    function resolve( ) {
+      if ( isPending(_state) ) {
+        _context = this;
+        _updateState( states.resolved, arguments );
+      }
+
+      return promise1;
+    }
+
+    function reject( ) {
+      if ( isPending(_state) ) {
+        _context = this;
+        _updateState( states.rejected, arguments );
+      }
+
+      return promise1;
+    }
+
+    function always( cb ) {
+      _queue( queues.always, cb );
+      return promise1;
+    }
+
+    function state() {
+      return _state;
+    }
+
+
+    /**
+    * Promise API
+    */
+    return extender.mixin(promise1, {
+      always: always,
+      done: done,
+      fail: fail,
+      resolve: resolve,
+      reject: reject,
+      then: then,
+      state: state
+    });
+
+
+    /**
+    * Internal core functionality
+    */
+
+
+    // Queue will figure out if the promise is resolved/rejected and do something
+    // with the callback based on that.  It also verifies that there is a callback
+    // function
+    function _queue ( type, cb ) {
+      // If the promise is already resolved/rejected, we call the callback right away
+      if ( isPending(_state) ) {
+        _queues[type].push(cb);
+      }
+      else {
+        async.apply(_context, [cb, _value]).fail(promise1.reject);
+      }
+    }
+
+    // Tell everyone we are resolved/rejected
+    function _notify ( queue ) {
+      var i, length;
+      for ( i = 0, length = queue.length; i < length; i++ ) {
+        queue[i].apply(_context, _value);
+      }
+
+      // Empty out the array
+      queue.splice(0, queue.length);
+    }
+
+    // Sets the state of the promise and call the callbacks as appropriate
+    function _updateState ( state, value ) {
+      _state = state;
+      _value = value;
+      async(function() {
+        _notify( _queues[state === states.resolved ? queues.resolved : queues.rejected] );
+        _notify( _queues[queues.always] );
+      }).fail(promise1.reject);
+    }
+
+    // Promise.then handler DRYs onresolved and onrejected
+    function _thenHandler ( promise2, action, handler ) {
+      return function thenHadler( ) {
+        try {
+          var data = (isFunction(handler) && handler.apply(this, arguments)) || undefined;
+          data = (data !== undefined && [data]) || arguments;
+          _resolver.call( this, promise2, data, action );
+        }
+        catch( ex ) {
+          promise2.reject(ex);
+        }
+      };
+    }
+
+    // Routine to resolve a thenable.  Data is in the form of an arguments object (array)
+    function _resolver ( promise2, data, action ) {
+      var input = data[0];
+
+      // The resolver input must not be the promise tiself
+      if ( input === promise2 ) {
+        throw new TypeError();
+      }
+      // Is data a thenable?
+      else if ( (input !== null && (isFunction(input) || isObject(input))) && isFunction(input.then) ) {
+        input.then.call(input, _thenHandler( promise2, actions.resolve ), _thenHandler( promise2, actions.reject ));
+      }
+      // Resolve/Reject promise
+      else {
+        promise2[action].apply( this, data );
+      }
+    }
+  }
+
+  // Expose enums for the states
+  scpromise.states = states;
+  scpromise.async  = async;
+  return scpromise;
+});
+
+/**
+ * scpromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ *
+ * Simple Compliant Promise
+ * https://github.com/MiguelCastillo/scpromise
+ */
+
+
+define('src/when',[
+  "src/promise"
+], function(scpromise) {
+  
+
+  /**
+  * Interface to allow multiple promises to be synchronized
+  */
+  function when( ) {
+    // The input is the queue of items that need to be resolved.
+    var queue   = Array.prototype.slice.call(arguments),
+        promise = scpromise(),
+        context = this,
+        i, item, remaining, queueLength;
+
+    if ( !queue.length ) {
+      return promise.resolve(null);
+    }
+
+    //
+    // Check everytime a new resolved promise occurs if we are done processing all
+    // the dependent promises.  If they are all done, then resolve the when promise
+    //
+    function checkPending() {
+      if ( remaining ) {
+        remaining--;
+      }
+
+      if ( !remaining ) {
+        promise.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
+      }
+    }
+
+    // Wrap the resolution to keep track of the proper index in the closure
+    function resolve( index ) {
+      return function() {
+        // We will replace the item in the queue with result to make
+        // it easy to send all the data into the resolve interface.
+        queue[index] = arguments;
+        context = this;
+        checkPending();
+      };
+    }
+
+    function reject() {
+      promise.reject.apply(this, arguments);
+    }
+
+    function processQueue() {
+      try {
+        queueLength = remaining = queue.length;
+        for ( i = 0; i < queueLength; i++ ) {
+          item = queue[i];
+
+          if ( item && typeof item.then === "function" ) {
+            item.then(resolve(i), reject);
+          }
+          else {
+            queue[i] = item;
+            checkPending();
+          }
+        }
+      }
+      catch( ex ) {
+        reject(ex);
+      }
+    }
+
+    // Process the promises and callbacks
+    setTimeout(processQueue, 1);
+    return promise;
+  };
+
+
+  return when;
+
+});
+
+
+/**
+ * scpromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ *
+ * Simple Compliant Promise
+ * https://github.com/MiguelCastillo/scpromise
+ */
+
+
+define('src/deferred',[
+  "src/promise"
+], function(scpromise) {
+  
+
+  function deferred() {
+    var promise = scpromise();
+    return {
+      promise: promise,
+      resolve: promise.resolve,
+      reject: promise.reject
+    };
+  }
+
+  return deferred;
+
+});
+
+
+/**
+ * scpromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ */
+
+
+define('src/scpromise',[
+  "src/promise",
+  "src/when",
+  "src/deferred"
+], function(promise, when, deferred) {
+  promise.when = when;
+  promise.deferred = deferred;
+  return promise;
+});
+
+
+define('src/model',[
+  "src/extender",
+  "src/events",
+  "src/scpromise"
+],function(extender, events, promise) {
   
 
 
@@ -1007,7 +1411,7 @@ define('mortar/model',[
     _.extend(settings, this.ajax, options.ajax);
 
     if ( settings.url ) {
-      return $.when(datasource.transaction(settings));
+      return datasource.transaction(settings);
     }
     else {
       throw "Must provide a url in order to make ajax calls.  Optionally, you can override or provide a custom data source that does not require a url.";
@@ -1029,7 +1433,7 @@ define('mortar/model',[
 
   // Create item in datasource
   crud.prototype.create = function(data, options) {
-    return $.when(this.datasource("post", data, options)).then(function(data){
+    return promise.when(this.datasource("post", data, options)).then(function(data){
       return data;
     });
   };
@@ -1037,7 +1441,7 @@ define('mortar/model',[
 
   // Read item from datasource
   crud.prototype.read = function(data, options) {
-    return $.when(this.datasource("get", data, options)).then(function(data) {
+    return promise.when(this.datasource("get", data, options)).then(function(data) {
       this.serialize(data);
       return data;
     });
@@ -1046,7 +1450,7 @@ define('mortar/model',[
 
   // Update item in the server
   crud.prototype.update = function(data, options) {
-    return $.when(this.datasource("put", data, options)).then(function(data){
+    return promise.when(this.datasource("put", data, options)).then(function(data){
       return data;
     });
   };
@@ -1054,7 +1458,7 @@ define('mortar/model',[
 
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
-    return $.when(this.datasource("delete", data, options)).then(function(data){
+    return promise.when(this.datasource("delete", data, options)).then(function(data){
       return data;
     });
   };
@@ -1183,7 +1587,6 @@ define('mortar/model',[
     }
     else {
       if ( this.data instanceof Array ) {
-        //this.data.splice.apply(this.data, [0, this.data.length].concat(data));
         this.data.splice(0, this.data.length); // Clean array
         this.data.push.apply(this, data);      // Add new data
       }
@@ -1191,7 +1594,7 @@ define('mortar/model',[
         _.extend(this.data, data);
       }
     }
-  }
+  };
 
 
   // Interface to convert model data to something suitable for consumption by the
@@ -1221,7 +1624,7 @@ define('mortar/model',[
 });
 
 
-define('mortar/fetch',[], function() {
+define('src/fetch',[],function() {
   
 
   var cache = {};
@@ -1286,7 +1689,10 @@ define('mortar/fetch',[], function() {
 });
 
 
-define('mortar/style',["mortar/fetch"], function( fetch ) {
+define('src/style',[
+  "src/fetch",
+  "src/scpromise"
+], function( fetch, promise ) {
   
 
 
@@ -1313,31 +1719,31 @@ define('mortar/style',["mortar/fetch"], function( fetch ) {
       return new style(options);
     }
 
-    var deferred = $.Deferred();
+    var _promise = promise();
     options = options || {};
 
     if (typeof options.url === "string") {
       options.type = options.type || getType(options.url);
       var handler = style.handler[options.type];
       if (handler) {
-        handler.load(options, deferred);
+        handler.load(options, _promise);
       }
     }
     else {
-      deferred.reject("No suitable option");
+      _promise.reject("No suitable option");
     }
 
-    return deferred;
+    return _promise;
   }
 
 
   style.handler = {
     "css": {
       dataType: "text",
-      load: function(options, deferred){
+      load: function(options, _promise){
         loader(options.url, "text").done(function(rc_style){
           $("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
-          deferred.resolve( rc_style );
+          _promise.resolve( rc_style );
         });
 
         /*
@@ -1350,26 +1756,26 @@ define('mortar/style',["mortar/fetch"], function( fetch ) {
         cssLink.setAttribute("type", "text/css");
         cssLink.setAttribute("href", options.url);
         head.appendChild(cssLink);
-        deferred.resolve(cssLink);
+        _promise.resolve(cssLink);
         */
       }
     },
     "$css": {
-      load: function(options, deferred) {
+      load: function(options, _promise) {
         loader(options.url, "json").done(function(rc_style){
           if( options.element instanceof jQuery ){
             options.element.css(rc_style);
           }
-          deferred.resolve( rc_style );
+          _promise.resolve( rc_style );
         });
       }
     },
     "less": {
-      load: function(options, deferred) {
+      load: function(options, _promise) {
         loader(options.url, "text").done(function(rc_style){
           //Process less content and then add it to the document as regular css
           //$("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
-          deferred.resolve( rc_style );
+          _promise.resolve( rc_style );
         });
       }
     }
@@ -1379,7 +1785,10 @@ define('mortar/style',["mortar/fetch"], function( fetch ) {
   return style;
 });
 
-define('mortar/tmpl',["mortar/fetch"], function( fetch ) {
+define('src/tmpl',[
+  "src/fetch",
+  "src/scpromise"
+], function( fetch, promise ) {
   
 
 
@@ -1391,24 +1800,24 @@ define('mortar/tmpl',["mortar/fetch"], function( fetch ) {
     options = options || {};
     selector = selector || options.selector || tmpl.selector;
 
-    var deferred = $.Deferred(),
+    var _promise = promise(),
         attrSelector = "[" + selector + "]";
 
     if (typeof options.url === "string" ) {
       tmpl.loader(options)
-        .done(deferred.resolve)
-        .fail(deferred.reject);
+        .done(_promise.resolve)
+        .fail(_promise.reject);
     }
     else if (typeof options.html === "string" ||
              options.html instanceof jQuery === true ) {
-      deferred.resolve(options.html);
+      _promise.resolve(options.html);
     }
     else {
-      deferred.resolve(options);
+      _promise.resolve(options);
     }
 
     // Handle nested tmpl loading
-    return deferred.then(function(_tmpl) {
+    return _promise.then(function(_tmpl) {
       var $tmpl = $(_tmpl);
 
       var done = $tmpl.filter(attrSelector)
@@ -1429,7 +1838,7 @@ define('mortar/tmpl',["mortar/fetch"], function( fetch ) {
         return $tmpl;
       }
 
-      return $.when.apply(tmpl, done).then(function() {
+      return promise.when.apply(tmpl, done).then(function() {
         return $tmpl;
       });
     });
@@ -1441,298 +1850,13 @@ define('mortar/tmpl',["mortar/fetch"], function( fetch ) {
   return tmpl;
 });
 
-/**
- * scpromise Copyright (c) 2014 Miguel Castillo.
- * Licensed under MIT
- *
- * Simple Compliant Promise
- * https://github.com/MiguelCastillo/scpromise
- */
-
-
-define('mortar/promise',[
-  "mortar/extender"
-], function(extender) {
-  
-
-  var states = {
-    "pending": 0,
-    "resolved": 1,
-    "rejected": 2
-  };
-
-
-  var actions = {
-    resolve: "resolve",
-    reject: "reject"
-  };
-
-
-  var queues = {
-    always: "always",
-    resolved: "resolved",
-    rejected: "rejected"
-  };
-
-
-  function scpromise( target ) {
-    target = target || {}; // Make sure we have a target object
-    var _state  = states.pending, // Current state
-        _queues = {
-          always: [],             // Always list of callbacks
-          resolved: [],           // Success list of callbacks
-          rejected: []            // Failue list of callbacks
-        }, _value;                // Resolved/Rejected value.
-
-
-    // Then promise interface
-    function then( onFulfilled, onRejected ) {
-      // Create a new promise to properly create a promise chain
-      var promise = new scpromise();
-
-      setTimeout(function() {
-        try {
-          // Handle done callback
-          target.done(function() {
-            _thenResolver( promise, actions.resolve, onFulfilled, arguments );
-          });
-
-          // Handle fail callback
-          target.fail(function() {
-            _thenResolver( promise, actions.reject, onRejected, arguments );
-          });
-        }
-        catch( ex ) {
-          promise.reject(ex);
-        }
-      }, 1);
-
-      return promise;
-    }
-
-
-    function done( cb ) {
-      if ( isRejected() ) {
-        return target;
-      }
-
-      _queue( queues.resolved, cb );
-      return target;
-    }
-
-
-    function fail( cb ) {
-      if ( isResolved() ) {
-        return target;
-      }
-
-      _queue( queues.rejected, cb );
-      return target;
-    }
-
-
-    function resolve( ) {
-      if ( !isPending() ) {
-        throw "Promise is already resolved";
-      }
-
-      _updateState( states.resolved, Array.prototype.slice.call(arguments) );
-      return target;
-    }
-
-
-    function reject( ) {
-      if ( !isPending() ) {
-        throw "Promise is already resolved";
-      }
-
-      _updateState( states.rejected, Array.prototype.slice.call(arguments) );
-      return target;
-    }
-
-
-    function always( cb ) {
-      _queue( queues.always, cb );
-      return target;
-    }
-
-
-    function state() {
-      return _state;
-    }
-
-
-    function isResolved() {
-      return _state === states.resolved;
-    }
-
-
-    function isRejected() {
-      return _state === states.rejected;
-    }
-
-
-    function isPending() {
-      return _state === states.pending;
-    }
-
-
-    return extender.mixin(target, {
-      always: always,
-      done: done,
-      fail: fail,
-      resolve: resolve,
-      reject: reject,
-      then: then,
-      state: state,
-      isResolved: isResolved,
-      isRejected: isRejected,
-      isPending: isPending
-    });
-
-
-    /**
-    * Internal core functionality
-    */
-
-    // Queue will figure out if the promise is resolved/rejected and do something
-    // with the callback based on that.  It also verifies that there is a callback
-    // function
-    function _queue( type, cb ) {
-      if ( typeof cb !== "function" ) {
-        throw "Callback must be a valid function";
-      }
-
-      // If the promise is already resolved/rejected, we call the callback right away
-      if ( isPending() ) {
-        _queues[type].push(cb);
-      }
-      else if((queues.resolved === type && isResolved()) ||
-              (queues.rejected === type && isRejected())) {
-        cb.apply(_value[0], _value);
-      }
-    }
-
-
-    // Tell everyone and tell them we are resolved/rejected
-    function _notify( queue ) {
-      var i, length;
-      for ( i = 0, length = queue.length; i < length; i++ ) {
-        queue[i].apply(_value[0], _value);
-      }
-
-      // Empty out the array
-      queue.splice(0, queue.length);
-    }
-
-
-    // Sets the state of the promise and call the callbacks as appropriate
-    function _updateState( state, value ) {
-      _state = state;
-      _value = value;
-      _notify( _queues[state === states.resolved ? queues.resolved : queues.rejected] );
-      _notify( _queues[queues.always] );
-    }
-
-
-    // Routine to resolve a thenable
-    function _thenResolver( promise, action, handler, data ) {
-      var result = (handler && handler.apply(data[0], data)) || data;
-
-      // Handle thenable chains
-      if ( handler && result && typeof result.then === "function" ) {
-        // Make sure we set the data as the context for then
-        result.then.call( data[0], function() {
-          promise.resolve.apply( arguments, arguments );
-        }, function () {
-          promise.reject.apply( arguments, arguments );
-        });
-      }
-      // Handle direct callbacks
-      else {
-        result = (result && [result]);
-        promise[action].apply( result, result );
-      }
-    }
-  }
-
-
-  /**
-  * Interface to allow multiple promises to be synchronized
-  */
-  scpromise.when = function( ) {
-    // The input is the queue of items that need to be resolved.
-    var queue   = Array.prototype.slice.call(arguments).slice(0),
-        promise = new scpromise(),
-        i, length, item, remaining;
-
-    if ( !queue.length ) {
-      return promise.resolve(null);
-    }
-
-    //
-    // Check everytime a new resolved promise occurs if we are done processing all
-    // the dependent promises.  If they are all done, then resolve the when promise
-    //
-    function checkPending() {
-      if ( remaining ) {
-        remaining--;
-      }
-
-      if ( !remaining ) {
-        promise.resolve.apply(queue, queue);
-      }
-    }
-
-    // Wrap the resolution to keep track of the proper index in the closure
-    function resolve( index ) {
-      return function(result) {
-        // We will replace the item in the queue with result to make
-        // it easy to send all the data into the resolve interface
-        queue[index] = result;
-        checkPending();
-      };
-    }
-
-    function reject() {
-      promise.reject.apply(arguments, arguments);
-    }
-
-    function processQueue() {
-      try {
-        for ( i = 0, length = queue.length, remaining = queue.length; i < length; i++ ) {
-          item = queue[i];
-
-          if ( item && typeof item.then === "function" ) {
-            item.then(resolve(i), reject);
-          }
-          else {
-            queue[i] = item;
-            checkPending();
-          }
-        }
-      }
-      catch( ex ) {
-        reject(ex);
-      }
-    }
-
-    // Process the promises and callbacks
-    setTimeout(processQueue, 1);
-    return promise;
-  };
-
-
-  return scpromise;
-});
-
-define('mortar/view',[
-  "mortar/extender",
-  "mortar/events",
-  "mortar/tmpl",
-  "mortar/model",
-  "mortar/style",
-  "mortar/promise"
+define('src/view',[
+  "src/extender",
+  "src/events",
+  "src/tmpl",
+  "src/model",
+  "src/style",
+  "src/scpromise"
 ], function(extender, events, tmpl, model, style, promise) {
   
 
@@ -1797,11 +1921,11 @@ define('mortar/view',[
     return promise.when(result.tmpl, result.model, result.style)
       .then(function(tmpl, model /*, style*/) {
         if ( tmpl ) {
-          _self.$el.empty().append($(tmpl));
+          _self.$el.empty().append($(tmpl[0]));
         }
 
         if ( model ) {
-          _self.model = model;
+          _self.model = model[0];
 
           // If the model is remote, then we will load the data automatically
           // and them do the binding once the data is loaded in the model
@@ -1826,7 +1950,7 @@ define('mortar/view',[
   //
   function baseview(options) {
     var _self = this;
-    var deferred = new promise();
+    var deferred = promise();
     var settings = baseview.configure.apply(_self, arguments);
 
     // Mixin options
@@ -1981,16 +2105,16 @@ define('mortar/view',[
 });
 
 
-define('mortar/core',[
-  "mortar/extender",
-  "mortar/events",
-  "mortar/hash.route",
-  "mortar/model",
-  "mortar/fetch",
-  "mortar/style",
-  "mortar/tmpl",
-  "mortar/view",
-  "mortar/promise"
+define('src/mortar',[
+  "src/extender",
+  "src/events",
+  "src/hash.route",
+  "src/model",
+  "src/fetch",
+  "src/style",
+  "src/tmpl",
+  "src/view",
+  "src/scpromise"
 ], function(extender, events, hash, model, fetch, style, tmpl, view, promise) {
 
   return {
@@ -2007,5 +2131,5 @@ define('mortar/core',[
 
 });
 
-  return require('mortar/core');
+  return require('src/core');
 }));
