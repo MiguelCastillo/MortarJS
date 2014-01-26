@@ -1,6 +1,6 @@
 define([
   "src/fetch",
-  "src/scpromise"
+  "src/spromise"
 ], function( fetch, promise ) {
   "use strict";
 

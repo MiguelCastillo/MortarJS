@@ -1,23 +1,20 @@
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
- *
- * Simple Compliant Promise
- * https://github.com/MiguelCastillo/scpromise
  */
 
 
 define([
   "src/promise"
-], function(scpromise) {
+], function(promise) {
   "use strict";
 
   function deferred() {
-    var promise = scpromise();
+    var promise1 = promise();
     return {
-      promise: promise,
-      resolve: promise.resolve,
-      reject: promise.reject
+      promise: promise1,
+      resolve: promise1.resolve,
+      reject: promise1.reject
     };
   }
 

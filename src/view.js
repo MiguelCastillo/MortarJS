@@ -4,7 +4,7 @@ define([
   "src/tmpl",
   "src/model",
   "src/style",
-  "src/scpromise"
+  "src/spromise"
 ], function(extender, events, tmpl, model, style, promise) {
   "use strict";
 

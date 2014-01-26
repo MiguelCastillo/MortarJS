@@ -1,7 +1,7 @@
 define([
   "src/extender",
   "src/events",
-  "src/scpromise"
+  "src/spromise"
 ],function(extender, events, promise) {
   "use strict";
 

@@ -1,15 +1,12 @@
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
- *
- * Simple Compliant Promise
- * https://github.com/MiguelCastillo/scpromise
  */
 
 
 define([
   "src/promise"
-], function(scpromise) {
+], function(promise) {
   "use strict";
 
   /**
@@ -17,13 +14,13 @@ define([
   */
   function when( ) {
     // The input is the queue of items that need to be resolved.
-    var queue   = Array.prototype.slice.call(arguments),
-        promise = scpromise(),
-        context = this,
+    var queue    = Array.prototype.slice.call(arguments),
+        promise1 = promise(),
+        context  = this,
         i, item, remaining, queueLength;
 
     if ( !queue.length ) {
-      return promise.resolve(null);
+      return promise1.resolve(null);
     }
 
     //
@@ -36,7 +33,7 @@ define([
       }
 
       if ( !remaining ) {
-        promise.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
+        promise1.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
       }
     }
 
@@ -52,7 +49,7 @@ define([
     }
 
     function reject() {
-      promise.reject.apply(this, arguments);
+      promise1.reject.apply(this, arguments);
     }
 
     function processQueue() {
@@ -77,7 +74,7 @@ define([
 
     // Process the promises and callbacks
     setTimeout(processQueue, 1);
-    return promise;
+    return promise1;
   };
 
 

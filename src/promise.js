@@ -1,9 +1,6 @@
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
- *
- * Simple Compliant Promise
- * https://github.com/MiguelCastillo/scpromise
  */
 
 
@@ -54,7 +51,7 @@ define([
   /**
   * Simple Compliant Promise
   */
-  function scpromise( promise1 ) {
+  function promise( promise1 ) {
     promise1 = promise1 || {}; // Make sure we have a promise1promise1 object
     var _state   = states.pending, // Current state
         _context = this,
@@ -70,7 +67,7 @@ define([
     */
     function then( onResolved, onRejected ) {
       // Create a new promise to properly create a promise chain
-      var promise2 = scpromise();
+      var promise2 = promise();
       promise1.done(_thenHandler( promise2, actions.resolve, onResolved ));
       promise1.fail(_thenHandler( promise2, actions.reject, onRejected ));
       return promise2;
@@ -207,7 +204,7 @@ define([
   }
 
   // Expose enums for the states
-  scpromise.states = states;
-  scpromise.async  = async;
-  return scpromise;
+  promise.states = states;
+  promise.async  = async;
+  return promise;
 });

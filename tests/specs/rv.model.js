@@ -1,4 +1,4 @@
-define(["src/rv.model", "src/fetch", "src/scpromise"], function(model, fetch, promise) {
+define(["src/rv.model", "src/fetch", "src/spromise"], function(model, fetch, promise) {
 
   describe("rv model", function() {
 
@@ -7,7 +7,7 @@ define(["src/rv.model", "src/fetch", "src/scpromise"], function(model, fetch, pr
         "hello": "world"
       });
 
-      expect(_model.data.hello).toBe("world")
+      expect(_model.data.hello).toBe("world");
     });
 
 

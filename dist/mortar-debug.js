@@ -971,7 +971,7 @@ define('src/hash.route',[],function() {
 
 
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
  */
 
@@ -1027,11 +1027,8 @@ define( 'src/async',[],function() {
 });
 
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
- *
- * Simple Compliant Promise
- * https://github.com/MiguelCastillo/scpromise
  */
 
 
@@ -1082,7 +1079,7 @@ define('src/promise',[
   /**
   * Simple Compliant Promise
   */
-  function scpromise( promise1 ) {
+  function promise( promise1 ) {
     promise1 = promise1 || {}; // Make sure we have a promise1promise1 object
     var _state   = states.pending, // Current state
         _context = this,
@@ -1098,7 +1095,7 @@ define('src/promise',[
     */
     function then( onResolved, onRejected ) {
       // Create a new promise to properly create a promise chain
-      var promise2 = scpromise();
+      var promise2 = promise();
       promise1.done(_thenHandler( promise2, actions.resolve, onResolved ));
       promise1.fail(_thenHandler( promise2, actions.reject, onRejected ));
       return promise2;
@@ -1235,23 +1232,20 @@ define('src/promise',[
   }
 
   // Expose enums for the states
-  scpromise.states = states;
-  scpromise.async  = async;
-  return scpromise;
+  promise.states = states;
+  promise.async  = async;
+  return promise;
 });
 
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
- *
- * Simple Compliant Promise
- * https://github.com/MiguelCastillo/scpromise
  */
 
 
 define('src/when',[
   "src/promise"
-], function(scpromise) {
+], function(promise) {
   
 
   /**
@@ -1259,13 +1253,13 @@ define('src/when',[
   */
   function when( ) {
     // The input is the queue of items that need to be resolved.
-    var queue   = Array.prototype.slice.call(arguments),
-        promise = scpromise(),
-        context = this,
+    var queue    = Array.prototype.slice.call(arguments),
+        promise1 = promise(),
+        context  = this,
         i, item, remaining, queueLength;
 
     if ( !queue.length ) {
-      return promise.resolve(null);
+      return promise1.resolve(null);
     }
 
     //
@@ -1278,7 +1272,7 @@ define('src/when',[
       }
 
       if ( !remaining ) {
-        promise.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
+        promise1.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
       }
     }
 
@@ -1294,7 +1288,7 @@ define('src/when',[
     }
 
     function reject() {
-      promise.reject.apply(this, arguments);
+      promise1.reject.apply(this, arguments);
     }
 
     function processQueue() {
@@ -1319,7 +1313,7 @@ define('src/when',[
 
     // Process the promises and callbacks
     setTimeout(processQueue, 1);
-    return promise;
+    return promise1;
   };
 
 
@@ -1329,25 +1323,22 @@ define('src/when',[
 
 
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
- *
- * Simple Compliant Promise
- * https://github.com/MiguelCastillo/scpromise
  */
 
 
 define('src/deferred',[
   "src/promise"
-], function(scpromise) {
+], function(promise) {
   
 
   function deferred() {
-    var promise = scpromise();
+    var promise1 = promise();
     return {
-      promise: promise,
-      resolve: promise.resolve,
-      reject: promise.reject
+      promise: promise1,
+      resolve: promise1.resolve,
+      reject: promise1.reject
     };
   }
 
@@ -1357,12 +1348,12 @@ define('src/deferred',[
 
 
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
  */
 
 
-define('src/scpromise',[
+define('src/spromise',[
   "src/promise",
   "src/when",
   "src/deferred"
@@ -1376,7 +1367,7 @@ define('src/scpromise',[
 define('src/model',[
   "src/extender",
   "src/events",
-  "src/scpromise"
+  "src/spromise"
 ],function(extender, events, promise) {
   
 
@@ -1691,7 +1682,7 @@ define('src/fetch',[],function() {
 
 define('src/style',[
   "src/fetch",
-  "src/scpromise"
+  "src/spromise"
 ], function( fetch, promise ) {
   
 
@@ -1787,7 +1778,7 @@ define('src/style',[
 
 define('src/tmpl',[
   "src/fetch",
-  "src/scpromise"
+  "src/spromise"
 ], function( fetch, promise ) {
   
 
@@ -1856,7 +1847,7 @@ define('src/view',[
   "src/tmpl",
   "src/model",
   "src/style",
-  "src/scpromise"
+  "src/spromise"
 ], function(extender, events, tmpl, model, style, promise) {
   
 
@@ -2114,7 +2105,7 @@ define('src/mortar',[
   "src/style",
   "src/tmpl",
   "src/view",
-  "src/scpromise"
+  "src/spromise"
 ], function(extender, events, hash, model, fetch, style, tmpl, view, promise) {
 
   return {

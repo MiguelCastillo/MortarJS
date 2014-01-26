@@ -2839,14 +2839,12 @@ define("jasmine", (function (global) {
 }(this)));
 
 /**
- * rjasmine Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
- *
- * https://github.com/MiguelCastillo/rjasmine
  */
 
 
-define('rjasmine/extender',[],function() {
+define('src/extender',[],function() {
   
 
   function extender(/*target, [source]+ */) {
@@ -2871,17 +2869,71 @@ define('rjasmine/extender',[],function() {
 
 
 /**
- * scpromise Copyright (c) 2014 Miguel Castillo.
+ * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
- *
- * Simple Compliant Promise
- * https://github.com/MiguelCastillo/scpromise
  */
 
 
-define('rjasmine/promise',[
-  "rjasmine/extender"
-], function(extender) {
+define( 'src/async',[],function() {
+
+  /**
+  * Handle exceptions in a setTimeout.
+  * @func <function> to be called when timeout finds cycles to execute it
+  * @err  <function> to be called when there is an exception thrown.  If
+  *  no function is provided then the exception will be rethrown outside
+  *  of the setTimeout scope
+  */
+  function async( ) {
+    var args     = Array.prototype.slice.call(arguments),
+        func     = args.shift(),
+        context  = this,
+        error    = function(){};
+
+
+    function runner() {
+      return function() {
+        try {
+          func.apply(context, args[0]);
+        }
+        catch( ex ) {
+          setTimeout(thrown(ex), 1);
+        }
+      };
+    }
+
+    function thrown(err) {
+      return function() {
+        error(err);
+      };
+    }
+
+    function fail(cb) {
+      error = cb;
+    }
+
+    // Schedule for running...
+    setTimeout(runner(), 1);
+
+    return {
+      fail: fail
+    };
+  }
+
+
+  return async;
+
+});
+
+/**
+ * spromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ */
+
+
+define('src/promise',[
+  "src/extender",
+  "src/async"
+], function(extender, async) {
   
 
   var states = {
@@ -2890,12 +2942,10 @@ define('rjasmine/promise',[
     "rejected": 2
   };
 
-
   var actions = {
     resolve: "resolve",
     reject: "reject"
   };
-
 
   var queues = {
     always: "always",
@@ -2903,9 +2953,32 @@ define('rjasmine/promise',[
     rejected: "rejected"
   };
 
+  function isFunction( func ) {
+    return typeof func === "function";
+  }
 
-  function scpromise( target ) {
-    target = target || {}; // Make sure we have a target object
+  function isObject( obj ) {
+    return typeof obj === "object";
+  }
+
+  function isResolved( state ) {
+    return state === states.resolved;
+  }
+
+  function isRejected( state ) {
+    return state === states.rejected;
+  }
+
+  function isPending( state ) {
+    return state === states.pending;
+  }
+
+
+  /**
+  * Simple Compliant Promise
+  */
+  function promise( promise1 ) {
+    promise1 = promise1 || {}; // Make sure we have a promise1promise1 object
     var _state   = states.pending, // Current state
         _context = this,
         _queues  = {
@@ -2915,101 +2988,65 @@ define('rjasmine/promise',[
         }, _value;                // Resolved/Rejected value.
 
 
-    // Then promise interface
-    function then( onFulfilled, onRejected ) {
+    /**
+    * Then promise interface
+    */
+    function then( onResolved, onRejected ) {
       // Create a new promise to properly create a promise chain
-      var promise = scpromise();
-
-      setTimeout(function() {
-        try {
-          // Handle done callback
-          target.done(function() {
-            _thenResolver.call( this, promise, actions.resolve, onFulfilled, arguments );
-          });
-
-          // Handle fail callback
-          target.fail(function() {
-            _thenResolver.call( this, promise, actions.reject, onRejected, arguments );
-          });
-        }
-        catch( ex ) {
-          promise.reject(ex);
-        }
-      }, 1);
-
-      return promise;
+      var promise2 = promise();
+      promise1.done(_thenHandler( promise2, actions.resolve, onResolved ));
+      promise1.fail(_thenHandler( promise2, actions.reject, onRejected ));
+      return promise2;
     }
-
 
     function done( cb ) {
-      if ( isRejected() ) {
-        return target;
+      if ( !isRejected(_state) ) {
+        _queue( queues.resolved, cb );
       }
 
-      _queue( queues.resolved, cb );
-      return target;
+      return promise1;
     }
-
 
     function fail( cb ) {
-      if ( isResolved() ) {
-        return target;
+      if ( !isResolved(_state) ) {
+        _queue( queues.rejected, cb );
       }
 
-      _queue( queues.rejected, cb );
-      return target;
+      return promise1;
     }
-
 
     function resolve( ) {
-      if ( !isPending() ) {
-        throw "Promise is already resolved";
+      if ( isPending(_state) ) {
+        _context = this;
+        _updateState( states.resolved, arguments );
       }
 
-      _context = this;
-      _updateState( states.resolved, arguments );
-      return target;
+      return promise1;
     }
-
 
     function reject( ) {
-      if ( !isPending() ) {
-        throw "Promise is already resolved";
+      if ( isPending(_state) ) {
+        _context = this;
+        _updateState( states.rejected, arguments );
       }
 
-      _context = this;
-      _updateState( states.rejected, arguments );
-      return target;
+      return promise1;
     }
-
 
     function always( cb ) {
       _queue( queues.always, cb );
-      return target;
+      return promise1;
     }
-
 
     function state() {
       return _state;
     }
 
 
-    function isResolved() {
-      return _state === states.resolved;
-    }
-
-
-    function isRejected() {
-      return _state === states.rejected;
-    }
-
-
-    function isPending() {
-      return _state === states.pending;
-    }
-
-
-    return extender.mixin(target, {
+    /**
+    * Promise API
+    */
+    return extender.mixin(promise1, {
       always: always,
       done: done,
       fail: fail,
@@ -3024,27 +3061,22 @@ define('rjasmine/promise',[
     * Internal core functionality
     */
 
+
     // Queue will figure out if the promise is resolved/rejected and do something
     // with the callback based on that.  It also verifies that there is a callback
     // function
-    function _queue( type, cb ) {
-      if ( typeof cb !== "function" ) {
-        throw "Callback must be a valid function";
-      }
-
+    function _queue ( type, cb ) {
       // If the promise is already resolved/rejected, we call the callback right away
-      if ( isPending() ) {
+      if ( isPending(_state) ) {
         _queues[type].push(cb);
       }
-      else if((queues.resolved === type && isResolved()) ||
-              (queues.rejected === type && isRejected())) {
-        cb.apply(_context, _value);
+      else {
+        async.apply(_context, [cb, _value]).fail(promise1.reject);
       }
     }
 
-
-    // Tell everyone and tell them we are resolved/rejected
-    function _notify( queue ) {
+    // Tell everyone we are resolved/rejected
+    function _notify ( queue ) {
       var i, length;
       for ( i = 0, length = queue.length; i < length; i++ ) {
         queue[i].apply(_context, _value);
@@ -3054,53 +3086,78 @@ define('rjasmine/promise',[
       queue.splice(0, queue.length);
     }
 
-
     // Sets the state of the promise and call the callbacks as appropriate
-    function _updateState( state, value ) {
+    function _updateState ( state, value ) {
       _state = state;
       _value = value;
-      _notify( _queues[state === states.resolved ? queues.resolved : queues.rejected] );
-      _notify( _queues[queues.always] );
+      async(function() {
+        _notify( _queues[state === states.resolved ? queues.resolved : queues.rejected] );
+        _notify( _queues[queues.always] );
+      }).fail(promise1.reject);
     }
 
+    // Promise.then handler DRYs onresolved and onrejected
+    function _thenHandler ( promise2, action, handler ) {
+      return function thenHadler( ) {
+        try {
+          var data = (isFunction(handler) && handler.apply(this, arguments)) || undefined;
+          data = (data !== undefined && [data]) || arguments;
+          _resolver.call( this, promise2, data, action );
+        }
+        catch( ex ) {
+          promise2.reject(ex);
+        }
+      };
+    }
 
-    // Routine to resolve a thenable
-    function _thenResolver( promise, action, handler, data ) {
-      var result = (handler && handler.apply( this, data ));
+    // Routine to resolve a thenable.  Data is in the form of an arguments object (array)
+    function _resolver ( promise2, data, action ) {
+      var input = data[0];
 
-      // Make sure we handle the promise object being the same as the
-      // returned value of the handler.
-      if ( handler && result === promise ) {
+      // The resolver input must not be the promise tiself
+      if ( input === promise2 ) {
         throw new TypeError();
       }
-      // Handle thenable chains
-      else if ( handler && result && typeof result.then === "function" ) {
-        result.then.call(data, function(){
-          promise.resolve.apply(this, arguments);
-        }, function() {
-          promise.reject.apply(this, arguments);
-        });
+      // Is data a thenable?
+      else if ( (input !== null && (isFunction(input) || isObject(input))) && isFunction(input.then) ) {
+        input.then.call(input, _thenHandler( promise2, actions.resolve ), _thenHandler( promise2, actions.reject ));
       }
-      // Handle direct callbacks
+      // Resolve/Reject promise
       else {
-        promise[action].apply( this, ((result && [result]) || data) );
+        promise2[action].apply( this, data );
       }
     }
   }
 
+  // Expose enums for the states
+  promise.states = states;
+  promise.async  = async;
+  return promise;
+});
+
+/**
+ * spromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ */
+
+
+define('src/when',[
+  "src/promise"
+], function(promise) {
+  
 
   /**
   * Interface to allow multiple promises to be synchronized
   */
-  scpromise.when = function( ) {
+  function when( ) {
     // The input is the queue of items that need to be resolved.
-    var queue   = Array.prototype.slice.call(arguments),
-        promise = scpromise(),
-        context = this,
+    var queue    = Array.prototype.slice.call(arguments),
+        promise1 = promise(),
+        context  = this,
         i, item, remaining, queueLength;
 
     if ( !queue.length ) {
-      return promise.resolve(null);
+      return promise1.resolve(null);
     }
 
     //
@@ -3113,7 +3170,7 @@ define('rjasmine/promise',[
       }
 
       if ( !remaining ) {
-        promise.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
+        promise1.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
       }
     }
 
@@ -3129,7 +3186,7 @@ define('rjasmine/promise',[
     }
 
     function reject() {
-      promise.reject.apply(this, arguments);
+      promise1.reject.apply(this, arguments);
     }
 
     function processQueue() {
@@ -3154,16 +3211,56 @@ define('rjasmine/promise',[
 
     // Process the promises and callbacks
     setTimeout(processQueue, 1);
-    return promise;
+    return promise1;
   };
 
 
-  // Expose enums for the states
-  scpromise.states = states;
+  return when;
 
-
-  return scpromise;
 });
+
+
+/**
+ * spromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ */
+
+
+define('src/deferred',[
+  "src/promise"
+], function(promise) {
+  
+
+  function deferred() {
+    var promise1 = promise();
+    return {
+      promise: promise1,
+      resolve: promise1.resolve,
+      reject: promise1.reject
+    };
+  }
+
+  return deferred;
+
+});
+
+
+/**
+ * spromise Copyright (c) 2014 Miguel Castillo.
+ * Licensed under MIT
+ */
+
+
+define('src/spromise',[
+  "src/promise",
+  "src/when",
+  "src/deferred"
+], function(promise, when, deferred) {
+  promise.when = when;
+  promise.deferred = deferred;
+  return promise;
+});
+
 
 /**
  * rjasmine Copyright (c) 2014 Miguel Castillo.
@@ -3173,7 +3270,7 @@ define('rjasmine/promise',[
  */
 
 
-define('rjasmine/timer',[
+define('src/timer',[
 ], function() {
   
 
@@ -3226,10 +3323,10 @@ define('rjasmine/timer',[
  */
 
 
-define('rjasmine/boot',[
+define('src/boot',[
   "jasmine",
-  "rjasmine/promise",
-  "rjasmine/timer"
+  "src/spromise",
+  "src/timer"
 ], function(jasmine, promise, timer) {
   
 
@@ -3349,8 +3446,8 @@ define('rjasmine/boot',[
  */
 
 
-define('rjasmine/reporters',[
-  "rjasmine/promise"
+define('src/reporters',[
+  "src/spromise"
 ], function(promise) {
   
 
@@ -3369,7 +3466,7 @@ define('rjasmine/reporters',[
       // If its a built in reporter, we need to adjust the path
       // so that we can load the proper reporter
       if ( option in builtInReporters ) {
-        option = "rjasmine/" + option;
+        option = "src/" + option;
       }
 
       _promises.push(load( rjasmine, option, _reporter ));
@@ -3407,13 +3504,13 @@ define('rjasmine/reporters',[
 /**
  * jasmine expansion to provide AMD support.
  */
-define('rjasmine/core',[
+define('src/rjasmine',[
   "jasmine",
-  "rjasmine/boot",
-  "rjasmine/extender",
-  "rjasmine/timer",
-  "rjasmine/reporters",
-  "rjasmine/promise"
+  "src/boot",
+  "src/extender",
+  "src/timer",
+  "src/reporters",
+  "src/spromise"
 ], function(jasmine, boot, extender, timer, reporters, promise) {
   
 
@@ -3459,8 +3556,8 @@ define('rjasmine/core',[
  */
 
 
-define('rjasmine/console_reporter',[
-  "rjasmine/timer"
+define('src/console_reporter',[
+  "src/timer"
 ], function(Timer) {
   
 
@@ -3902,7 +3999,7 @@ define("jasmine-html", function(){});
  */
 
 
-define('rjasmine/inBrowser',[],function() {
+define('src/inBrowser',[],function() {
   
 
   /**
@@ -3936,10 +4033,10 @@ define('rjasmine/inBrowser',[],function() {
  */
 
 
-define('rjasmine/html_reporter',[
+define('src/html_reporter',[
   "jasmine-html",
-  "rjasmine/extender",
-  "rjasmine/inBrowser"
+  "src/extender",
+  "src/inBrowser"
 ], function(jasmineHtml, extender, inBrowser) {
   
 
@@ -4004,5 +4101,5 @@ define('rjasmine/html_reporter',[
 });
 
 
-  return require("rjasmine/core");
+  return require("src/rjasmine");
 }));

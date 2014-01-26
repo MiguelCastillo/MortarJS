@@ -1,4 +1,4 @@
-define(["src/ko.model", "src/fetch", "src/scpromise"], function(model, fetch, promise) {
+define(["src/ko.model", "src/fetch", "src/spromise"], function(model, fetch, promise) {
 
   describe("ko model", function() {
 
