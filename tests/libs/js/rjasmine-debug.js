@@ -4078,7 +4078,7 @@ define('src/html_reporter',[
         createElement: function() { return document.createElement.apply(document, arguments); },
         createTextNode: function() { return document.createTextNode.apply(document, arguments); },
         timer: new core.Timer()
-      }, options.reporter) );
+      }, options) );
 
       env.addReporter(reporter);
 
