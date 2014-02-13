@@ -970,6 +970,7 @@ define('src/hash.route',[],function() {
 });
 
 
+
 /**
  * spromise Copyright (c) 2014 Miguel Castillo.
  * Licensed under MIT
@@ -977,6 +978,21 @@ define('src/hash.route',[],function() {
 
 
 define( 'src/async',[],function() {
+  var self = this;
+
+  var exec;
+  if ( self.setImmediate ) {
+    exec = self.setImmediate;
+  }
+  else if ( self.process && typeof self.process.nextTick === "function" ) {
+    exec = self.process.nextTick;
+  }
+  else {
+    exec = function(cb) {
+      setTimeout(cb, 0);
+    };
+  }
+
 
   /**
   * Handle exceptions in a setTimeout.
@@ -986,44 +1002,39 @@ define( 'src/async',[],function() {
   *  of the setTimeout scope
   */
   function async( ) {
-    var args     = Array.prototype.slice.call(arguments),
-        func     = args.shift(),
+    var args     = arguments,
+        func     = arguments[0],
+        index    = 1,
+        now      = true,
         context  = this,
-        error    = function(){};
+        instance = {};
 
-
-    function runner() {
-      return function() {
-        try {
-          func.apply(context, args[0]);
-        }
-        catch( ex ) {
-          setTimeout(thrown(ex), 1);
-        }
-      };
+    // You can pass in the very first parameter if you want to schedule
+    // the task to run right away or whenever run is called
+    if ( typeof func === "boolean" ) {
+      now = func;
+      func = arguments[1];
+      index = 2;
     }
 
-    function thrown(err) {
-      return function() {
-        error(err);
-      };
-    }
+    // Readjust args
+    args = arguments[index];
 
-    function fail(cb) {
-      error = cb;
-    }
-
-    // Schedule for running...
-    setTimeout(runner(), 1);
-
-    return {
-      fail: fail
+    instance.run = function run(fn) {
+      exec(runner(fn || func));
     };
+
+    function runner(fn) {
+      return function() {
+        fn.apply(context, args);
+      };
+    }
+
+    // Return instance
+    return now ? instance.run() : instance;
   }
 
-
   return async;
-
 });
 
 /**
@@ -1032,7 +1043,7 @@ define( 'src/async',[],function() {
  */
 
 
-define('src/promise',["src/async"], function(async) {
+define('src/promise',["src/async"], function (async) {
   
 
   var states = {
@@ -1041,203 +1052,288 @@ define('src/promise',["src/async"], function(async) {
     "rejected": 2
   };
 
-  var actions = {
-    resolve: "resolve",
-    reject: "reject"
-  };
-
   var queues = {
-    always: "always",
-    resolved: "resolved",
-    rejected: "rejected"
+    "always": 0,
+    "resolved": 1,
+    "rejected": 2
   };
 
-  function isFunction( func ) {
-    return typeof func === "function";
-  }
+  var actions = {
+    "resolve": "resolve",
+    "reject": "reject"
+  };
 
-  function isObject( obj ) {
-    return typeof obj === "object";
-  }
 
-  function isResolved( state ) {
-    return state === states.resolved;
-  }
+  /**
+   * Small Promise
+   */
+  function Promise(target, options) {
+    // Make sure we have a target object
+    target = target || {};
+    var stateManager = new StateManager(target, options || {});
 
-  function isRejected( state ) {
-    return state === states.rejected;
-  }
+    /**
+     * callback registration (then, done, fail, always) must be synchrounous so
+     * that the callbacks can be registered in the order they come in.
+     */
 
-  function isPending( state ) {
-    return state === states.pending;
+    function then(onResolved, onRejected) {
+      return stateManager.then(onResolved, onRejected);
+    }
+
+    // Setup a way to verify an spromise object
+    then.constructor = Promise;
+    then.stateManager = stateManager;
+
+
+    function done(cb) {
+      stateManager.queue(states.resolved, cb);
+      return target;
+    }
+
+    function fail(cb) {
+      stateManager.queue(states.rejected, cb);
+      return target;
+    }
+
+    function always(cb) {
+      stateManager.queue(queues.always, cb);
+      return target;
+    }
+
+    function state() {
+      return stateManager._state;
+    }
+
+    function resolve() {
+      stateManager.transition(states.resolved, this, arguments);
+      return target;
+    }
+
+    function reject() {
+      stateManager.transition(states.rejected, this, arguments);
+      return target;
+    }
+
+    function thenable(promise) {
+      promise.then(target.resolve, target.reject);
+      return target;
+    }
+
+    target.always = always;
+    target.done = done;
+    target.fail = fail;
+    target.thenable = thenable;
+    target.resolve = resolve;
+    target.reject = reject;
+    target.then = then;
+    target.state = state;
+    target.promise = {
+      always: always,
+      done: done,
+      fail: fail,
+      then: then,
+      state: state
+    };
+
+    return target;
   }
 
 
   /**
-  * Simple Compliant Promise
+   * Interface to play nice with libraries like when and q.
+   */
+  Promise.defer = function (target, options) {
+    return new Promise(target, options);
+  };
+
+  /**
+  * Interface to create a promise and link it to a thenable object.  The assumption is that
+  * the object passed in is a thenable.  If it isn't, there is no check so an exption might
+  * be going your way.
   */
-  function promise( promise1 ) {
-    promise1 = promise1 || {}; // Make sure we have a promise1promise1 object
-    var _state   = states.pending, // Current state
-        _context = this,
-        _queues  = {
-          always: [],             // Always list of callbacks
-          resolved: [],           // Success list of callbacks
-          rejected: []            // Failue list of callbacks
-        }, _value;                // Resolved/Rejected value.
+  Promise.thenable = function (thenable) {
+    var promise = new Promise();
+    return promise.thenable(thenable);
+  };
+
+  /**
+   * Create a promise that's already rejected
+   */
+  Promise.rejected = function () {
+    return new Promise({}, {
+      context: this,
+      value: arguments,
+      state: states.rejected
+    });
+  };
+
+  /**
+   * Create a promise that's already resolved
+   */
+  Promise.resolved = function () {
+    return new Promise({}, {
+      context: this,
+      value: arguments,
+      state: states.resolved
+    });
+  };
 
 
-    /**
-    * Then promise interface
-    */
-    function then( onResolved, onRejected ) {
-      // Create a new promise to properly create a promise chain
-      var promise2 = promise();
-      promise1.done(_thenHandler(promise2, actions.resolve, onResolved));
-      promise1.fail(_thenHandler(promise2, actions.reject, onRejected));
-      return promise2;
+  /**
+   * StateManager is the state manager for a promise
+   */
+  function StateManager(promise, options) {
+    this.promise = promise;
+
+    // If we already have an async object, that means that the state isn't just resolved,
+    // but we also have a valid async already initialized with the proper context and data
+    // we can just reuse.  This saves on a lot of cycles and memory.
+    if (options.async) {
+      this.state = options.state;
+      this.async = options.async;
     }
-
-    function done( cb ) {
-      if ( !isRejected(_state) ) {
-        _queue( queues.resolved, cb );
-      }
-
-      return promise1;
-    }
-
-    function fail( cb ) {
-      if ( !isResolved(_state) ) {
-        _queue( queues.rejected, cb );
-      }
-
-      return promise1;
-    }
-
-    function resolve( ) {
-      if ( isPending(_state) ) {
-        _context = this;
-        _updateState( states.resolved, arguments );
-      }
-
-      return promise1;
-    }
-
-    function reject( ) {
-      if ( isPending(_state) ) {
-        _context = this;
-        _updateState( states.rejected, arguments );
-      }
-
-      return promise1;
-    }
-
-    function always( cb ) {
-      _queue( queues.always, cb );
-      return promise1;
-    }
-
-    function state() {
-      return _state;
-    }
-
-
-    /**
-    * Promise API
-    */
-    promise1.always = always;
-    promise1.done = done;
-    promise1.fail = fail;
-    promise1.resolve = resolve;
-    promise1.reject = reject;
-    promise1.then = then;
-    promise1.state = state;
-    return promise1;
-
-
-    /**
-    * Internal core functionality
-    */
-
-
-    // Queue will figure out if the promise is resolved/rejected and do something
-    // with the callback based on that.  It also verifies that there is a callback
-    // function
-    function _queue ( type, cb ) {
-      // If the promise is already resolved/rejected, we call the callback right away
-      if ( isPending(_state) ) {
-        _queues[type].push(cb);
-      }
-      else {
-        async.apply(_context, [cb, _value]).fail(promise1.reject);
-      }
-    }
-
-    // Tell everyone we are resolved/rejected
-    function _notify ( queue ) {
-      var i, length;
-      for ( i = 0, length = queue.length; i < length; i++ ) {
-        queue[i].apply(_context, _value);
-      }
-
-      // Empty out the array
-      queue.splice(0, queue.length);
-    }
-
-    // Sets the state of the promise and call the callbacks as appropriate
-    function _updateState ( state, value ) {
-      _state = state;
-      _value = value;
-      async(function() {
-        _notify( _queues[state === states.resolved ? queues.resolved : queues.rejected] );
-        _notify( _queues[queues.always] );
-      }).fail(promise1.reject);
-    }
-
-    // Promise.then handler DRYs onresolved and onrejected
-    function _thenHandler ( promise2, action, handler ) {
-      return function thenHadler( ) {
-        try {
-          var data;
-
-          if ( handler && isFunction(handler) ) {
-            data = handler.apply(this, arguments);
-          }
-
-          // Setting the data to arguments when data is undefined isn't compliant.  But I have
-          // found that this behavior is much more desired when chaining promises.
-          data = (data !== undefined && [data]) || arguments;
-          _resolver.call( this, promise2, data, action );
-        }
-        catch( ex ) {
-          promise2.reject(ex);
-        }
-      };
-    }
-
-    // Routine to resolve a thenable.  Data is in the form of an arguments object (array)
-    function _resolver ( promise2, data, action ) {
-      var input = data[0];
-
-      // The resolver input must not be the promise tiself
-      if ( input === promise2 ) {
-        throw new TypeError();
-      }
-      // Is data a thenable?
-      else if ( (input !== null && (isFunction(input) || isObject(input))) && isFunction(input.then) ) {
-        input.then.call(input, _thenHandler( promise2, actions.resolve ), _thenHandler( promise2, actions.reject ));
-      }
-      // Resolve/Reject promise
-      else {
-        promise2[action].apply( this, data );
-      }
+    // If a state is passed in, then we go ahead and initialize the state manager with it
+    else if (options.state) {
+      this.transition(options.state, options.context, options.value);
     }
   }
 
+  // Queue will figure out if the promise is resolved/rejected and do something
+  // with the callback based on that.
+  StateManager.prototype.queue = function (state, cb) {
+    // Queue it up if we are still pending over here
+    if (!this.state) {
+      (this.deferred || (this.deferred = [])).push({
+        type: state,
+        cb: cb
+      });
+    }
+    // If the promise is already resolved/rejected
+    else if (this.state === state) {
+      this.async.run(cb);
+    }
+  };
+
+  // Tell everyone we are resolved/rejected
+  StateManager.prototype.notify = function () {
+    var deferred = this.deferred,
+      queueType = this.state,
+      i = 0,
+      length = deferred.length,
+      item;
+
+    do {
+      item = deferred[i++];
+      if (item.type === queueType || item.type === queues.always) {
+        this.async.run(item.cb);
+      }
+    } while (i < length);
+
+    // Clean up memory when we are done processing the queue
+    this.deferred = null;
+  };
+
+  // Sets the state of the promise and call the callbacks as appropriate
+  StateManager.prototype.transition = function (state, context, value) {
+    if (!this.state) {
+      this.state   = state;
+      this.context = context;
+      this.value   = value;
+      this.async   = async.call(context, false, (void 0), value);
+      if (this.deferred) {
+        this.notify();
+      }
+    }
+  };
+
+  // Links together the resolution of promise1 to promise2
+  StateManager.prototype.then = function (onResolved, onRejected) {
+    var resolution, promise2;
+    onResolved = typeof (onResolved) === "function" ? onResolved : null;
+    onRejected = typeof (onRejected) === "function" ? onRejected : null;
+
+    if ((!onResolved && this.state === states.resolved) ||
+        (!onRejected && this.state === states.rejected)) {
+      promise2 = new Promise({}, this);
+    }
+    else {
+      promise2 = new Promise();
+      resolution = new Resolution(promise2);
+      this.queue(states.resolved, resolution.chain(actions.resolve, onResolved || onRejected));
+      this.queue(states.rejected, resolution.chain(actions.reject, onRejected || onResolved));
+    }
+
+    return promise2;
+  };
+
+
+  /**
+   * Thenable resolution
+   */
+  function Resolution(promise) {
+    this.promise = promise;
+    this.resolved = 0;
+  }
+
+  // Promise.chain DRYs onresolved and onrejected operations.  Handler is onResolved or onRejected
+  Resolution.prototype.chain = function (action, handler) {
+    var _self = this;
+    return function chain() {
+      // Prevent calling chain multiple times
+      if (!(_self.resolved)) {
+        _self.resolved++;
+        _self.context = this;
+        try {
+          _self.resolve(action, !handler ? arguments : [handler.apply(this, arguments)]);
+        }
+        catch (ex) {
+          _self.promise.reject.call(_self.context, ex);
+        }
+      }
+    };
+  };
+
+  // Routine to resolve a thenable.  Data is in the form of an arguments object (array)
+  Resolution.prototype.resolve = function (action, data) {
+    var input = data[0],
+      then = (input && input.then),
+      thenable = (then && typeof (then) === "function"),
+      resolution, thenableType;
+
+    // The resolver input must not be the promise tiself
+    if (input === this.promise) {
+      throw new TypeError();
+    }
+
+    if (thenable && then.constructor === Promise) {
+      // Shortcut if the incoming spromise is already resolved
+      resolution = new Resolution(this.promise);
+      input.done(resolution.chain(actions.resolve)).fail(resolution.chain(actions.reject));
+    }
+    else {
+      thenableType = (thenable && typeof (input));
+      if (thenableType === "function" || thenableType === "object") {
+        try {
+          resolution = new Resolution(this.promise);
+          then.call(input, resolution.chain(actions.resolve), resolution.chain(actions.reject));
+        }
+        catch (ex) {
+          if (!resolution.resolved) {
+            this.promise.reject.call(this.context, ex);
+          }
+        }
+      }
+      else {
+        this.promise[action].apply(this.context, data);
+      }
+    }
+  };
+
+
   // Expose enums for the states
-  promise.states = states;
-  promise.async  = async;
-  return promise;
+  Promise.states = states;
+  return Promise;
 });
 
 /**
@@ -1247,8 +1343,9 @@ define('src/promise',["src/async"], function(async) {
 
 
 define('src/when',[
-  "src/promise"
-], function(promise) {
+  "src/promise",
+  "src/async"
+], function(promise, async) {
   
 
   /**
@@ -1285,7 +1382,6 @@ define('src/when',[
         // We will replace the item in the queue with result to make
         // it easy to send all the data into the resolve interface.
         queue[index] = arguments;
-        context = this;
         checkPending();
       };
     }
@@ -1315,38 +1411,11 @@ define('src/when',[
     }
 
     // Process the promises and callbacks
-    setTimeout(processQueue, 1);
+    async(processQueue);
     return promise1;
-  };
-
-
-  return when;
-
-});
-
-
-/**
- * spromise Copyright (c) 2014 Miguel Castillo.
- * Licensed under MIT
- */
-
-
-define('src/deferred',[
-  "src/promise"
-], function(promise) {
-  
-
-  function deferred() {
-    var promise1 = promise();
-    return {
-      promise: promise1,
-      resolve: promise1.resolve,
-      reject: promise1.reject
-    };
   }
 
-  return deferred;
-
+  return when;
 });
 
 
@@ -1358,11 +1427,11 @@ define('src/deferred',[
 
 define('src/spromise',[
   "src/promise",
-  "src/when",
-  "src/deferred"
-], function(promise, when, deferred) {
+  "src/async",
+  "src/when"
+], function(promise, async, when) {
   promise.when = when;
-  promise.deferred = deferred;
+  promise.async  = async;
   return promise;
 });
 
@@ -1427,7 +1496,7 @@ define('src/model',[
 
   // Create item in datasource
   crud.prototype.create = function(data, options) {
-    return promise.when(this.datasource("post", data, options)).then(function(data){
+    return promise.when.call(this, this.datasource("post", data, options)).then(function(data){
       return data;
     });
   };
@@ -1435,7 +1504,7 @@ define('src/model',[
 
   // Read item from datasource
   crud.prototype.read = function(data, options) {
-    return promise.when(this.datasource("get", data, options)).then(function(data) {
+    return promise.when.call(this, this.datasource("get", data, options)).then(function(data) {
       this.serialize(data);
       return data;
     });
@@ -1444,7 +1513,7 @@ define('src/model',[
 
   // Update item in the server
   crud.prototype.update = function(data, options) {
-    return promise.when(this.datasource("put", data, options)).then(function(data){
+    return promise.when.call(this, this.datasource("put", data, options)).then(function(data){
       return data;
     });
   };
@@ -1452,7 +1521,7 @@ define('src/model',[
 
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
-    return promise.when(this.datasource("delete", data, options)).then(function(data){
+    return promise.when.call(this.datasource("delete", data, options)).then(function(data){
       return data;
     });
   };
@@ -1548,7 +1617,7 @@ define('src/model',[
     options.defaultdata = data;
 
     // Datasource to deal with data persistence
-    options.datasource = options.datasource || model.datasource
+    options.datasource = options.datasource || model.datasource;
 
     // Ensure valid url, if one is provided
     if (_url) {
@@ -1574,7 +1643,7 @@ define('src/model',[
 
   // Interface to take data from a datasource and converting to a format that's
   // suitable for the UI
-  model.prototype.serialize = function(data, options) {
+  model.prototype.serialize = function(data) {
     // Init the data
     if ( !this.data ) {
       this.data = data;
@@ -1614,6 +1683,7 @@ define('src/model',[
   };
 
 
+  model.extension = "js";
   return model;
 });
 
@@ -1776,6 +1846,7 @@ define('src/style',[
   };
 
 
+  style.extension = "css";
   return style;
 });
 
@@ -1841,21 +1912,20 @@ define('src/tmpl',[
 
   tmpl.selector = "mjs-tmpl";
   tmpl.loader = fetch;
+  tmpl.extension = "html";
   return tmpl;
 });
 
-define('src/view',[
-  "src/extender",
-  "src/events",
+define('src/resources',[
   "src/tmpl",
   "src/model",
-  "src/style",
-  "src/spromise"
-], function(extender, events, tmpl, model, style, promise) {
+  "src/style"
+], function(tmpl, model, style) {
   
 
 
-  function resources () {
+  function resources (items, path) {
+    return resources.load(items, path);
   }
 
 
@@ -1874,26 +1944,16 @@ define('src/view',[
     // Check for any hints of file extension.  If one does not exist,
     // then infer it based on the handler.
     if ( resource.url && resource.url.lastIndexOf(".") === -1 ) {
-      switch (handler) {
-        case "style":
-          resource.url += ".css";
-          break;
-        case "tmpl":
-          resource.url += ".html";
-          break;
-        case "model":
-          resource.url += ".js";
-          break;
-      }
+      var ext = resources.handlers[handler].extension;
+      resource.url += ext ? "." + ext : "";
     }
 
     return resources.handlers[handler](resource);
   };
 
 
-  resources.load = function(items) {
+  resources.load = function(items, path) {
     // wire up to requirejs
-    var _self = this;
     var resource, parts, config, type, result = {};
 
     for ( var handler in items ) {
@@ -1901,16 +1961,37 @@ define('src/view',[
 
       // Handle items with directives
       if ( /\w+!.*/.test(handler) ) {
-        parts    = /(\w+)!(.*)/.exec(handler);
-        type     = parts.pop();
-        handler  = parts.pop();
-        config   = {};
-        config[type] = resource || _self.path;
-        resource = config;
+        parts        = handler.split("!");
+        handler      = parts[0];
+        type         = parts[1];
+        config       = {};
+        config[type] = resource || path;
+        resource     = config;
       }
 
       result[handler] = resources.get(resource, handler);
     }
+
+    return result;
+  };
+
+
+  return resources;
+
+});
+
+define('src/view',[
+  "src/extender",
+  "src/events",
+  "src/resources",
+  "src/spromise"
+], function(extender, events, resources, promise) {
+  
+
+
+  function loadResources( ) {
+    var _self  = this;
+    var result = baseview.resources(_self.resources, _self.fqn);
 
     return promise.when(result.tmpl, result.model, result.style)
       .then(function(tmpl, model /*, style*/) {
@@ -1936,24 +2017,19 @@ define('src/view',[
 
         return result;
       });
-  };
+  }
 
 
   //
   // Base view
   //
   function baseview(options) {
-    var _self = this;
-    var deferred = promise();
-    var settings = baseview.configure.apply(_self, arguments);
+    var _self    = this,
+      deferred = promise(),
+      settings = baseview.configure.apply(_self, arguments);
 
-    // Mixin options
     _.extend(_self, settings.options);
-
-    // Setup the target element and events
     _self.$el.addClass(_self.className);
-
-    // Bind base events and optional events for the view and the dom element container
     _self.on(_self.events).on(settings.events);
     _self.on.call(_self.$el, _self.events, _self);
     _self.on.call(_self.$el, settings.events, _self);
@@ -1965,15 +2041,12 @@ define('src/view',[
     // in case there is a need to setup anything on the dom before loading
     // up all the resources.
     // _init can return a promise object...  Maybe there is a need to do
-    // some async work before loading the resources.
+    // some async work before continuing on.
     // _create can also return a promise object
-    //
-    // Let the thread continue to execute without blocking while the view
-    // is initialized.
     //
     promise.when(_self._init(options))
     .then(function() {
-      return baseview.resources.load.call(_self, _self.resources);
+      return loadResources.call(_self, _self.resources, _self.fqn);
     })
     .then(function() {
       return promise.when(_self._create(options));
@@ -2014,7 +2087,7 @@ define('src/view',[
   baseview.prototype.transition = function (view, selector) {
     var lastView = this._lastView;
 
-    if ( lastView == view ) {
+    if ( lastView === view ) {
       return;
     }
 
@@ -2070,11 +2143,12 @@ define('src/view',[
 
     // Path is a special property used for resolving resources that are relative to
     // the view.
-    var path = options.path || this.path;
-    if ( path ) {
-      var _name = path.split("/");
+    var fqn = options.fqn || this.fqn;
+    if ( fqn ) {
+      var _name = fqn.split("/");
       options.name = _name.pop();
       options.namespace = _name.join(".");
+      options.path = fqn;
     }
 
     // Figure out the class name.
@@ -2125,5 +2199,5 @@ define('src/mortar',[
 
 });
 
-  return require('src/core');
+  return require('src/mortar');
 }));

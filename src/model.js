@@ -58,7 +58,7 @@ define([
 
   // Create item in datasource
   crud.prototype.create = function(data, options) {
-    return promise.when(this.datasource("post", data, options)).then(function(data){
+    return promise.when.call(this, this.datasource("post", data, options)).then(function(data){
       return data;
     });
   };
@@ -66,7 +66,7 @@ define([
 
   // Read item from datasource
   crud.prototype.read = function(data, options) {
-    return promise.when(this.datasource("get", data, options)).then(function(data) {
+    return promise.when.call(this, this.datasource("get", data, options)).then(function(data) {
       this.serialize(data);
       return data;
     });
@@ -75,7 +75,7 @@ define([
 
   // Update item in the server
   crud.prototype.update = function(data, options) {
-    return promise.when(this.datasource("put", data, options)).then(function(data){
+    return promise.when.call(this, this.datasource("put", data, options)).then(function(data){
       return data;
     });
   };
@@ -83,7 +83,7 @@ define([
 
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
-    return promise.when(this.datasource("delete", data, options)).then(function(data){
+    return promise.when.call(this.datasource("delete", data, options)).then(function(data){
       return data;
     });
   };
@@ -179,7 +179,7 @@ define([
     options.defaultdata = data;
 
     // Datasource to deal with data persistence
-    options.datasource = options.datasource || model.datasource
+    options.datasource = options.datasource || model.datasource;
 
     // Ensure valid url, if one is provided
     if (_url) {
@@ -205,7 +205,7 @@ define([
 
   // Interface to take data from a datasource and converting to a format that's
   // suitable for the UI
-  model.prototype.serialize = function(data, options) {
+  model.prototype.serialize = function(data) {
     // Init the data
     if ( !this.data ) {
       this.data = data;
@@ -245,6 +245,7 @@ define([
   };
 
 
+  model.extension = "js";
   return model;
 });
 

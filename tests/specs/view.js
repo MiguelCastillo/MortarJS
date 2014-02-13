@@ -13,7 +13,7 @@ define(["src/view"], function(view) {
       expect(_view.events).toBeDefined();
       expect(_view.on).toBeDefined();
       expect(_view.off).toBeDefined();
-      expect(_view.path).toBeUndefined();
+      expect(_view.fqn).toBeUndefined();
       expect(_view.namespace).toBeUndefined();
       expect(_view.name).toBeUndefined();
     });
@@ -91,15 +91,15 @@ define(["src/view"], function(view) {
     });
 
 
-    it("view with path", function() {
+    it("view with fqn", function() {
       var _view = new view({
-        path: "tests/views/hash"
+        fqn: "tests/views/hash"
       });
 
       // Test base properties
       expect(_view instanceof view).toBe(true);
       expect(_view.$el instanceof $).toBe(true);
-      expect(_view.path).toBe("tests/views/hash");
+      expect(_view.fqn).toBe("tests/views/hash");
       expect(_view.namespace).toBe("tests.views");
       expect(_view.name).toBe("hash");
     });
@@ -123,7 +123,7 @@ define(["src/view"], function(view) {
 
     it("view with remote html tmpl", function() {
       var _view = new view({
-        path: "tests/tmpl/deep",
+        fqn: "tests/tmpl/deep",
         resources: {
           "tmpl!url": ""
         }

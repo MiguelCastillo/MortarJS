@@ -1,70 +1,15 @@
 define([
   "src/extender",
   "src/events",
-  "src/tmpl",
-  "src/model",
-  "src/style",
+  "src/resources",
   "src/spromise"
-], function(extender, events, tmpl, model, style, promise) {
+], function(extender, events, resources, promise) {
   "use strict";
 
 
-  function resources () {
-  }
-
-
-  resources.handlers = {
-    "tmpl": tmpl,
-    "model": model,
-    "style": style
-  };
-
-
-  resources.get = function(resource, handler) {
-    if (!handler || !resources.handlers[handler]) {
-      return;
-    }
-
-    // Check for any hints of file extension.  If one does not exist,
-    // then infer it based on the handler.
-    if ( resource.url && resource.url.lastIndexOf(".") === -1 ) {
-      switch (handler) {
-        case "style":
-          resource.url += ".css";
-          break;
-        case "tmpl":
-          resource.url += ".html";
-          break;
-        case "model":
-          resource.url += ".js";
-          break;
-      }
-    }
-
-    return resources.handlers[handler](resource);
-  };
-
-
-  resources.load = function(items) {
-    // wire up to requirejs
-    var _self = this;
-    var resource, parts, config, type, result = {};
-
-    for ( var handler in items ) {
-      resource = items[handler];
-
-      // Handle items with directives
-      if ( /\w+!.*/.test(handler) ) {
-        parts    = /(\w+)!(.*)/.exec(handler);
-        type     = parts.pop();
-        handler  = parts.pop();
-        config   = {};
-        config[type] = resource || _self.path;
-        resource = config;
-      }
-
-      result[handler] = resources.get(resource, handler);
-    }
+  function loadResources( ) {
+    var _self  = this;
+    var result = baseview.resources(_self.resources, _self.fqn);
 
     return promise.when(result.tmpl, result.model, result.style)
       .then(function(tmpl, model /*, style*/) {
@@ -90,24 +35,19 @@ define([
 
         return result;
       });
-  };
+  }
 
 
   //
   // Base view
   //
   function baseview(options) {
-    var _self = this;
-    var deferred = promise();
-    var settings = baseview.configure.apply(_self, arguments);
+    var _self    = this,
+      deferred = promise(),
+      settings = baseview.configure.apply(_self, arguments);
 
-    // Mixin options
     _.extend(_self, settings.options);
-
-    // Setup the target element and events
     _self.$el.addClass(_self.className);
-
-    // Bind base events and optional events for the view and the dom element container
     _self.on(_self.events).on(settings.events);
     _self.on.call(_self.$el, _self.events, _self);
     _self.on.call(_self.$el, settings.events, _self);
@@ -119,15 +59,12 @@ define([
     // in case there is a need to setup anything on the dom before loading
     // up all the resources.
     // _init can return a promise object...  Maybe there is a need to do
-    // some async work before loading the resources.
+    // some async work before continuing on.
     // _create can also return a promise object
-    //
-    // Let the thread continue to execute without blocking while the view
-    // is initialized.
     //
     promise.when(_self._init(options))
     .then(function() {
-      return baseview.resources.load.call(_self, _self.resources);
+      return loadResources.call(_self, _self.resources, _self.fqn);
     })
     .then(function() {
       return promise.when(_self._create(options));
@@ -168,7 +105,7 @@ define([
   baseview.prototype.transition = function (view, selector) {
     var lastView = this._lastView;
 
-    if ( lastView == view ) {
+    if ( lastView === view ) {
       return;
     }
 
@@ -224,11 +161,12 @@ define([
 
     // Path is a special property used for resolving resources that are relative to
     // the view.
-    var path = options.path || this.path;
-    if ( path ) {
-      var _name = path.split("/");
+    var fqn = options.fqn || this.fqn;
+    if ( fqn ) {
+      var _name = fqn.split("/");
       options.name = _name.pop();
       options.namespace = _name.join(".");
+      options.path = fqn;
     }
 
     // Figure out the class name.

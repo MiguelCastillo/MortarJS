@@ -51,7 +51,6 @@ define(["src/spromise"], function(promise) {
 
     it("Thenable returning thenable", function() {
       var promise1 = promise();
-      var promise6 = promise();
 
       var promise2 = promise1.then(function(x) {
         expect(x).toBe("Thenable returning thenable simple value");
@@ -67,12 +66,12 @@ define(["src/spromise"], function(promise) {
         expect(x).toBe("second chain");
       })
       .done(function (x) {
-        expect(x).toBe("second chain");
+        expect(x).toBeUndefined();
         // returning a promise only affects then and not done
         return promise().resolve("third chain");
       })
       .done(function (x) {
-        expect(x).toBe("second chain");
+        expect(x).toBeUndefined();
       });
 
       promise1.resolve("Thenable returning thenable simple value");
@@ -85,19 +84,22 @@ define(["src/spromise"], function(promise) {
 
       promise1.then(function(x) {
         expect(x).toBe("simple value");
-        return promise.revoled("tests1");
+        return promise().resolve("tests1");
       })
       .then(function(x) {
         expect(x).toBe("tests1");
-        return promise.revole("tests2");
+        return promise().resolve("tests2");
       })
       .then(function(x) {
         expect(x).toBe("tests2");
-        return promise.resolve("tests3");
       })
       .then(function(x) {
-        expect(x).toBe("tests4");
-        return promise.resolve("tests5");
+        expect(x).toBeUndefined();
+        return promise().resolve("tests3");
+      })
+      .then(function(x) {
+        expect(x).toBe("tests3");
+        return promise().resolve("tests5");
       })
       .then(function(x) {
         expect(x).toBe("tests5");

@@ -1,7 +1,7 @@
 define(["src/model"], function(model) {
 
   describe("Model.", function() {
-
+/*
     it("verify data type and get property in model.data", function() {
       var _model = new model({
         "sample": "data"
@@ -45,7 +45,7 @@ define(["src/model"], function(model) {
       expect(_model.url).toBe("dummy url");
       expect(typeof _model.data === "object").toBe(true);
     });
-
+*/
 
     it("single url param for object", function() {
       var _model = new model("tests/json/simple.json");
@@ -59,7 +59,7 @@ define(["src/model"], function(model) {
         });
     });
 
-
+/*
     it("single url param for array", function() {
       var _model = new model("tests/json/array.json");
 
@@ -96,7 +96,7 @@ define(["src/model"], function(model) {
           expect(data.hello).toBe("world");
         });
     });
-
+*/
   });
 
 });

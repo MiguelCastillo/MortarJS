@@ -91,5 +91,6 @@ define([
   };
 
 
+  style.extension = "css";
   return style;
 });

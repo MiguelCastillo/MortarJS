@@ -60,5 +60,6 @@ define([
 
   tmpl.selector = "mjs-tmpl";
   tmpl.loader = fetch;
+  tmpl.extension = "html";
   return tmpl;
 });
