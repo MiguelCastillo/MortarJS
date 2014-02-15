@@ -305,13 +305,15 @@ define('src/promise',["src/async"], function (async) {
   }
 
   // Promise.chain DRYs onresolved and onrejected operations.  Handler is onResolved or onRejected
-  Resolution.prototype.chain = function (action, handler) {
+  Resolution.prototype.chain = function (action, handler, then) {
     var _self = this;
     return function chain() {
       // Prevent calling chain multiple times
       if (!(_self.resolved)) {
         _self.resolved++;
         _self.context = this;
+        _self.then    = then;
+
         try {
           _self.resolve(action, !handler ? arguments : [handler.apply(this, arguments)]);
         }
@@ -340,11 +342,11 @@ define('src/promise',["src/async"], function (async) {
       input.done(resolution.chain(actions.resolve)).fail(resolution.chain(actions.reject));
     }
     else {
-      thenableType = (thenable && typeof (input));
+      thenableType = (thenable && this.then !== input && typeof (input));
       if (thenableType === "function" || thenableType === "object") {
         try {
-          resolution = new Resolution(this.promise);
-          then.call(input, resolution.chain(actions.resolve), resolution.chain(actions.reject));
+          resolution = new Resolution(this.promise, input);
+          then.call(input, resolution.chain(actions.resolve, false, input), resolution.chain(actions.reject, false, input));
         }
         catch (ex) {
           if (!resolution.resolved) {

@@ -5,12 +5,15 @@
 
 
 (function (root, factory) {
-  if (typeof define === 'function' && define.amd) {
+  if (typeof require === 'function' && typeof exports === 'object' && typeof module === 'object') {
+    // CommonJS support
+    module.exports = factory(require("Mortar"), require('ko'));
+  } else if (typeof define === 'function' && define.amd) {
     // Do AMD support
     define(factory);
   } else {
     // Do browser support
-    root.mortar = factory();
+    root.Mortar = factory();
   }
 }(this, function () {
   //almond, and your modules will be inlined here
@@ -1277,13 +1280,15 @@ define('src/promise',["src/async"], function (async) {
   }
 
   // Promise.chain DRYs onresolved and onrejected operations.  Handler is onResolved or onRejected
-  Resolution.prototype.chain = function (action, handler) {
+  Resolution.prototype.chain = function (action, handler, then) {
     var _self = this;
     return function chain() {
       // Prevent calling chain multiple times
       if (!(_self.resolved)) {
         _self.resolved++;
         _self.context = this;
+        _self.then    = then;
+
         try {
           _self.resolve(action, !handler ? arguments : [handler.apply(this, arguments)]);
         }
@@ -1312,11 +1317,11 @@ define('src/promise',["src/async"], function (async) {
       input.done(resolution.chain(actions.resolve)).fail(resolution.chain(actions.reject));
     }
     else {
-      thenableType = (thenable && typeof (input));
+      thenableType = (thenable && this.then !== input && typeof (input));
       if (thenableType === "function" || thenableType === "object") {
         try {
-          resolution = new Resolution(this.promise);
-          then.call(input, resolution.chain(actions.resolve), resolution.chain(actions.reject));
+          resolution = new Resolution(this.promise, input);
+          then.call(input, resolution.chain(actions.resolve, false, input), resolution.chain(actions.reject, false, input));
         }
         catch (ex) {
           if (!resolution.resolved) {
@@ -1952,24 +1957,60 @@ define('src/resources',[
   };
 
 
-  resources.load = function(items, path) {
-    // wire up to requirejs
-    var resource, parts, config, type, result = {};
+  resources.load = function(items, fqn) {
+    var resource, parts, config, directive, path, name;
+    var result = {},
+        pathParts = fqn ? fqn.split("/") : [];
+
+    // Makes sure that we have a list of resources in a proper format
+    items = resources.ensureResources(items);
+
+    // Get the name from the fqn for resource name assignment
+    name = pathParts.pop();
+
+    // Skip intermmidiate directory because this is where I am expceting the
+    // resources to be located at
+    pathParts.pop();
+
+    // Setup root directory
+    path = pathParts.join("/");
 
     for ( var handler in items ) {
       resource = items[handler];
 
+      // Resources that has been explicitly set to false, don't process.
+      if ( resource === false ) {
+        result[handler] = false;
+        continue;
+      }
+
       // Handle items with directives
       if ( /\w+!.*/.test(handler) ) {
-        parts        = handler.split("!");
-        handler      = parts[0];
-        type         = parts[1];
-        config       = {};
-        config[type] = resource || path;
-        resource     = config;
+        parts             = handler.split("!");
+        handler           = parts[0];
+        directive         = parts[1];
+        config            = {};
+        config[directive] = resource || path + "/" + handler + "/" + name;
+        resource          = config;
       }
 
       result[handler] = resources.get(resource, handler);
+    }
+
+    return result;
+  };
+
+
+  resources.ensureResources = function( items ) {
+    var result = {}, i, length;
+
+    if ( items instanceof Array ) {
+      for ( i = 0, length = items.length; i < length; i++ ) {
+        result[ items[i] ] = "";
+      }
+    }
+    else {
+      result = items;
     }
 
     return result;
@@ -1991,32 +2032,45 @@ define('src/view',[
 
   function loadResources( ) {
     var _self  = this;
-    var result = baseview.resources(_self.resources, _self.fqn);
+    var result;
 
+    if ( !_self.resources && _self.fqn ) {
+      _self.resources = {
+        "tmpl!url": ""
+      };
+    }
+
+    result = baseview.resources(_self.resources, _self.fqn);
     return promise.when(result.tmpl, result.model, result.style)
       .then(function(tmpl, model /*, style*/) {
-        if ( tmpl ) {
-          _self.$el.empty().append($(tmpl[0]));
-        }
-
-        if ( model ) {
-          _self.model = model[0];
-
-          // If the model is remote, then we will load the data automatically
-          // and them do the binding once the data is loaded in the model
-          if ( _.result(model, "url") ) {
-            return model.read().then(function(){
-              model.bind(_self.$el);
-              return result;
-            });
-          }
-          else {
-            model.bind(_self.$el);
-          }
-        }
-
+        _self.tmpl  = tmpl || _.result(_self, "tmpl");
+        _self.model = model || _.result(_self, "model");
         return result;
       });
+  }
+
+
+  function initResources( ) {
+    var _self = this,
+        tmpl = _self.tmpl,
+        model = _self.model;
+
+    if ( tmpl ) {
+      _self.$el.empty().append($(tmpl[0]));
+    }
+
+    if ( model ) {
+      // If the model is remote, then we will load the data automatically
+      // and then do the binding once the data is loaded in the model
+      if ( _.result(model, "url") ) {
+        return model.read().then(function(){
+          model.bind(_self.$el);
+        });
+      }
+      else {
+        model.bind(_self.$el);
+      }
+    }
   }
 
 
@@ -2037,22 +2091,20 @@ define('src/view',[
     // Add ready callback so that it is possible to know when a view is ready
     _self.ready = deferred.done;
 
-    // Before anything is done, I am calling init with the $el in place
-    // in case there is a need to setup anything on the dom before loading
-    // up all the resources.
-    // _init can return a promise object...  Maybe there is a need to do
-    // some async work before continuing on.
-    // _create can also return a promise object
-    //
-    promise.when(_self._init(options))
+    // Load resources so that they can then be further processed by _init.
+    promise.when(loadResources.call(_self))
     .then(function() {
-      return loadResources.call(_self, _self.resources, _self.fqn);
+      return promise.when(_self._init(options));
+    })
+    .then(function() {
+      return promise.when(initResources.call(_self));
     })
     .then(function() {
       return promise.when(_self._create(options));
     })
     .then(function() {
-      _self.trigger("_create").trigger("view:ready", [_self, options]);
+      _self._create();
+      _self.trigger("view:ready", [_self, options]);
       deferred.resolve(_self);
     });
   }
@@ -2070,17 +2122,18 @@ define('src/view',[
 
   baseview.prototype.destroy = function destroy() {
     // Callback
-    this.trigger("_destroy").trigger("view:destroy");
+    this._destroy();
+    this.trigger("view:destroy");
+
+    if ( this.model ) {
+      this.model.unbind();
+    }
 
     // Clean up bound events for the view and the dom element container
     this.off().off.call(this.$el);
 
     // Remove dom element
     this.$el.remove();
-
-    if ( this.model ) {
-      this.model.unbind();
-    }
   };
 
 

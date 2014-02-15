@@ -9,32 +9,45 @@ define([
 
   function loadResources( ) {
     var _self  = this;
-    var result = baseview.resources(_self.resources, _self.fqn);
+    var result;
 
+    if ( !_self.resources && _self.fqn ) {
+      _self.resources = {
+        "tmpl!url": ""
+      };
+    }
+
+    result = baseview.resources(_self.resources, _self.fqn);
     return promise.when(result.tmpl, result.model, result.style)
       .then(function(tmpl, model /*, style*/) {
-        if ( tmpl ) {
-          _self.$el.empty().append($(tmpl[0]));
-        }
-
-        if ( model ) {
-          _self.model = model[0];
-
-          // If the model is remote, then we will load the data automatically
-          // and them do the binding once the data is loaded in the model
-          if ( _.result(model, "url") ) {
-            return model.read().then(function(){
-              model.bind(_self.$el);
-              return result;
-            });
-          }
-          else {
-            model.bind(_self.$el);
-          }
-        }
-
+        _self.tmpl  = tmpl || _.result(_self, "tmpl");
+        _self.model = model || _.result(_self, "model");
         return result;
       });
+  }
+
+
+  function initResources( ) {
+    var _self = this,
+        tmpl = _self.tmpl,
+        model = _self.model;
+
+    if ( tmpl ) {
+      _self.$el.empty().append($(tmpl[0]));
+    }
+
+    if ( model ) {
+      // If the model is remote, then we will load the data automatically
+      // and then do the binding once the data is loaded in the model
+      if ( _.result(model, "url") ) {
+        return model.read().then(function(){
+          model.bind(_self.$el);
+        });
+      }
+      else {
+        model.bind(_self.$el);
+      }
+    }
   }
 
 
@@ -55,22 +68,20 @@ define([
     // Add ready callback so that it is possible to know when a view is ready
     _self.ready = deferred.done;
 
-    // Before anything is done, I am calling init with the $el in place
-    // in case there is a need to setup anything on the dom before loading
-    // up all the resources.
-    // _init can return a promise object...  Maybe there is a need to do
-    // some async work before continuing on.
-    // _create can also return a promise object
-    //
-    promise.when(_self._init(options))
+    // Load resources so that they can then be further processed by _init.
+    promise.when(loadResources.call(_self))
     .then(function() {
-      return loadResources.call(_self, _self.resources, _self.fqn);
+      return promise.when(_self._init(options));
+    })
+    .then(function() {
+      return promise.when(initResources.call(_self));
     })
     .then(function() {
       return promise.when(_self._create(options));
     })
     .then(function() {
-      _self.trigger("_create").trigger("view:ready", [_self, options]);
+      _self._create();
+      _self.trigger("view:ready", [_self, options]);
       deferred.resolve(_self);
     });
   }
@@ -88,17 +99,18 @@ define([
 
   baseview.prototype.destroy = function destroy() {
     // Callback
-    this.trigger("_destroy").trigger("view:destroy");
+    this._destroy();
+    this.trigger("view:destroy");
+
+    if ( this.model ) {
+      this.model.unbind();
+    }
 
     // Clean up bound events for the view and the dom element container
     this.off().off.call(this.$el);
 
     // Remove dom element
     this.$el.remove();
-
-    if ( this.model ) {
-      this.model.unbind();
-    }
   };
 
 
