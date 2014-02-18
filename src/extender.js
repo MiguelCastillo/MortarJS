@@ -7,6 +7,10 @@ define(function() {
   }
 
 
+  /**
+  * Interface that iterates through all the input properties and prototype objects
+  * to extend the instance of extender.
+  */
   extender.prototype.extend = function( /* extend+ */ ) {
     var extensions = Array.prototype.slice.call(arguments),
         iextension;
@@ -28,15 +32,22 @@ define(function() {
   };
 
 
-  // Base dummy extension to use the prototype as a placeholder when
-  // establishing inheritance.
+  /**
+  * Base dummy extension to use the prototype as a placeholder when establishing inheritance.
+  * Override extension with any other base function that you wish all your prototypical
+  * inheritance chains to use.
+  */
   extender.extension = function() {};
 
 
-  extender.mixin = function() {
+  /**
+  * Interface to setup extending capabilties.  Unlike extend, this will not create
+  * a prototypical inheritance chain.
+  */
+  extender.mixin  = function() {
     var _extender = new extender(),
-        args = Array.prototype.slice.call(arguments),
-        base = args.shift();
+        args      = Array.prototype.slice.call(arguments),
+        base      = args.shift();
 
     if ( base.constructor === Function ) {
       _extender.extend.apply(base.prototype, args);
@@ -51,18 +62,14 @@ define(function() {
   };
 
 
-  // Works similar to Object.create, but this takes into account passing in
-  // constructors.
+  /**
+  * Interface to setup inheritance
+  * Works similar to Object.create, but this takes into account passing in constructors.
+  *
+  * extender.extend( base, (object || function) * )
+  */
   extender.extend = function() {
-    var base;
-
-    // extender.extend( base, (object || function) * )
-    if ( this === extender ) {
-      base = Array.prototype.slice.call(arguments).shift();
-    }
-    else {
-      base = this;
-    }
+    var base = this === extender ? arguments[0] : this;
 
     // Setup extension class to be able to setup inheritance
     if ( base && base.constructor === Function ) {
@@ -72,8 +79,7 @@ define(function() {
       extender.extension.prototype = base;
     }
 
-    // Setup a function the we can instantiate and properly call the
-    // proper constructor
+    // Setup a function the we can instantiate and properly call the proper constructor
     function extension() {
       this.constructor.apply(this, arguments);
     }
