@@ -1612,7 +1612,9 @@ define('src/model',[
       _url = options;
       options = null;
     }
-    else if ( !options && data ) {
+    else if ( !options && (data || this.data) ) {
+      data = data || this;
+
       // Items that can be used as options in a data object when an options object is
       // not explicitly provided.
       if ( data.data || data.url || data.events || data.datasource ) {
@@ -1620,13 +1622,14 @@ define('src/model',[
 
         // Setup direct access to the data.  data.data could be undefined or null, which is
         // fine because the data and its type will be properly setup during serialization
-        data = data.data;
+        data = _.result(data, "data");
       }
     }
 
 
     // Ensure valid options object
     options = options || {};
+
 
     // Datasource to deal with data persistence
     options.datasource = options.datasource || model.datasource;
@@ -1636,11 +1639,14 @@ define('src/model',[
       options.url = _url;
     }
 
+    if ( data ) {
+      options.data = data;
+    }
+
     var events = options.events || {};
     delete options.events;
 
     return {
-      data: data,
       events: events,
       options: options
     };
