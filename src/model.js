@@ -83,7 +83,7 @@ define([
 
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
-    return promise.when.call(this.datasource("delete", data, options)).then(function(data){
+    return promise.when.call(this, this.datasource("delete", data, options)).then(function(data){
       return data;
     });
   };
@@ -110,7 +110,9 @@ define([
     _.extend(this, settings.options);
 
     // Serialize
-    this.serialize(this.defaultdata);
+    this.serialize(this.data);
+    this._init();
+    this._create();
   }
 
 
@@ -125,7 +127,9 @@ define([
       dataType: "json"
     },
     bind: $.noop,
-    unbind: $.noop
+    unbind: $.noop,
+    _init: $.noop,
+    _create: $.noop
   }, events, crud);
 
 
@@ -174,9 +178,6 @@ define([
 
     // Ensure valid options object
     options = options || {};
-
-    // Default data
-    options.defaultdata = data;
 
     // Datasource to deal with data persistence
     options.datasource = options.datasource || model.datasource;

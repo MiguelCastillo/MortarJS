@@ -18,7 +18,12 @@ define([
   };
 
 
-  resources.get = function(resource, handler) {
+  resources.register = function(type, handler) {
+    resources.handlers[type] = handler;
+  };
+
+
+  resources.fetch = function(resource, handler) {
     if (!handler || !resources.handlers[handler]) {
       return;
     }
@@ -46,7 +51,8 @@ define([
     name = pathParts.pop();
 
     // Skip intermmidiate directory because this is where I am expceting the
-    // resources to be located at
+    // resources to be located at based on its handler name.  This is what
+    // gives me the ability to match resource handlers to directories
     pathParts.pop();
 
     // Setup root directory
@@ -55,8 +61,7 @@ define([
     for ( var handler in items ) {
       resource = items[handler];
 
-      // Resources that has been explicitly set to false, don't process.
-      if ( resource === false ) {
+      if ( !resource && resource !== "" ) {
         result[handler] = false;
         continue;
       }
@@ -71,7 +76,7 @@ define([
         resource          = config;
       }
 
-      result[handler] = resources.get(resource, handler);
+      result[handler] = resources.fetch(resource, handler);
     }
 
     return result;
@@ -86,8 +91,11 @@ define([
         result[ items[i] ] = "";
       }
     }
-    else {
+    else if (items) {
       result = items;
+    }
+    else {
+      result = {};
     }
 
     return result;

@@ -7,33 +7,42 @@ define([
   "use strict";
 
 
-  function loadResources( ) {
-    var _self  = this;
-    var result;
+  function loadResources(_self) {
+    var resources = _self.resources || {},
+        fqn       = _self.fqn;
+    var result, promises;
 
-    if ( !_self.resources && _self.fqn ) {
-      _self.resources = {
-        "tmpl!url": ""
-      };
+    result = baseview.resources(resources, fqn);
+
+    if ( !result.tmpl ) {
+      result.tmpl = _.result(_self, "tmpl") || (fqn && baseview.resources(["tmpl!url"], fqn).tmpl);
     }
 
-    result = baseview.resources(_self.resources, _self.fqn);
-    return promise.when(result.tmpl, result.model, result.style)
-      .then(function(tmpl, model /*, style*/) {
-        _self.tmpl  = tmpl || _.result(_self, "tmpl");
-        _self.model = model || _.result(_self, "model");
-        return result;
+    if ( !result.style && _self.style ) {
+      _self.style = _.result(_self, "style");
+    }
+
+    if ( !result.model && _self.model ) {
+      _self.model = _.result(_self, "model");
+    }
+
+    promises = _.map(result, function( value, key ) {
+      promise.when(value).done(function(val) {
+         _self[key] = val || _.result(resources, key);
       });
+      return value;
+    });
+
+    return promise.when.apply(_self, promises);
   }
 
 
-  function initResources( ) {
-    var _self = this,
-        tmpl = _self.tmpl,
+  function initResources(_self) {
+    var tmpl = _self.tmpl,
         model = _self.model;
 
     if ( tmpl ) {
-      _self.$el.empty().append($(tmpl[0]));
+      _self.$el.empty().append(tmpl);
     }
 
     if ( model ) {
@@ -59,22 +68,27 @@ define([
       deferred = promise(),
       settings = baseview.configure.apply(_self, arguments);
 
+    if ( _self.events ) {
+      _self.on(_self.events);
+      _self.on.call(_self.$el, _self.events, _self);
+    }
+
+    if ( settings.events ) {
+      _self.on(settings.events);
+      _self.on.call(_self.$el, settings.events, _self);
+    }
+
     _.extend(_self, settings.options);
     _self.$el.addClass(_self.className);
-    _self.on(_self.events).on(settings.events);
-    _self.on.call(_self.$el, _self.events, _self);
-    _self.on.call(_self.$el, settings.events, _self);
-
-    // Add ready callback so that it is possible to know when a view is ready
     _self.ready = deferred.done;
 
     // Load resources so that they can then be further processed by _init.
-    promise.when(loadResources.call(_self))
+    promise.when(loadResources(_self))
     .then(function() {
       return promise.when(_self._init(options));
     })
     .then(function() {
-      return promise.when(initResources.call(_self));
+      return promise.when(initResources(_self));
     })
     .then(function() {
       return promise.when(_self._create(options));
@@ -164,6 +178,8 @@ define([
       options = _.extend({}, options);
     }
 
+    options.settings = options.settings || {};
+
     // Keep events separate so that we dont override events when creating instances.
     var events = _.extend({}, options.events);
     delete options.events;
@@ -176,13 +192,13 @@ define([
     var fqn = options.fqn || this.fqn;
     if ( fqn ) {
       var _name = fqn.split("/");
-      options.name = _name.pop();
-      options.namespace = _name.join(".");
-      options.path = fqn;
+      options.settings.name      = _name.pop();
+      options.settings.path      = _name.join("/");
+      options.settings.namespace = _name.join(".");
     }
 
     // Figure out the class name.
-    options.className = options.className || options.name || this.className;
+    options.className = options.className || options.settings.name || this.className;
 
     return {
       events: events,
@@ -195,10 +211,7 @@ define([
   };
 
 
-  // Resources
   baseview.resources = resources;
-
-
   return baseview;
 });
 
