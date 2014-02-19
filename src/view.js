@@ -15,16 +15,16 @@ define([
 
 
     //
-    // tmpl, style, and model can be resource that can setup right in the view itself.  These
+    // tmpl, style, and model are resources that can be setup right in the view itself.  These
     // are special resources, and they can be defined in the view directly because they are so
-    // common I wanted to provide a less verbose way to defined them.
+    // common I wanted to provide a less verbose way to defined them to reduce boilerplate code.
     //
 
 
     //
     // * The only resource that is really required for a view is a template... What good is a
     // view if it does not render anything?  That's why I will force loading of a template via
-    // the resource manager if I can't explicitly find defined settings for it.
+    // the resource manager if I can't explicitly find one defined in the settings.
     //
     if ( !result.tmpl ) {
       result.tmpl = _.result(_self, "tmpl") || (fqn && baseview.resources(["tmpl!url"], fqn).tmpl);
@@ -42,7 +42,7 @@ define([
       promise.when(value).done(function(val) {
         _self[key] = val;
 
-        // Immediately try to call resources that were defined as a function.
+        // Immediately try to resolve resources that may have been defined as a function.
         _self[key] = _.result(_self, key);
       });
       return value;
@@ -82,11 +82,13 @@ define([
       deferred = promise(),
       settings = baseview.configure.apply(_self, arguments);
 
-    if ( _self.events ) {
+    // This is handling events that were configured when defining a view
+    if ( _self.events && settings.pevents === false ) {
       _self.on(_self.events);
       _self.on.call(_self.$el, _self.events, _self);
     }
 
+    // This is handling events that are passed in to the constructor
     if ( settings.events ) {
       _self.on(settings.events);
       _self.on.call(_self.$el, settings.events, _self);
