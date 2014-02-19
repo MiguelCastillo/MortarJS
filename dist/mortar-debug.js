@@ -2159,8 +2159,8 @@ define('src/view',[
 
     // Iterate through all the resources and make sure we call load passing in the instance of the view
     for ( var resource in resources ) {
-      if ( resources.hasOwnProperty( resource ) && _.isFunction(_self[resource].loaded) ) {
-        _self[resource].loaded.call(_self[resource], _self);
+      if ( resources.hasOwnProperty( resource ) && _.isFunction(resources[resource].loaded) ) {
+        resources[resource].loaded.call(_self[resource], _self);
       }
     }
   }
@@ -2170,7 +2170,7 @@ define('src/view',[
   * baseview
   */
   function baseview(options) {
-    var _self    = this,
+    var _self  = this,
       deferred = promise(),
       settings = baseview.configure.apply(_self, arguments);
 
