@@ -7,8 +7,9 @@ define([
   "src/style",
   "src/tmpl",
   "src/view",
+  "src/resources",
   "src/spromise"
-], function(extender, events, hash, model, fetch, style, tmpl, view, promise) {
+], function(extender, events, hash, model, fetch, style, tmpl, view, resources, promise) {
 
   return {
     extender: extender,
@@ -19,6 +20,7 @@ define([
     style: style,
     tmpl: tmpl,
     view: view,
+    resources: resources,
     promise: promise
   };
 

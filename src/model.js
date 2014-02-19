@@ -1,8 +1,9 @@
 define([
   "src/extender",
   "src/events",
-  "src/spromise"
-],function(extender, events, promise) {
+  "src/spromise",
+  "src/resources"
+],function(extender, events, promise, resources) {
   "use strict";
 
 
@@ -177,10 +178,8 @@ define([
       }
     }
 
-
     // Ensure valid options object
     options = options || {};
-
 
     // Datasource to deal with data persistence
     options.datasource = options.datasource || model.datasource;
@@ -252,7 +251,17 @@ define([
   };
 
 
-  model.extension = "js";
+  // Expose as a resource.  Run it in a self executing function so keep the module clean
+  // and so that we can also move the resource registration if need be.
+  (function() {
+    var resource = resources.resource.extend({
+      load: model,
+      extension: "js"
+    });
+
+    resources.register("model", new resource());
+  })();
+
   return model;
 });
 

@@ -1,9 +1,18 @@
 define([
-  "src/tmpl",
-  "src/model",
-  "src/style"
-], function(tmpl, model, style) {
+  "src/extender"
+], function(extender) {
   "use strict";
+
+
+  /**
+  * Resources!  This will allow the registration of resources so that they can
+  * be exposed to directory hierarchy expected for resources.
+  * If a resouce handler is registered, then resources will automatically look
+  * for resources in the directory matching the name of the resource type.  This
+  * is how MortarJS can automatically load tmpl resources from the tmpl directory.
+  */
+
+  var loaders = {};
 
 
   function resources (items, path) {
@@ -11,31 +20,34 @@ define([
   }
 
 
-  resources.handlers = {
-    "tmpl": tmpl,
-    "model": model,
-    "style": style
-  };
+  resources.register = function(type, loader) {
+    if ( loader instanceof resources.resource === false ) {
+      throw new TypeError("Resource loader must be of type resource");
+    }
 
-
-  resources.register = function(type, handler) {
-    resources.handlers[type] = handler;
+    loaders[type] = loader;
   };
 
 
   resources.fetch = function(resource, handler) {
-    if (!handler || !resources.handlers[handler]) {
-      return;
+    var resourceLoader = loaders[handler];
+
+    // If the resource if a function, we will not handle process it as a resource
+    if ( _.isFunction(resource) ) {
+      return resource;
     }
 
-    // Check for any hints of file extension.  If one does not exist,
-    // then infer it based on the handler.
+    if (!handler || !resourceLoader) {
+      return resource;
+    }
+
+    // Check for any hints of file extension.  If one does not exist, then infer it based on the handler.
     if ( resource.url && resource.url.lastIndexOf(".") === -1 ) {
-      var ext = resources.handlers[handler].extension;
+      var ext = resourceLoader.extension;
       resource.url += ext ? "." + ext : "";
     }
 
-    return resources.handlers[handler](resource);
+    return resourceLoader.load(resource);
   };
 
 
@@ -50,9 +62,8 @@ define([
     // Get the name from the fqn for resource name assignment
     name = pathParts.pop();
 
-    // Skip intermmidiate directory because this is where I am expceting the
-    // resources to be located at based on its handler name.  This is what
-    // gives me the ability to match resource handlers to directories
+    // Skip intermmidiate directory because this is where I am expceting the resources to be located at based
+    // on its handler name.  This is what gives me the ability to match resource loaders to directories
     pathParts.pop();
 
     // Setup root directory
@@ -102,6 +113,14 @@ define([
   };
 
 
-  return resources;
+  /**
+  *  Resource interface to devire from when processing external resources
+  */
+  resources.resource = function() {};
+  extender.mixin(resources.resource, {
+    load: $.noop
+  });
 
+
+  return resources;
 });

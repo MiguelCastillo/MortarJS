@@ -8,27 +8,26 @@ define([
 
 
   function loadResources(_self) {
-    var resources = _self.resources || {},
-        fqn       = _self.fqn;
-    var result, promises;
-
-    result = baseview.resources(resources, fqn);
+    var resources = _self.resources || (_self.resources = {}),
+        fqn       = _self.fqn,
+        result    = baseview.resources(resources, fqn);
+    var promises;
 
     if ( !result.tmpl ) {
       result.tmpl = _.result(_self, "tmpl") || (fqn && baseview.resources(["tmpl!url"], fqn).tmpl);
     }
 
     if ( !result.style && _self.style ) {
-      _self.style = _.result(_self, "style");
+      result.style = _.result(_self, "style");
     }
 
     if ( !result.model && _self.model ) {
-      _self.model = _.result(_self, "model");
+      result.model = _.result(_self, "model");
     }
 
     promises = _.map(result, function( value, key ) {
       promise.when(value).done(function(val) {
-         _self[key] = val || _.result(resources, key);
+         _self[key] = val || _.result(result, key);
       });
       return value;
     });
@@ -38,16 +37,17 @@ define([
 
 
   function initResources(_self) {
-    var tmpl = _self.tmpl,
-        model = _self.model;
+    var tmpl      = _self.tmpl,
+        model     = _self.model,
+        resources = _self.resources;
 
     if ( tmpl ) {
-      _self.$el.empty().append(tmpl);
+      _self.$el.append(tmpl);
     }
 
     if ( model ) {
-      // If the model is remote, then we will load the data automatically
-      // and then do the binding once the data is loaded in the model
+      // If the model is remote, then we will load the data automatically and then do the binding once
+      // the data is loaded in the model
       if ( _.result(model, "url") ) {
         return model.read().then(function(){
           model.bind(_self.$el);
@@ -57,12 +57,19 @@ define([
         model.bind(_self.$el);
       }
     }
+
+    // Iterate through all the resources and make sure we call load passing in the instance of the view
+    for ( var resource in resources ) {
+      if ( resources.hasOwnProperty( resource ) && _.isFunction(_self[resource].load) ) {
+        _self[resource].load.call(_self[resource], _self);
+      }
+    }
   }
 
 
-  //
-  // Base view
-  //
+  /**
+  * baseview
+  */
   function baseview(options) {
     var _self    = this,
       deferred = promise(),

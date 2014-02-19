@@ -1447,11 +1447,139 @@ define('src/spromise',[
 });
 
 
+define('src/resources',[
+  "src/extender"
+], function(extender) {
+  
+
+
+  /**
+  * Resources!  This will allow the registration of resources so that they can
+  * be exposed to directory hierarchy expected for resources.
+  * If a resouce handler is registered, then resources will automatically look
+  * for resources in the directory matching the name of the resource type.  This
+  * is how MortarJS can automatically load tmpl resources from the tmpl directory.
+  */
+
+  var loaders = {};
+
+
+  function resources (items, path) {
+    return resources.load(items, path);
+  }
+
+
+  resources.register = function(type, loader) {
+    if ( loader instanceof resources.resource === false ) {
+      throw new TypeError("Resource loader must be of type resource");
+    }
+
+    loaders[type] = loader;
+  };
+
+
+  resources.fetch = function(resource, handler) {
+    var resourceLoader = loaders[handler];
+
+    // If the resource if a function, we will not handle process it as a resource
+    if ( _.isFunction(resource) ) {
+      return resource;
+    }
+
+    if (!handler || !resourceLoader) {
+      return resource;
+    }
+
+    // Check for any hints of file extension.  If one does not exist, then infer it based on the handler.
+    if ( resource.url && resource.url.lastIndexOf(".") === -1 ) {
+      var ext = resourceLoader.extension;
+      resource.url += ext ? "." + ext : "";
+    }
+
+    return resourceLoader.load(resource);
+  };
+
+
+  resources.load = function(items, fqn) {
+    var resource, parts, config, directive, path, name;
+    var result = {},
+        pathParts = fqn ? fqn.split("/") : [];
+
+    // Makes sure that we have a list of resources in a proper format
+    items = resources.ensureResources(items);
+
+    // Get the name from the fqn for resource name assignment
+    name = pathParts.pop();
+
+    // Skip intermmidiate directory because this is where I am expceting the resources to be located at based
+    // on its handler name.  This is what gives me the ability to match resource loaders to directories
+    pathParts.pop();
+
+    // Setup root directory
+    path = pathParts.join("/");
+
+    for ( var handler in items ) {
+      resource = items[handler];
+
+      if ( !resource && resource !== "" ) {
+        result[handler] = false;
+        continue;
+      }
+
+      // Handle items with directives
+      if ( /\w+!.*/.test(handler) ) {
+        parts             = handler.split("!");
+        handler           = parts[0];
+        directive         = parts[1];
+        config            = {};
+        config[directive] = resource || path + "/" + handler + "/" + name;
+        resource          = config;
+      }
+
+      result[handler] = resources.fetch(resource, handler);
+    }
+
+    return result;
+  };
+
+
+  resources.ensureResources = function( items ) {
+    var result = {}, i, length;
+
+    if ( items instanceof Array ) {
+      for ( i = 0, length = items.length; i < length; i++ ) {
+        result[ items[i] ] = "";
+      }
+    }
+    else if (items) {
+      result = items;
+    }
+    else {
+      result = {};
+    }
+
+    return result;
+  };
+
+
+  /**
+  *  Resource interface to devire from when processing external resources
+  */
+  resources.resource = function() {};
+  extender.mixin(resources.resource, {
+    load: $.noop
+  });
+
+
+  return resources;
+});
+
 define('src/model',[
   "src/extender",
   "src/events",
-  "src/spromise"
-],function(extender, events, promise) {
+  "src/spromise",
+  "src/resources"
+],function(extender, events, promise, resources) {
   
 
 
@@ -1626,10 +1754,8 @@ define('src/model',[
       }
     }
 
-
     // Ensure valid options object
     options = options || {};
-
 
     // Datasource to deal with data persistence
     options.datasource = options.datasource || model.datasource;
@@ -1701,7 +1827,17 @@ define('src/model',[
   };
 
 
-  model.extension = "js";
+  // Expose as a resource.  Run it in a self executing function so keep the module clean
+  // and so that we can also move the resource registration if need be.
+  (function() {
+    var resource = resources.resource.extend({
+      load: model,
+      extension: "js"
+    });
+
+    resources.register("model", new resource());
+  })();
+
   return model;
 });
 
@@ -1773,8 +1909,9 @@ define('src/fetch',[],function() {
 
 define('src/style',[
   "src/fetch",
-  "src/spromise"
-], function( fetch, promise ) {
+  "src/spromise",
+  "src/resources"
+], function( fetch, promise, resources ) {
   
 
 
@@ -1864,14 +2001,25 @@ define('src/style',[
   };
 
 
-  style.extension = "css";
+  // Expose as a resource.  Run it in a self executing function so keep the module clean
+  // and so that we can also move the resource registration if need be.
+  (function() {
+    var resource = resources.resource.extend({
+      load: style,
+      extension: "css"
+    });
+
+    resources.register("style", new resource());
+  })();
+
   return style;
 });
 
 define('src/tmpl',[
   "src/fetch",
-  "src/spromise"
-], function( fetch, promise ) {
+  "src/spromise",
+  "src/resources",
+], function( fetch, promise , resources) {
   
 
 
@@ -1930,117 +2078,23 @@ define('src/tmpl',[
 
   tmpl.selector = "mjs-tmpl";
   tmpl.loader = fetch;
-  tmpl.extension = "html";
+
+
+  // Expose as a resource.  Run it in a self executing function so keep the module clean
+  // and so that we can also move the resource registration if need be.
+  (function() {
+    var resource = resources.resource.extend({
+      load: tmpl,
+      extension: "html"
+    });
+
+    resources.register("tmpl", new resource());
+  })();
+
+
   return tmpl;
 });
 
-define('src/resources',[
-  "src/tmpl",
-  "src/model",
-  "src/style"
-], function(tmpl, model, style) {
-  
-
-
-  function resources (items, path) {
-    return resources.load(items, path);
-  }
-
-
-  resources.handlers = {
-    "tmpl": tmpl,
-    "model": model,
-    "style": style
-  };
-
-
-  resources.register = function(type, handler) {
-    resources.handlers[type] = handler;
-  };
-
-
-  resources.fetch = function(resource, handler) {
-    if (!handler || !resources.handlers[handler]) {
-      return;
-    }
-
-    // Check for any hints of file extension.  If one does not exist,
-    // then infer it based on the handler.
-    if ( resource.url && resource.url.lastIndexOf(".") === -1 ) {
-      var ext = resources.handlers[handler].extension;
-      resource.url += ext ? "." + ext : "";
-    }
-
-    return resources.handlers[handler](resource);
-  };
-
-
-  resources.load = function(items, fqn) {
-    var resource, parts, config, directive, path, name;
-    var result = {},
-        pathParts = fqn ? fqn.split("/") : [];
-
-    // Makes sure that we have a list of resources in a proper format
-    items = resources.ensureResources(items);
-
-    // Get the name from the fqn for resource name assignment
-    name = pathParts.pop();
-
-    // Skip intermmidiate directory because this is where I am expceting the
-    // resources to be located at based on its handler name.  This is what
-    // gives me the ability to match resource handlers to directories
-    pathParts.pop();
-
-    // Setup root directory
-    path = pathParts.join("/");
-
-    for ( var handler in items ) {
-      resource = items[handler];
-
-      if ( !resource && resource !== "" ) {
-        result[handler] = false;
-        continue;
-      }
-
-      // Handle items with directives
-      if ( /\w+!.*/.test(handler) ) {
-        parts             = handler.split("!");
-        handler           = parts[0];
-        directive         = parts[1];
-        config            = {};
-        config[directive] = resource || path + "/" + handler + "/" + name;
-        resource          = config;
-      }
-
-      result[handler] = resources.fetch(resource, handler);
-    }
-
-    return result;
-  };
-
-
-  resources.ensureResources = function( items ) {
-    var result = {}, i, length;
-
-    if ( items instanceof Array ) {
-      for ( i = 0, length = items.length; i < length; i++ ) {
-        result[ items[i] ] = "";
-      }
-    }
-    else if (items) {
-      result = items;
-    }
-    else {
-      result = {};
-    }
-
-    return result;
-  };
-
-
-  return resources;
-
-});
 
 define('src/view',[
   "src/extender",
@@ -2052,27 +2106,26 @@ define('src/view',[
 
 
   function loadResources(_self) {
-    var resources = _self.resources || {},
-        fqn       = _self.fqn;
-    var result, promises;
-
-    result = baseview.resources(resources, fqn);
+    var resources = _self.resources || (_self.resources = {}),
+        fqn       = _self.fqn,
+        result    = baseview.resources(resources, fqn);
+    var promises;
 
     if ( !result.tmpl ) {
       result.tmpl = _.result(_self, "tmpl") || (fqn && baseview.resources(["tmpl!url"], fqn).tmpl);
     }
 
     if ( !result.style && _self.style ) {
-      _self.style = _.result(_self, "style");
+      result.style = _.result(_self, "style");
     }
 
     if ( !result.model && _self.model ) {
-      _self.model = _.result(_self, "model");
+      result.model = _.result(_self, "model");
     }
 
     promises = _.map(result, function( value, key ) {
       promise.when(value).done(function(val) {
-         _self[key] = val || _.result(resources, key);
+         _self[key] = val || _.result(result, key);
       });
       return value;
     });
@@ -2082,16 +2135,17 @@ define('src/view',[
 
 
   function initResources(_self) {
-    var tmpl = _self.tmpl,
-        model = _self.model;
+    var tmpl      = _self.tmpl,
+        model     = _self.model,
+        resources = _self.resources;
 
     if ( tmpl ) {
-      _self.$el.empty().append(tmpl);
+      _self.$el.append(tmpl);
     }
 
     if ( model ) {
-      // If the model is remote, then we will load the data automatically
-      // and then do the binding once the data is loaded in the model
+      // If the model is remote, then we will load the data automatically and then do the binding once
+      // the data is loaded in the model
       if ( _.result(model, "url") ) {
         return model.read().then(function(){
           model.bind(_self.$el);
@@ -2101,12 +2155,19 @@ define('src/view',[
         model.bind(_self.$el);
       }
     }
+
+    // Iterate through all the resources and make sure we call load passing in the instance of the view
+    for ( var resource in resources ) {
+      if ( resources.hasOwnProperty( resource ) && _.isFunction(_self[resource].load) ) {
+        _self[resource].load.call(_self[resource], _self);
+      }
+    }
   }
 
 
-  //
-  // Base view
-  //
+  /**
+  * baseview
+  */
   function baseview(options) {
     var _self    = this,
       deferred = promise(),
@@ -2269,8 +2330,9 @@ define('src/mortar',[
   "src/style",
   "src/tmpl",
   "src/view",
+  "src/resources",
   "src/spromise"
-], function(extender, events, hash, model, fetch, style, tmpl, view, promise) {
+], function(extender, events, hash, model, fetch, style, tmpl, view, resources, promise) {
 
   return {
     extender: extender,
@@ -2281,6 +2343,7 @@ define('src/mortar',[
     style: style,
     tmpl: tmpl,
     view: view,
+    resources: resources,
     promise: promise
   };
 

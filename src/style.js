@@ -1,7 +1,8 @@
 define([
   "src/fetch",
-  "src/spromise"
-], function( fetch, promise ) {
+  "src/spromise",
+  "src/resources"
+], function( fetch, promise, resources ) {
   "use strict";
 
 
@@ -91,6 +92,16 @@ define([
   };
 
 
-  style.extension = "css";
+  // Expose as a resource.  Run it in a self executing function so keep the module clean
+  // and so that we can also move the resource registration if need be.
+  (function() {
+    var resource = resources.resource.extend({
+      load: style,
+      extension: "css"
+    });
+
+    resources.register("style", new resource());
+  })();
+
   return style;
 });
