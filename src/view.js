@@ -83,7 +83,7 @@ define([
       settings = baseview.configure.apply(_self, arguments);
 
     // This is handling events that were configured when defining a view
-    if ( _self.events && settings.pevents === false ) {
+    if ( _self.events && settings.pevents !== false ) {
       _self.on(_self.events);
       _self.on.call(_self.$el, _self.events, _self);
     }
