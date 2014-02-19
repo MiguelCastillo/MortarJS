@@ -96,7 +96,8 @@ define([
 
 
   resources.ensureResources = function( items ) {
-    var result = {}, i, length;
+    var result = {};
+    var i, length;
 
     if ( items instanceof Array ) {
       for ( i = 0, length = items.length; i < length; i++ ) {
@@ -105,9 +106,6 @@ define([
     }
     else if (items) {
       result = items;
-    }
-    else {
-      result = {};
     }
 
     return result;
