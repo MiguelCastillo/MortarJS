@@ -87,6 +87,7 @@ define([
         resource          = config;
       }
 
+      resource.location = path + "/" + handler + "/" + name;
       result[handler] = resources.fetch(resource, handler);
     }
 

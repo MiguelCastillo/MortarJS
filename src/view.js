@@ -13,6 +13,19 @@ define([
         result    = baseview.resources(resources, fqn);
     var promises;
 
+
+    //
+    // tmpl, style, and model can be resource that can setup right in the view itself.  These
+    // are special resources, and they can be defined in the view directly because they are so
+    // common I wanted to provide a less verbose way to defined them.
+    //
+
+
+    //
+    // * The only resource that is really required for a view is a template... What good is a
+    // view if it does not render anything?  That's why I will force loading of a template via
+    // the resource manager if I can't explicitly find defined settings for it.
+    //
     if ( !result.tmpl ) {
       result.tmpl = _.result(_self, "tmpl") || (fqn && baseview.resources(["tmpl!url"], fqn).tmpl);
     }
@@ -27,7 +40,10 @@ define([
 
     promises = _.map(result, function( value, key ) {
       promise.when(value).done(function(val) {
-         _self[key] = val || _.result(result, key);
+        _self[key] = val;
+
+        // Immediately try to call resources that were defined as a function.
+        _self[key] = _.result(_self, key);
       });
       return value;
     });
@@ -46,22 +62,13 @@ define([
     }
 
     if ( model ) {
-      // If the model is remote, then we will load the data automatically and then do the binding once
-      // the data is loaded in the model
-      if ( _.result(model, "url") ) {
-        return model.read().then(function(){
-          model.bind(_self.$el);
-        });
-      }
-      else {
-        model.bind(_self.$el);
-      }
+      model.bind(_self.$el);
     }
 
     // Iterate through all the resources and make sure we call load passing in the instance of the view
     for ( var resource in resources ) {
-      if ( resources.hasOwnProperty( resource ) && _.isFunction(_self[resource].load) ) {
-        _self[resource].load.call(_self[resource], _self);
+      if ( resources.hasOwnProperty( resource ) && _.isFunction(_self[resource].loaded) ) {
+        _self[resource].loaded.call(_self[resource], _self);
       }
     }
   }
