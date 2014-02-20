@@ -5,7 +5,7 @@ Going through major facelift!
 
 # Install
 ``` javascript
-> bower mortarjs
+> bower install mortarjs
 ```
 Or go to the dist folder
 
