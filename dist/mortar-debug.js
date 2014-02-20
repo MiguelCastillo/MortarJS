@@ -2118,7 +2118,7 @@ define('src/view',[
     // view if it does not render anything?  That's why I will force loading of a template via
     // the resource manager if I can't explicitly find one defined in the settings.
     //
-    if ( !result.tmpl ) {
+    if ( !result.tmpl && result.tmpl !== false ) {
       result.tmpl = _.result(_self, "tmpl") || (fqn && baseview.resources(["tmpl!url"], fqn).tmpl);
     }
 
