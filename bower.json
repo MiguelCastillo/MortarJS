@@ -26,6 +26,7 @@
     "buildinfo",
     "src",
     "Gruntfile.js",
-    "notes.txt"
+    "notes.txt",
+    "lib"
   ]
 }
