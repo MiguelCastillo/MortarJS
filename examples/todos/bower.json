@@ -1,0 +1,12 @@
+{
+    "name": "todomvc-mortarjs",
+    "version": "0.0.0",
+    "dependencies": {
+        "todomvc-common": "~0.1.4",
+        "jquery": "~1.11.0",
+        "underscore": "",
+        "knockout.js": "~3.0.0",
+        "mortarjs": "",
+        "mortarjs.koModel": ""
+    }
+}
