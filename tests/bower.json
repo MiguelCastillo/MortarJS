@@ -1,0 +1,20 @@
+{
+  "name": "mortarjs.unittests",
+  "version": "0.0.1",
+  "homepage": "https://github.com/MiguelCastillo/MortarJS",
+  "authors": [
+    "Miguel Castillo <manchagnu@gmail.com>"
+  ],
+  "description": "MortarJS UnitTests",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/MiguelCastillo/MortarJS.git"
+  },
+  "main": "main.js",
+  "dependencies": {
+    "requirejs": "",
+    "jquery": "",
+    "underscore": "",
+    "rjasmine": ""
+  }
+}
