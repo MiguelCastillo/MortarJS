@@ -16,7 +16,7 @@
 
 
 /**
- * almond 0.2.6 Copyright (c) 2011-2012, The Dojo Foundation All Rights Reserved.
+ * @license almond 0.2.9 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
  * see: http://github.com/jrburke/almond for details
  */
@@ -33,7 +33,8 @@ var requirejs, require, define;
         config = {},
         defining = {},
         hasOwn = Object.prototype.hasOwnProperty,
-        aps = [].slice;
+        aps = [].slice,
+        jsSuffixRegExp = /\.js$/;
 
     function hasProp(obj, prop) {
         return hasOwn.call(obj, prop);
@@ -48,7 +49,7 @@ var requirejs, require, define;
      * @returns {String} normalized name
      */
     function normalize(name, baseName) {
-        var nameParts, nameSegment, mapValue, foundMap,
+        var nameParts, nameSegment, mapValue, foundMap, lastIndex,
             foundI, foundStarMap, starI, i, j, part,
             baseParts = baseName && baseName.split("/"),
             map = config.map,
@@ -66,8 +67,15 @@ var requirejs, require, define;
                 //"one/two/three.js", but we want the directory, "one/two" for
                 //this normalization.
                 baseParts = baseParts.slice(0, baseParts.length - 1);
+                name = name.split('/');
+                lastIndex = name.length - 1;
 
-                name = baseParts.concat(name.split("/"));
+                // Node .js allowance:
+                if (config.nodeIdCompat && jsSuffixRegExp.test(name[lastIndex])) {
+                    name[lastIndex] = name[lastIndex].replace(jsSuffixRegExp, '');
+                }
+
+                name = baseParts.concat(name);
 
                 //start trimDots
                 for (i = 0; i < name.length; i += 1) {
@@ -276,14 +284,14 @@ var requirejs, require, define;
     main = function (name, deps, callback, relName) {
         var cjsModule, depName, ret, map, i,
             args = [],
+            callbackType = typeof callback,
             usingExports;
 
         //Use name if no relName
         relName = relName || name;
 
         //Call the callback to define the module, if necessary.
-        if (typeof callback === 'function') {
-
+        if (callbackType === 'undefined' || callbackType === 'function') {
             //Pull out the defined dependencies and pass the ordered
             //values to the callback.
             //Default to [require, exports, module] if no deps
@@ -314,7 +322,7 @@ var requirejs, require, define;
                 }
             }
 
-            ret = callback.apply(defined[name], args);
+            ret = callback ? callback.apply(defined[name], args) : undefined;
 
             if (name) {
                 //If setting exports via "module" is in play,
@@ -349,6 +357,13 @@ var requirejs, require, define;
         } else if (!deps.splice) {
             //deps is a config object, not an array.
             config = deps;
+            if (config.deps) {
+                req(config.deps, config.callback);
+            }
+            if (!callback) {
+                return;
+            }
+
             if (callback.splice) {
                 //callback is an array, which means it is a dependency list.
                 //Adjust args if there are dependencies
@@ -393,11 +408,7 @@ var requirejs, require, define;
      * the config return value is used.
      */
     req.config = function (cfg) {
-        config = cfg;
-        if (config.deps) {
-            req(config.deps, config.callback);
-        }
-        return req;
+        return req(cfg);
     };
 
     /**
@@ -426,7 +437,7 @@ var requirejs, require, define;
     };
 }());
 
-define("libs/js/almond", function(){});
+define("lib/almond/almond", function(){});
 
 /*
 Copyright (c) 2008-2013 Pivotal Labs
@@ -2916,14 +2927,14 @@ define('src/promise',["src/async"], function (async) {
 
   var states = {
     "pending": 0,
-    "resolved": 1,
-    "rejected": 2
+    "resolved": 2,
+    "rejected": 3
   };
 
   var queues = {
-    "always": 0,
-    "resolved": 1,
-    "rejected": 2
+    "always": 1,
+    "resolved": 2,
+    "rejected": 3
   };
 
   var actions = {
@@ -3009,6 +3020,21 @@ define('src/promise',["src/async"], function (async) {
 
 
   /**
+  * Interface to create a promise from a resolve function that is called with
+  * a resolve and reject as the only parameters to it
+  */
+  Promise.factory = function(resolver) {
+    if ( typeof resolver !== "function" ) {
+      throw new TypeError("Resolver must be a function");
+    }
+
+    var promise = new Promise();
+    resolver(promise.resolve, promise.reject);
+    return promise.promise;
+  };
+
+
+  /**
    * Interface to play nice with libraries like when and q.
    */
   Promise.defer = function (target, options) {
@@ -3078,7 +3104,7 @@ define('src/promise',["src/async"], function (async) {
       });
     }
     // If the promise is already resolved/rejected
-    else if (this.state === state) {
+    else if (this.state === state || state === 1) {
       this.async.run(cb);
     }
   };
@@ -3145,13 +3171,15 @@ define('src/promise',["src/async"], function (async) {
   }
 
   // Promise.chain DRYs onresolved and onrejected operations.  Handler is onResolved or onRejected
-  Resolution.prototype.chain = function (action, handler) {
+  Resolution.prototype.chain = function (action, handler, then) {
     var _self = this;
     return function chain() {
       // Prevent calling chain multiple times
       if (!(_self.resolved)) {
         _self.resolved++;
         _self.context = this;
+        _self.then    = then;
+
         try {
           _self.resolve(action, !handler ? arguments : [handler.apply(this, arguments)]);
         }
@@ -3180,11 +3208,11 @@ define('src/promise',["src/async"], function (async) {
       input.done(resolution.chain(actions.resolve)).fail(resolution.chain(actions.reject));
     }
     else {
-      thenableType = (thenable && typeof (input));
+      thenableType = (thenable && this.then !== input && typeof (input));
       if (thenableType === "function" || thenableType === "object") {
         try {
-          resolution = new Resolution(this.promise);
-          then.call(input, resolution.chain(actions.resolve), resolution.chain(actions.reject));
+          resolution = new Resolution(this.promise, input);
+          then.call(input, resolution.chain(actions.resolve, false, input), resolution.chain(actions.reject, false, input));
         }
         catch (ex) {
           if (!resolution.resolved) {
@@ -3259,22 +3287,17 @@ define('src/when',[
     }
 
     function processQueue() {
-      try {
-        queueLength = remaining = queue.length;
-        for ( i = 0; i < queueLength; i++ ) {
-          item = queue[i];
+      queueLength = remaining = queue.length;
+      for ( i = 0; i < queueLength; i++ ) {
+        item = queue[i];
 
-          if ( item && typeof item.then === "function" ) {
-            item.then(resolve(i), reject);
-          }
-          else {
-            queue[i] = item;
-            checkPending();
-          }
+        if ( item && typeof item.then === "function" ) {
+          item.then(resolve(i), reject);
         }
-      }
-      catch( ex ) {
-        reject(ex);
+        else {
+          queue[i] = queueLength === 1 ? [item] : item;
+          checkPending();
+        }
       }
     }
 
@@ -3317,7 +3340,7 @@ define('src/timer',[
   
 
   function timer(start) {
-    if(start === true){
+    if(start !== false) {
       this.start();
     }
   }
@@ -3524,8 +3547,8 @@ define('src/reporters',[
   
 
   var builtInReporters = {
-    "console_reporter": true,
-    "html_reporter": true
+    "console": true,
+    "html": true
   };
 
 
@@ -3538,7 +3561,7 @@ define('src/reporters',[
       // If its a built in reporter, we need to adjust the path
       // so that we can load the proper reporter
       if ( option in builtInReporters ) {
-        option = "src/" + option;
+        option = "src/reporters/" + option;
       }
 
       _promises.push(load( rjasmine, option, _reporter ));
@@ -3554,7 +3577,7 @@ define('src/reporters',[
     require([name], function(reporter) {
       var _reporter = new reporter(rjasmine, options);
       rjasmine._env.addReporter(_reporter);
-      _promise.resolve();
+      _promise.resolve(_reporter);
     });
 
     return _promise;
@@ -3628,7 +3651,7 @@ define('src/rjasmine',[
  */
 
 
-define('src/console_reporter',[
+define('src/reporters/console',[
   "src/timer"
 ], function(Timer) {
   
@@ -4105,7 +4128,7 @@ define('src/inBrowser',[],function() {
  */
 
 
-define('src/html_reporter',[
+define('src/reporters/html',[
   "jasmine-html",
   "src/extender",
   "src/inBrowser"

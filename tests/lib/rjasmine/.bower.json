@@ -21,13 +21,18 @@
     "test",
     "tests",
     "lib",
-    "buildinfo"
+    "buildinfo",
+    "src"
   ],
-  "_release": "aecb3cada6",
+  "devDependencies": {
+    "requirejs": "",
+    "almond": ""
+  },
+  "_release": "51cfcd36cf",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "aecb3cada66012ee59b7bb61d378ba5cf6e306d4"
+    "commit": "51cfcd36cfa79d4dec33fe1b0bb139c4b7f28d2f"
   },
   "_source": "git://github.com/MiguelCastillo/rjasmine.git",
   "_target": "*",

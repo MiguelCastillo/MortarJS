@@ -1,10 +1,10 @@
 {
   "name": "rjasmine",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "author": "Miguel Castillo <mahchagnu@gmail.com>",
   "title": "rjasmine",
-  "description": "Jasmine for AMD",
+  "description": "AMD and Promise support for Jasmine",
   "homepage": "https://github.com/MiguelCastillo/rjasmine",
   "repository": {
     "type": "git",
@@ -17,6 +17,5 @@
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-requirejs": "~0.4.1"
-  },
-  "private": true
+  }
 }

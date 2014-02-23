@@ -24,7 +24,7 @@ define(["mortar"], function(Mortar) {
       // reporter to customize where the test results go.
       var _rjasmine = new rjasmine({
         reporters: {
-          html_reporter: {
+          html: {
             getContainer: function() {
               return _self.$el[0];
             }

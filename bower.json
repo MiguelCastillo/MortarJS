@@ -27,5 +27,8 @@
     "Gruntfile.js",
     "notes.txt",
     "lib"
-  ]
+  ],
+  "devDependencies": {
+    "almond": ""
+  }
 }

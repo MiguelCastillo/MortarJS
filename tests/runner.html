@@ -7,7 +7,7 @@
     <meta name="description" content="Jamsine Runner">
     <meta name="author" content="Miguel Castillo">
 
-    <base href="../">
+    <base href="../"/>
 
     <link rel="shortcut icon" type="image/png" href="tests/lib/jasmine-2.0.0/jasmine_favicon.png">
     <link rel="stylesheet" type="text/css" href="tests/lib/jasmine-2.0.0/jasmine.css">
@@ -34,30 +34,28 @@
   <body>
     <script>
       // Load up rjasmine
-      require(["rjasmine", "jquery", "underscore"], function (rjasmine) {
+      require(["rjasmine"], function (RJasmine) {
         // Create instance of jasmine
-        var _rjasmine = new rjasmine({
+        var rjasmine = new RJasmine({
           reporters: {
-            console_reporter: true,
-            html_reporter: true
+            console: true,
+            html: true
           }
         });
 
         // Make api global and jasmine itself so that reporters can have an easy
         // way to register themeselves
-        rjasmine.extend(window, _rjasmine._api);
-        window.jasmine = rjasmine.jasmine;
+        RJasmine.extend(window, rjasmine._api);
+        window.jasmine = RJasmine.jasmine;
 
-        _rjasmine.ready(function() {
+        rjasmine.ready(function() {
           require([
             "tests/specs/promise",
             "tests/specs/extender",
             "tests/specs/view",
             "tests/specs/tmpl",
             "tests/specs/model"
-          ], function(console_reporter) {
-            _rjasmine.execute();
-          });
+          ], rjasmine.execute);
         });
       });
     </script>

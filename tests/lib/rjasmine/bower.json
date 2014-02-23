@@ -1,6 +1,6 @@
 {
   "name": "rjasmine",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/MiguelCastillo/rjasmine",
   "authors": [
     "Miguel Castillo <manchagnu@gmail.com>"
@@ -22,6 +22,11 @@
     "test",
     "tests",
     "lib",
-    "buildinfo"
-  ]
+    "buildinfo",
+    "src"
+  ],
+  "devDependencies": {
+    "requirejs": "",
+    "almond": ""
+  }
 }

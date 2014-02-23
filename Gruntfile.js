@@ -28,7 +28,7 @@ module.exports = function(grunt) {
           paths: {
           },
 
-          name: 'lib/js/almond',
+          name: 'lib/almond/almond',
           include: ['src/mortar'],
           out: 'dist/mortar-debug.js',
 
@@ -46,7 +46,7 @@ module.exports = function(grunt) {
           paths: {
           },
 
-          name: 'lib/js/almond',
+          name: 'lib/almond/almond',
           include: ['src/mortar'],
           out: 'dist/mortar.js',
 
