@@ -93,15 +93,18 @@ define(["src/view"], function(view) {
 
     it("view with fqn", function() {
       var _view = new view({
-        fqn: "tests/views/hash"
+        fqn: "tests/views/hash",
+        resources: {
+          "tmpl": false
+        }
       });
 
       // Test base properties
       expect(_view instanceof view).toBe(true);
       expect(_view.$el instanceof $).toBe(true);
       expect(_view.fqn).toBe("tests/views/hash");
-      expect(_view.namespace).toBe("tests.views");
-      expect(_view.name).toBe("hash");
+      expect(_view.settings.namespace).toBe("tests.views");
+      expect(_view.settings.name).toBe("hash");
     });
 
 
