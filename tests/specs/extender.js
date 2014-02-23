@@ -6,7 +6,7 @@ define(["src/extender"], function(extender) {
 
       // Base class
       function base() {}
-      base.prototype.yes = function() {}
+      base.prototype.yes = function() {};
 
       // Extend base class
       var extbase1 = extender.extend(base, {
@@ -28,8 +28,7 @@ define(["src/extender"], function(extender) {
 
       // Base class
       function base() {}
-      base.prototype.yes = function() {
-      }
+      base.prototype.yes = function() {};
 
       // Setup extender but this time to use base as the extending context
       base.extend = extender.extend;
