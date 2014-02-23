@@ -9,6 +9,7 @@
     "require": true,
     "define": true,
     "$": true,
-    "window": true
+    "window": true,
+    "_": true
   }
 }
