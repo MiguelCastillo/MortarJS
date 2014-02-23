@@ -9,19 +9,19 @@ define([
   "src/view",
   "src/resources",
   "src/spromise"
-], function(extender, events, hash, model, fetch, style, tmpl, view, resources, promise) {
+], function(Extender, Events, Hash, Model, Fetch, Style, Tmpl, View, Resources, Promise) {
 
   return {
-    extender: extender,
-    events: events,
-    hash: hash,
-    model: model,
-    fetch: fetch,
-    style: style,
-    tmpl: tmpl,
-    view: view,
-    resources: resources,
-    promise: promise
+    Extender: Extender,
+    Events: Events,
+    Hash: Hash,
+    Model: Model,
+    Fetch: Fetch,
+    Style: Style,
+    Tmpl: Tmpl,
+    View: View,
+    Resources: Resources,
+    Promise: Promise
   };
 
 });
