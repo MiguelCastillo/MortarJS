@@ -116,17 +116,17 @@ define('src/promise',["src/async"], function (async) {
 
     function done(cb) {
       stateManager.queue(states.resolved, cb);
-      return target;
+      return target.promise;
     }
 
     function fail(cb) {
       stateManager.queue(states.rejected, cb);
-      return target;
+      return target.promise;
     }
 
     function always(cb) {
       stateManager.queue(queues.always, cb);
-      return target;
+      return target.promise;
     }
 
     function state() {

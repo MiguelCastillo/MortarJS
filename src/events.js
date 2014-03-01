@@ -1,4 +1,4 @@
-define(["src/extender"], function(extender) {
+define(["src/extender"], function(Extender) {
   "use strict";
 
   // Converters is a hash of the different type of events we can
@@ -45,17 +45,16 @@ define(["src/extender"], function(extender) {
   //
   // Event factory...
   //
-  function factory() {
-  }
+  var factory = {};
 
 
   // Takes part of events and convets it into a object with
   // all relevant parts.
   factory.normalize = function ( evt, handler, context ) {
-    var _evt      = evt.split(" "),
-        type      = _evt.shift(),
-        selector  = _evt.join(" ") || null,
-        custom    = type.split(":").length !== 1;
+    evt = evt.split(" ");
+    var type     = evt.shift(),
+        selector = evt.join(" ") || null,
+        custom   = type.split(":").length !== 1;
 
     if ( typeof handler === "string" ) {
       handler = this[handler];
@@ -77,7 +76,7 @@ define(["src/extender"], function(extender) {
 
   factory.bind = function() {
     var $this    = $(this);
-    var settings = events.configure.apply(this, arguments),
+    var settings = Events.configure.apply(this, arguments),
         _events  = settings.events || {},
         _evt;
 
@@ -89,7 +88,7 @@ define(["src/extender"], function(extender) {
         continue;
       }
 
-      $this.on(_evt.type + "." + events.prefix, _evt.selector, _evt.cb);
+      $this.on(_evt.type + "." + Events.prefix, _evt.selector, _evt.cb);
     }
 
     return this;
@@ -100,7 +99,7 @@ define(["src/extender"], function(extender) {
     var $this = $(this);
 
     if (!arguments[0]) {
-      $this.off("." + events.prefix);
+      $this.off("." + Events.prefix);
     }
     else {
       $this.off.apply($this, arguments);
@@ -112,55 +111,55 @@ define(["src/extender"], function(extender) {
 
 
   // Event system
-  function events() {
+  function Events() {
   }
 
 
-  extender.mixin(events, {
+  Extender.mixin(Events, {
     events: {}
   });
 
 
-  events.prefix     = "mortar";
-  events.factory    = factory;
-  events.converters = converters;
+  Events.prefix     = "mortar";
+  Events.factory    = factory;
+  Events.converters = converters;
 
 
   // Replace events.configure if you want to customize how the events are built.
   // E.g. call your own converters in a custom way like using instanceof instead
   // of typeof.
-  events.configure = function() {
-    var converter = events.converters[typeof arguments[0]];
+  Events.configure = function() {
+    var converter = Events.converters[typeof arguments[0]];
     if ( converter ) {
       return converter.apply(this, arguments);
     }
   };
 
 
-  events.prototype.on = function() {
-    return events.factory.bind.apply(this, arguments);
+  Events.prototype.on = function() {
+    return Events.factory.bind.apply(this, arguments);
   };
 
 
-  events.prototype.off = function() {
-    return events.factory.unbind.apply(this, arguments);
+  Events.prototype.off = function() {
+    return Events.factory.unbind.apply(this, arguments);
   };
 
 
-  events.prototype.trigger = function() {
+  Events.prototype.trigger = function() {
     var $this = $(this);
     $this.trigger.apply($this, arguments);
     return this;
   };
 
 
-  events.prototype.triggerHandler = function() {
+  Events.prototype.triggerHandler = function() {
     var $this = $(this);
     $this.triggerHandler.apply($this, arguments);
     return this;
   };
 
 
-  return events;
+  return Events;
 });
 

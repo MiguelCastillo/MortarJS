@@ -2,3 +2,7 @@ Switch views with routes makes sense when there are multiple views to choose fro
 
 http://dev.w3.org/csswg/css-regions/
 
+
+Leave resource loading to the view, and leave module/dependency management to requirejs.
+
+Resources in a views are not really modules, they are part of the view.  A module is something that a view uses to complement functionality, a resource is part of the view.

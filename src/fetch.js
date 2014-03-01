@@ -3,7 +3,12 @@ define(function() {
 
   var cache = {};
 
-  function fetch( settings ) {
+  function Fetch( settings ) {
+    return Fetch.load( settings );
+  }
+
+
+  Fetch.load = function ( settings ) {
     if ( !settings ) {
       throw "Invalid settings";
     }
@@ -37,28 +42,28 @@ define(function() {
     }
 
     return cache[settings.url];
-  }
+  };
 
 
-  fetch.get = function( url ) {
+  Fetch.get = function( url ) {
     return cache[url];
   };
 
 
-  fetch.remove = function( url ) {
+  Fetch.remove = function( url ) {
     if ( url in cache ) {
       delete cache[url];
     }
   };
 
 
-  fetch.clear = function() {
+  Fetch.clear = function() {
     for ( var i in cache ) {
       delete cache[i];
     }
   };
 
 
-  return fetch;
+  return Fetch;
 });
 

@@ -3,7 +3,7 @@ define([
   "src/events",
   "src/spromise",
   "src/resources"
-],function(extender, events, promise, resources) {
+],function(Extender, Events, Promise, Resources) {
   "use strict";
 
 
@@ -59,7 +59,7 @@ define([
 
   // Create item in datasource
   crud.prototype.create = function(data, options) {
-    return promise.when.call(this, this.datasource("post", data, options)).then(function(data){
+    return Promise.when.call(this, this.datasource("post", data, options)).then(function(data){
       return data;
     });
   };
@@ -67,7 +67,7 @@ define([
 
   // Read item from datasource
   crud.prototype.read = function(data, options) {
-    return promise.when.call(this, this.datasource("get", data, options)).then(function(data) {
+    return Promise.when.call(this, this.datasource("get", data, options)).then(function(data) {
       this.serialize(data);
       return data;
     });
@@ -76,7 +76,7 @@ define([
 
   // Update item in the server
   crud.prototype.update = function(data, options) {
-    return promise.when.call(this, this.datasource("put", data, options)).then(function(data){
+    return Promise.when.call(this, this.datasource("put", data, options)).then(function(data){
       return data;
     });
   };
@@ -84,7 +84,7 @@ define([
 
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
-    return promise.when.call(this, this.datasource("delete", data, options)).then(function(data){
+    return Promise.when.call(this, this.datasource("delete", data, options)).then(function(data){
       return data;
     });
   };
@@ -96,13 +96,13 @@ define([
   // Model definition
   //
 
-  function model( data, options ) {
-    if ( this instanceof model === false ) {
-      return new model( data, options );
+  function Model( data, options ) {
+    if ( this instanceof Model === false ) {
+      return new Model( data, options );
     }
 
     // Configure model
-    var settings = model.configure.apply(this, arguments);
+    var settings = Model.configure.apply(this, arguments);
 
     // Setup events
     this.on(this.events).on(settings.events);
@@ -120,10 +120,10 @@ define([
 
   // Assign request factory to model for direct access.  You can override
   // request or request.send in order to customize how data is transfered.
-  model.datasource = datasource;
+  Model.datasource = datasource;
 
 
-  extender.mixin(model, {
+  Extender.mixin(Model, {
     ajax: {
       dataType: "json"
     },
@@ -131,7 +131,7 @@ define([
     unbind: $.noop,
     _init: $.noop,
     _create: $.noop
-  }, events, crud);
+  }, Events, crud);
 
 
   /*
@@ -139,7 +139,7 @@ define([
   * we will pluck properties out of data to configure the model.  E.g. data.data
   * and data.url
   */
-  model.configure = function( data, options ) {
+  Model.configure = function( data, options ) {
     var _url;
 
     // Working through some hoops to provide a flexible way to specify a url and data.
@@ -182,7 +182,7 @@ define([
     options = options || {};
 
     // Datasource to deal with data persistence
-    options.datasource = options.datasource || model.datasource;
+    options.datasource = options.datasource || Model.datasource;
 
     // Ensure valid url, if one is provided
     if (_url) {
@@ -211,7 +211,7 @@ define([
 
   // Interface to take data from a datasource and converting to a format that's
   // suitable for the UI
-  model.prototype.serialize = function(data) {
+  Model.prototype.serialize = function(data) {
     // Init the data
     if ( !this.data ) {
       this.data = data;
@@ -230,7 +230,7 @@ define([
 
   // Interface to convert model data to something suitable for consumption by the
   // datasrouce.  E.g. http request, local storage, cookie...
-  model.prototype.deserialize = function() {
+  Model.prototype.deserialize = function() {
     return this.data;
   };
 
@@ -240,13 +240,13 @@ define([
   //
 
   // Gets current value of a model propertry
-  model.prototype.get = function(property) {
+  Model.prototype.get = function(property) {
     return this.data[property];
   };
 
 
   // Sets the new value of a model property
-  model.prototype.set = function(property, value) {
+  Model.prototype.set = function(property, value) {
     this.data[property] = value;
   };
 
@@ -254,14 +254,15 @@ define([
   // Expose as a resource.  Run it in a self executing function so keep the module clean
   // and so that we can also move the resource registration if need be.
   (function() {
-    var resource = resources.resource.extend({
-      load: model,
+    var Resource = Resources.resource.extend({
+      load: Model,
       extension: "js"
     });
 
-    resources.register("model", new resource());
+    Resources.register("model", new Resource());
   })();
 
-  return model;
+
+  return Model;
 });
 

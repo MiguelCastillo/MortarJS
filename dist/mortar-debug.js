@@ -446,7 +446,7 @@ define('src/extender',[],function() {
   
 
 
-  function extender(/* extend* */) {
+  function Extender(/* extend* */) {
     this.extend.apply(this, arguments);
   }
 
@@ -455,7 +455,7 @@ define('src/extender',[],function() {
   * Interface that iterates through all the input properties and prototype objects
   * to extend the instance of extender.
   */
-  extender.prototype.extend = function( /* extend+ */ ) {
+  Extender.prototype.extend = function( /* extend+ */ ) {
     var extensions = Array.prototype.slice.call(arguments),
         iextension;
 
@@ -464,8 +464,8 @@ define('src/extender',[],function() {
       iextension = extensions.shift();
 
       if ( iextension.constructor === Function ) {
-        extender.extension.prototype = iextension.prototype;
-        _.extend(this, new extender.extension());
+        Extender.extension.prototype = iextension.prototype;
+        _.extend(this, new Extender.extension());
       }
       else {
         _.extend(this, iextension);
@@ -481,15 +481,15 @@ define('src/extender',[],function() {
   * Override extension with any other base function that you wish all your prototypical
   * inheritance chains to use.
   */
-  extender.extension = function() {};
+  Extender.extension = function() {};
 
 
   /**
   * Interface to setup extending capabilties.  Unlike extend, this will not create
   * a prototypical inheritance chain.
   */
-  extender.mixin  = function() {
-    var _extender = new extender(),
+  Extender.mixin  = function() {
+    var _extender = new Extender(),
         args      = Array.prototype.slice.call(arguments),
         base      = args.shift();
 
@@ -501,7 +501,7 @@ define('src/extender',[],function() {
       _extender.extend.apply(base, args);
     }
 
-    base.extend = extender.extend;
+    base.extend = Extender.extend;
     return base;
   };
 
@@ -512,15 +512,15 @@ define('src/extender',[],function() {
   *
   * extender.extend( base, (object || function) * )
   */
-  extender.extend = function() {
-    var base = this === extender ? arguments[0] : this;
+  Extender.extend = function() {
+    var base = this === Extender ? arguments[0] : this;
 
     // Setup extension class to be able to setup inheritance
     if ( base && base.constructor === Function ) {
-      extender.extension.prototype = base.prototype;
+      Extender.extension.prototype = base.prototype;
     }
     else {
-      extender.extension.prototype = base;
+      Extender.extension.prototype = base;
     }
 
     // Setup a function the we can instantiate and properly call the proper constructor
@@ -528,18 +528,18 @@ define('src/extender',[],function() {
       this.constructor.apply(this, arguments);
     }
 
-    extension.prototype = new extender.extension();
+    extension.prototype = new Extender.extension();
     extension.__super__ = base.prototype;
-    extender.mixin.apply(base, [extension].concat.apply(extension, arguments));
+    Extender.mixin.apply(base, [extension].concat.apply(extension, arguments));
     return extension;
   };
 
 
-  return extender;
+  return Extender;
 });
 
 
-define('src/events',["src/extender"], function(extender) {
+define('src/events',["src/extender"], function(Extender) {
   
 
   // Converters is a hash of the different type of events we can
@@ -586,17 +586,16 @@ define('src/events',["src/extender"], function(extender) {
   //
   // Event factory...
   //
-  function factory() {
-  }
+  var factory = {};
 
 
   // Takes part of events and convets it into a object with
   // all relevant parts.
   factory.normalize = function ( evt, handler, context ) {
-    var _evt      = evt.split(" "),
-        type      = _evt.shift(),
-        selector  = _evt.join(" ") || null,
-        custom    = type.split(":").length !== 1;
+    evt = evt.split(" ");
+    var type     = evt.shift(),
+        selector = evt.join(" ") || null,
+        custom   = type.split(":").length !== 1;
 
     if ( typeof handler === "string" ) {
       handler = this[handler];
@@ -618,7 +617,7 @@ define('src/events',["src/extender"], function(extender) {
 
   factory.bind = function() {
     var $this    = $(this);
-    var settings = events.configure.apply(this, arguments),
+    var settings = Events.configure.apply(this, arguments),
         _events  = settings.events || {},
         _evt;
 
@@ -630,7 +629,7 @@ define('src/events',["src/extender"], function(extender) {
         continue;
       }
 
-      $this.on(_evt.type + "." + events.prefix, _evt.selector, _evt.cb);
+      $this.on(_evt.type + "." + Events.prefix, _evt.selector, _evt.cb);
     }
 
     return this;
@@ -641,7 +640,7 @@ define('src/events',["src/extender"], function(extender) {
     var $this = $(this);
 
     if (!arguments[0]) {
-      $this.off("." + events.prefix);
+      $this.off("." + Events.prefix);
     }
     else {
       $this.off.apply($this, arguments);
@@ -653,56 +652,56 @@ define('src/events',["src/extender"], function(extender) {
 
 
   // Event system
-  function events() {
+  function Events() {
   }
 
 
-  extender.mixin(events, {
+  Extender.mixin(Events, {
     events: {}
   });
 
 
-  events.prefix     = "mortar";
-  events.factory    = factory;
-  events.converters = converters;
+  Events.prefix     = "mortar";
+  Events.factory    = factory;
+  Events.converters = converters;
 
 
   // Replace events.configure if you want to customize how the events are built.
   // E.g. call your own converters in a custom way like using instanceof instead
   // of typeof.
-  events.configure = function() {
-    var converter = events.converters[typeof arguments[0]];
+  Events.configure = function() {
+    var converter = Events.converters[typeof arguments[0]];
     if ( converter ) {
       return converter.apply(this, arguments);
     }
   };
 
 
-  events.prototype.on = function() {
-    return events.factory.bind.apply(this, arguments);
+  Events.prototype.on = function() {
+    return Events.factory.bind.apply(this, arguments);
   };
 
 
-  events.prototype.off = function() {
-    return events.factory.unbind.apply(this, arguments);
+  Events.prototype.off = function() {
+    return Events.factory.unbind.apply(this, arguments);
   };
 
 
-  events.prototype.trigger = function() {
+  Events.prototype.trigger = function() {
     var $this = $(this);
     $this.trigger.apply($this, arguments);
     return this;
   };
 
 
-  events.prototype.triggerHandler = function() {
+  Events.prototype.triggerHandler = function() {
     var $this = $(this);
     $this.triggerHandler.apply($this, arguments);
     return this;
   };
 
 
-  return events;
+  return Events;
 });
 
 
@@ -1107,17 +1106,17 @@ define('src/promise',["src/async"], function (async) {
 
     function done(cb) {
       stateManager.queue(states.resolved, cb);
-      return target;
+      return target.promise;
     }
 
     function fail(cb) {
       stateManager.queue(states.rejected, cb);
-      return target;
+      return target.promise;
     }
 
     function always(cb) {
       stateManager.queue(queues.always, cb);
-      return target;
+      return target.promise;
     }
 
     function state() {
@@ -1469,7 +1468,7 @@ define('src/spromise',[
 
 define('src/resources',[
   "src/extender"
-], function(extender) {
+], function(Extender) {
   
 
 
@@ -1484,13 +1483,13 @@ define('src/resources',[
   var loaders = {};
 
 
-  function resources (items, path) {
-    return resources.load(items, path);
+  function Resources (items, path) {
+    return Resources.load(items, path);
   }
 
 
-  resources.register = function(type, loader) {
-    if ( loader instanceof resources.resource === false ) {
+  Resources.register = function(type, loader) {
+    if ( loader instanceof Resources.resource === false ) {
       throw new TypeError("Resource loader must be of type resource");
     }
 
@@ -1498,7 +1497,7 @@ define('src/resources',[
   };
 
 
-  resources.fetch = function(resource, handler) {
+  Resources.fetch = function(resource, handler) {
     var resourceLoader = loaders[handler];
 
     // If the resource if a function, we will not handle process it as a resource
@@ -1520,13 +1519,13 @@ define('src/resources',[
   };
 
 
-  resources.load = function(items, fqn) {
+  Resources.load = function(items, fqn) {
     var resource, parts, config, directive, path, name;
     var result = {},
         pathParts = fqn ? fqn.split("/") : [];
 
     // Makes sure that we have a list of resources in a proper format
-    items = resources.ensureResources(items);
+    items = Resources.ensureResources(items);
 
     // Get the name from the fqn for resource name assignment
     name = pathParts.pop();
@@ -1557,14 +1556,14 @@ define('src/resources',[
       }
 
       resource.location = path + "/" + handler + "/" + name;
-      result[handler] = resources.fetch(resource, handler);
+      result[handler] = Resources.fetch(resource, handler);
     }
 
     return result;
   };
 
 
-  resources.ensureResources = function( items ) {
+  Resources.ensureResources = function( items ) {
     var result = {};
     var i, length;
 
@@ -1584,13 +1583,13 @@ define('src/resources',[
   /**
   *  Resource interface to devire from when processing external resources
   */
-  resources.resource = function() {};
-  extender.mixin(resources.resource, {
+  Resources.resource = function() {};
+  Extender.mixin(Resources.resource, {
     load: $.noop
   });
 
 
-  return resources;
+  return Resources;
 });
 
 define('src/model',[
@@ -1598,7 +1597,7 @@ define('src/model',[
   "src/events",
   "src/spromise",
   "src/resources"
-],function(extender, events, promise, resources) {
+],function(Extender, Events, Promise, Resources) {
   
 
 
@@ -1654,7 +1653,7 @@ define('src/model',[
 
   // Create item in datasource
   crud.prototype.create = function(data, options) {
-    return promise.when.call(this, this.datasource("post", data, options)).then(function(data){
+    return Promise.when.call(this, this.datasource("post", data, options)).then(function(data){
       return data;
     });
   };
@@ -1662,7 +1661,7 @@ define('src/model',[
 
   // Read item from datasource
   crud.prototype.read = function(data, options) {
-    return promise.when.call(this, this.datasource("get", data, options)).then(function(data) {
+    return Promise.when.call(this, this.datasource("get", data, options)).then(function(data) {
       this.serialize(data);
       return data;
     });
@@ -1671,7 +1670,7 @@ define('src/model',[
 
   // Update item in the server
   crud.prototype.update = function(data, options) {
-    return promise.when.call(this, this.datasource("put", data, options)).then(function(data){
+    return Promise.when.call(this, this.datasource("put", data, options)).then(function(data){
       return data;
     });
   };
@@ -1679,7 +1678,7 @@ define('src/model',[
 
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
-    return promise.when.call(this, this.datasource("delete", data, options)).then(function(data){
+    return Promise.when.call(this, this.datasource("delete", data, options)).then(function(data){
       return data;
     });
   };
@@ -1691,13 +1690,13 @@ define('src/model',[
   // Model definition
   //
 
-  function model( data, options ) {
-    if ( this instanceof model === false ) {
-      return new model( data, options );
+  function Model( data, options ) {
+    if ( this instanceof Model === false ) {
+      return new Model( data, options );
     }
 
     // Configure model
-    var settings = model.configure.apply(this, arguments);
+    var settings = Model.configure.apply(this, arguments);
 
     // Setup events
     this.on(this.events).on(settings.events);
@@ -1715,10 +1714,10 @@ define('src/model',[
 
   // Assign request factory to model for direct access.  You can override
   // request or request.send in order to customize how data is transfered.
-  model.datasource = datasource;
+  Model.datasource = datasource;
 
 
-  extender.mixin(model, {
+  Extender.mixin(Model, {
     ajax: {
       dataType: "json"
     },
@@ -1726,7 +1725,7 @@ define('src/model',[
     unbind: $.noop,
     _init: $.noop,
     _create: $.noop
-  }, events, crud);
+  }, Events, crud);
 
 
   /*
@@ -1734,7 +1733,7 @@ define('src/model',[
   * we will pluck properties out of data to configure the model.  E.g. data.data
   * and data.url
   */
-  model.configure = function( data, options ) {
+  Model.configure = function( data, options ) {
     var _url;
 
     // Working through some hoops to provide a flexible way to specify a url and data.
@@ -1777,7 +1776,7 @@ define('src/model',[
     options = options || {};
 
     // Datasource to deal with data persistence
-    options.datasource = options.datasource || model.datasource;
+    options.datasource = options.datasource || Model.datasource;
 
     // Ensure valid url, if one is provided
     if (_url) {
@@ -1806,7 +1805,7 @@ define('src/model',[
 
   // Interface to take data from a datasource and converting to a format that's
   // suitable for the UI
-  model.prototype.serialize = function(data) {
+  Model.prototype.serialize = function(data) {
     // Init the data
     if ( !this.data ) {
       this.data = data;
@@ -1825,7 +1824,7 @@ define('src/model',[
 
   // Interface to convert model data to something suitable for consumption by the
   // datasrouce.  E.g. http request, local storage, cookie...
-  model.prototype.deserialize = function() {
+  Model.prototype.deserialize = function() {
     return this.data;
   };
 
@@ -1835,13 +1834,13 @@ define('src/model',[
   //
 
   // Gets current value of a model propertry
-  model.prototype.get = function(property) {
+  Model.prototype.get = function(property) {
     return this.data[property];
   };
 
 
   // Sets the new value of a model property
-  model.prototype.set = function(property, value) {
+  Model.prototype.set = function(property, value) {
     this.data[property] = value;
   };
 
@@ -1849,15 +1848,16 @@ define('src/model',[
   // Expose as a resource.  Run it in a self executing function so keep the module clean
   // and so that we can also move the resource registration if need be.
   (function() {
-    var resource = resources.resource.extend({
-      load: model,
+    var Resource = Resources.resource.extend({
+      load: Model,
       extension: "js"
     });
 
-    resources.register("model", new resource());
+    Resources.register("model", new Resource());
   })();
 
-  return model;
+
+  return Model;
 });
 
 
@@ -1866,7 +1866,12 @@ define('src/fetch',[],function() {
 
   var cache = {};
 
-  function fetch( settings ) {
+  function Fetch( settings ) {
+    return Fetch.load( settings );
+  }
+
+
+  Fetch.load = function ( settings ) {
     if ( !settings ) {
       throw "Invalid settings";
     }
@@ -1900,29 +1905,29 @@ define('src/fetch',[],function() {
     }
 
     return cache[settings.url];
-  }
+  };
 
 
-  fetch.get = function( url ) {
+  Fetch.get = function( url ) {
     return cache[url];
   };
 
 
-  fetch.remove = function( url ) {
+  Fetch.remove = function( url ) {
     if ( url in cache ) {
       delete cache[url];
     }
   };
 
 
-  fetch.clear = function() {
+  Fetch.clear = function() {
     for ( var i in cache ) {
       delete cache[i];
     }
   };
 
 
-  return fetch;
+  return Fetch;
 });
 
 
@@ -1930,11 +1935,11 @@ define('src/style',[
   "src/fetch",
   "src/spromise",
   "src/resources"
-], function( fetch, promise, resources ) {
+], function( Fetch, Promise, Resources ) {
   
 
 
-  function getType(name) {
+  function getTypeFromExtension(name) {
     var offset = name.lastIndexOf(".");
     if ( offset !== -1 ) {
       return name.substr(offset + 1);
@@ -1943,7 +1948,7 @@ define('src/style',[
 
 
   function loader(url, dataType) {
-    return fetch({
+    return Fetch.load({
       "url": url,
       "ajax": {
         dataType: dataType
@@ -1952,36 +1957,47 @@ define('src/style',[
   }
 
 
-  function style(options) {
-    if (this instanceof style === false) {
-      return new style(options);
+  function Style(options) {
+    if (this instanceof Style === false) {
+      return new Style(options);
     }
 
-    var _promise = promise();
+    return this.load(options);
+  }
+
+
+  Style.prototype.load = function(options) {
+    var _promise = Promise.defer();
     options = options || {};
 
     if (typeof options.url === "string") {
-      options.type = options.type || getType(options.url);
-      var handler = style.handler[options.type];
-      if (handler) {
-        handler.load(options, _promise);
-      }
+      Style.adapters.url(options).done(_promise.resolve);
     }
     else {
       _promise.reject("No suitable option");
     }
 
     return _promise;
-  }
+  };
 
 
-  style.handler = {
+  Style.adapters = {
+    "url": function(options) {
+      options.type = options.type || getTypeFromExtension(options.url);
+      var type = Style.types[options.type];
+      if (type) {
+        return type.load(options);
+      }
+    }
+  };
+
+
+  Style.types = {
     "css": {
       dataType: "text",
-      load: function(options, _promise){
-        loader(options.url, "text").done(function(rc_style){
+      load: function(options){
+        return loader(options.url, "text").done(function(rc_style){
           $("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
-          _promise.resolve( rc_style );
         });
 
         /*
@@ -1994,26 +2010,23 @@ define('src/style',[
         cssLink.setAttribute("type", "text/css");
         cssLink.setAttribute("href", options.url);
         head.appendChild(cssLink);
-        _promise.resolve(cssLink);
         */
       }
     },
     "$css": {
-      load: function(options, _promise) {
-        loader(options.url, "json").done(function(rc_style){
+      load: function(options) {
+        return loader(options.url, "json").done(function(rc_style){
           if( options.element instanceof jQuery ){
             options.element.css(rc_style);
           }
-          _promise.resolve( rc_style );
         });
       }
     },
     "less": {
-      load: function(options, _promise) {
-        loader(options.url, "text").done(function(rc_style){
+      load: function(options) {
+        return loader(options.url, "text").done(function(rc_style){
           //Process less content and then add it to the document as regular css
           //$("<style type='text/css'>" + rc_style + "</style>").appendTo('head');
-          _promise.resolve( rc_style );
         });
       }
     }
@@ -2023,43 +2036,48 @@ define('src/style',[
   // Expose as a resource.  Run it in a self executing function so keep the module clean
   // and so that we can also move the resource registration if need be.
   (function() {
-    var resource = resources.resource.extend({
-      load: style,
+    var Resource = Resources.resource.extend({
+      load: Style,
       extension: "css"
     });
 
-    resources.register("style", new resource());
+    Resources.register("style", new Resource());
   })();
 
-  return style;
+  return Style;
 });
 
 define('src/tmpl',[
   "src/fetch",
   "src/spromise",
-  "src/resources",
-], function( fetch, promise , resources) {
+  "src/resources"
+], function( Fetch, Promise, Resources) {
   
 
 
-  function tmpl(options, selector) {
-    if ( this instanceof tmpl === false ) {
-      return new tmpl(options, selector);
+  function Tmpl(options, selector) {
+    if ( this instanceof Tmpl === false ) {
+      return new Tmpl(options, selector);
     }
 
-    options = options || {};
-    selector = selector || options.selector || tmpl.selector;
+    return this.load(options, selector);
+  }
 
-    var _promise = promise(),
+
+  Tmpl.prototype.load = function(options, selector) {
+    options = options || {};
+    selector = selector || options.selector || Tmpl.selector;
+
+    var _self = this,
+        _promise = Promise.defer(),
         attrSelector = "[" + selector + "]";
 
     if (typeof options.url === "string" ) {
-      tmpl.loader(options)
+      Tmpl.loader(options)
         .done(_promise.resolve)
         .fail(_promise.reject);
     }
-    else if (typeof options.html === "string" ||
-             options.html instanceof jQuery === true ) {
+    else if (typeof options.html === "string" || options.html instanceof jQuery === true ) {
       _promise.resolve(options.html);
     }
     else {
@@ -2075,7 +2093,7 @@ define('src/tmpl',[
         .add($tmpl.find(attrSelector))
         .map(function() {
           var $this = $(this);
-          return tmpl({
+          return _self.load({
               "url": $this.attr(selector)
             })
             .done(function(_tmpl){
@@ -2088,30 +2106,30 @@ define('src/tmpl',[
         return $tmpl;
       }
 
-      return promise.when.apply(tmpl, done).then(function() {
+      return Promise.when.apply(_self, done).then(function() {
         return $tmpl;
       });
     });
-  }
+  };
 
 
-  tmpl.selector = "mjs-tmpl";
-  tmpl.loader = fetch;
+  Tmpl.selector = "mjs-tmpl";
+  Tmpl.loader = Fetch;
 
 
   // Expose as a resource.  Run it in a self executing function so keep the module clean
   // and so that we can also move the resource registration if need be.
   (function() {
-    var resource = resources.resource.extend({
-      load: tmpl,
+    var Resource = Resources.resource.extend({
+      load: Tmpl,
       extension: "html"
     });
 
-    resources.register("tmpl", new resource());
+    Resources.register("tmpl", new Resource());
   })();
 
 
-  return tmpl;
+  return Tmpl;
 });
 
 
@@ -2120,14 +2138,14 @@ define('src/view',[
   "src/events",
   "src/resources",
   "src/spromise"
-], function(extender, events, resources, promise) {
+], function(Extender, Events, Resources, Promise) {
   
 
 
   function loadResources(_self) {
     var resources = _self.resources || (_self.resources = {}),
         fqn       = _self.fqn,
-        result    = baseview.resources(resources, fqn);
+        result    = View.resources(resources, fqn);
     var promises;
 
 
@@ -2144,7 +2162,7 @@ define('src/view',[
     // the resource manager if I can't explicitly find one defined in the settings.
     //
     if ( !result.tmpl && result.tmpl !== false ) {
-      result.tmpl = _.result(_self, "tmpl") || (fqn && baseview.resources(["tmpl!url"], fqn).tmpl);
+      result.tmpl = _.result(_self, "tmpl") || (fqn && View.resources(["tmpl!url"], fqn).tmpl);
     }
 
     if ( !result.style && _self.style ) {
@@ -2156,7 +2174,7 @@ define('src/view',[
     }
 
     promises = _.map(result, function( value, key ) {
-      promise.when(value).done(function(val) {
+      Promise.when(value).done(function(val) {
         _self[key] = val;
 
         // Immediately try to resolve resources that may have been defined as a function.
@@ -2165,7 +2183,7 @@ define('src/view',[
       return value;
     });
 
-    return promise.when.apply(_self, promises);
+    return Promise.when.apply(_self, promises);
   }
 
 
@@ -2192,12 +2210,12 @@ define('src/view',[
 
 
   /**
-  * baseview
+  * View
   */
-  function baseview(options) {
+  function View(options) {
     var _self  = this,
-      deferred = promise(),
-      settings = baseview.configure.apply(_self, arguments);
+      deferred = Promise.defer(),
+      settings = View.configure.apply(_self, arguments);
 
     // This is handling events that were configured when defining a view
     if ( _self.events && settings.pevents !== false ) {
@@ -2216,15 +2234,15 @@ define('src/view',[
     _self.ready = deferred.done;
 
     // Load resources so that they can then be further processed by _init.
-    promise.when(loadResources(_self))
+    Promise.when(loadResources(_self))
     .then(function() {
-      return promise.when(_self._init(options));
+      return Promise.when(_self._init(options));
     })
     .then(function() {
-      return promise.when(initResources(_self));
+      return Promise.when(initResources(_self));
     })
     .then(function() {
-      return promise.when(_self._create(options));
+      return Promise.when(_self._create(options));
     })
     .then(function() {
       _self._create();
@@ -2235,16 +2253,16 @@ define('src/view',[
 
 
   // Extend the prototype for baseview
-  extender.mixin(baseview, {
+  Extender.mixin(View, {
     tagName: "div",
     className: "view",
     _init: $.noop,
     _create: $.noop,
     _destroy: $.noop
-  }, events);
+  }, Events);
 
 
-  baseview.prototype.destroy = function destroy() {
+  View.prototype.destroy = function destroy() {
     // Callback
     this._destroy();
     this.trigger("view:destroy");
@@ -2261,7 +2279,7 @@ define('src/view',[
   };
 
 
-  baseview.prototype.transition = function (view, selector) {
+  View.prototype.transition = function (view, selector) {
     var lastView = this._lastView;
 
     if ( lastView === view ) {
@@ -2303,7 +2321,7 @@ define('src/view',[
   // events, tagName, and $el
   // It will also make sure that a view gets the proper settings
   //
-  baseview.configure = function ( options ) {
+  View.configure = function ( options ) {
     if ( options instanceof jQuery ) {
       options = { $el: options };
     }
@@ -2344,8 +2362,8 @@ define('src/view',[
   };
 
 
-  baseview.resources = resources;
-  return baseview;
+  View.resources = Resources;
+  return View;
 });
 
 

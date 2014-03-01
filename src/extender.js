@@ -2,7 +2,7 @@ define(function() {
   "use strict";
 
 
-  function extender(/* extend* */) {
+  function Extender(/* extend* */) {
     this.extend.apply(this, arguments);
   }
 
@@ -11,7 +11,7 @@ define(function() {
   * Interface that iterates through all the input properties and prototype objects
   * to extend the instance of extender.
   */
-  extender.prototype.extend = function( /* extend+ */ ) {
+  Extender.prototype.extend = function( /* extend+ */ ) {
     var extensions = Array.prototype.slice.call(arguments),
         iextension;
 
@@ -20,8 +20,8 @@ define(function() {
       iextension = extensions.shift();
 
       if ( iextension.constructor === Function ) {
-        extender.extension.prototype = iextension.prototype;
-        _.extend(this, new extender.extension());
+        Extender.extension.prototype = iextension.prototype;
+        _.extend(this, new Extender.extension());
       }
       else {
         _.extend(this, iextension);
@@ -37,15 +37,15 @@ define(function() {
   * Override extension with any other base function that you wish all your prototypical
   * inheritance chains to use.
   */
-  extender.extension = function() {};
+  Extender.extension = function() {};
 
 
   /**
   * Interface to setup extending capabilties.  Unlike extend, this will not create
   * a prototypical inheritance chain.
   */
-  extender.mixin  = function() {
-    var _extender = new extender(),
+  Extender.mixin  = function() {
+    var _extender = new Extender(),
         args      = Array.prototype.slice.call(arguments),
         base      = args.shift();
 
@@ -57,7 +57,7 @@ define(function() {
       _extender.extend.apply(base, args);
     }
 
-    base.extend = extender.extend;
+    base.extend = Extender.extend;
     return base;
   };
 
@@ -68,15 +68,15 @@ define(function() {
   *
   * extender.extend( base, (object || function) * )
   */
-  extender.extend = function() {
-    var base = this === extender ? arguments[0] : this;
+  Extender.extend = function() {
+    var base = this === Extender ? arguments[0] : this;
 
     // Setup extension class to be able to setup inheritance
     if ( base && base.constructor === Function ) {
-      extender.extension.prototype = base.prototype;
+      Extender.extension.prototype = base.prototype;
     }
     else {
-      extender.extension.prototype = base;
+      Extender.extension.prototype = base;
     }
 
     // Setup a function the we can instantiate and properly call the proper constructor
@@ -84,13 +84,13 @@ define(function() {
       this.constructor.apply(this, arguments);
     }
 
-    extension.prototype = new extender.extension();
+    extension.prototype = new Extender.extension();
     extension.__super__ = base.prototype;
-    extender.mixin.apply(base, [extension].concat.apply(extension, arguments));
+    Extender.mixin.apply(base, [extension].concat.apply(extension, arguments));
     return extension;
   };
 
 
-  return extender;
+  return Extender;
 });
 

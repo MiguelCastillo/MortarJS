@@ -1,6 +1,6 @@
 define([
   "src/extender"
-], function(extender) {
+], function(Extender) {
   "use strict";
 
 
@@ -15,13 +15,13 @@ define([
   var loaders = {};
 
 
-  function resources (items, path) {
-    return resources.load(items, path);
+  function Resources (items, path) {
+    return Resources.load(items, path);
   }
 
 
-  resources.register = function(type, loader) {
-    if ( loader instanceof resources.resource === false ) {
+  Resources.register = function(type, loader) {
+    if ( loader instanceof Resources.resource === false ) {
       throw new TypeError("Resource loader must be of type resource");
     }
 
@@ -29,7 +29,7 @@ define([
   };
 
 
-  resources.fetch = function(resource, handler) {
+  Resources.fetch = function(resource, handler) {
     var resourceLoader = loaders[handler];
 
     // If the resource if a function, we will not handle process it as a resource
@@ -51,13 +51,13 @@ define([
   };
 
 
-  resources.load = function(items, fqn) {
+  Resources.load = function(items, fqn) {
     var resource, parts, config, directive, path, name;
     var result = {},
         pathParts = fqn ? fqn.split("/") : [];
 
     // Makes sure that we have a list of resources in a proper format
-    items = resources.ensureResources(items);
+    items = Resources.ensureResources(items);
 
     // Get the name from the fqn for resource name assignment
     name = pathParts.pop();
@@ -88,14 +88,14 @@ define([
       }
 
       resource.location = path + "/" + handler + "/" + name;
-      result[handler] = resources.fetch(resource, handler);
+      result[handler] = Resources.fetch(resource, handler);
     }
 
     return result;
   };
 
 
-  resources.ensureResources = function( items ) {
+  Resources.ensureResources = function( items ) {
     var result = {};
     var i, length;
 
@@ -115,11 +115,11 @@ define([
   /**
   *  Resource interface to devire from when processing external resources
   */
-  resources.resource = function() {};
-  extender.mixin(resources.resource, {
+  Resources.resource = function() {};
+  Extender.mixin(Resources.resource, {
     load: $.noop
   });
 
 
-  return resources;
+  return Resources;
 });

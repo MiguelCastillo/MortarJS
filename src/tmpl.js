@@ -1,29 +1,34 @@
 define([
   "src/fetch",
   "src/spromise",
-  "src/resources",
-], function( fetch, promise , resources) {
+  "src/resources"
+], function( Fetch, Promise, Resources) {
   "use strict";
 
 
-  function tmpl(options, selector) {
-    if ( this instanceof tmpl === false ) {
-      return new tmpl(options, selector);
+  function Tmpl(options, selector) {
+    if ( this instanceof Tmpl === false ) {
+      return new Tmpl(options, selector);
     }
 
-    options = options || {};
-    selector = selector || options.selector || tmpl.selector;
+    return this.load(options, selector);
+  }
 
-    var _promise = promise(),
+
+  Tmpl.prototype.load = function(options, selector) {
+    options = options || {};
+    selector = selector || options.selector || Tmpl.selector;
+
+    var _self = this,
+        _promise = Promise.defer(),
         attrSelector = "[" + selector + "]";
 
     if (typeof options.url === "string" ) {
-      tmpl.loader(options)
+      Tmpl.loader(options)
         .done(_promise.resolve)
         .fail(_promise.reject);
     }
-    else if (typeof options.html === "string" ||
-             options.html instanceof jQuery === true ) {
+    else if (typeof options.html === "string" || options.html instanceof jQuery === true ) {
       _promise.resolve(options.html);
     }
     else {
@@ -39,7 +44,7 @@ define([
         .add($tmpl.find(attrSelector))
         .map(function() {
           var $this = $(this);
-          return tmpl({
+          return _self.load({
               "url": $this.attr(selector)
             })
             .done(function(_tmpl){
@@ -52,29 +57,29 @@ define([
         return $tmpl;
       }
 
-      return promise.when.apply(tmpl, done).then(function() {
+      return Promise.when.apply(_self, done).then(function() {
         return $tmpl;
       });
     });
-  }
+  };
 
 
-  tmpl.selector = "mjs-tmpl";
-  tmpl.loader = fetch;
+  Tmpl.selector = "mjs-tmpl";
+  Tmpl.loader = Fetch;
 
 
   // Expose as a resource.  Run it in a self executing function so keep the module clean
   // and so that we can also move the resource registration if need be.
   (function() {
-    var resource = resources.resource.extend({
-      load: tmpl,
+    var Resource = Resources.resource.extend({
+      load: Tmpl,
       extension: "html"
     });
 
-    resources.register("tmpl", new resource());
+    Resources.register("tmpl", new Resource());
   })();
 
 
-  return tmpl;
+  return Tmpl;
 });
 

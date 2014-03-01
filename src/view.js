@@ -3,14 +3,14 @@ define([
   "src/events",
   "src/resources",
   "src/spromise"
-], function(extender, events, resources, promise) {
+], function(Extender, Events, Resources, Promise) {
   "use strict";
 
 
   function loadResources(_self) {
     var resources = _self.resources || (_self.resources = {}),
         fqn       = _self.fqn,
-        result    = baseview.resources(resources, fqn);
+        result    = View.resources(resources, fqn);
     var promises;
 
 
@@ -27,7 +27,7 @@ define([
     // the resource manager if I can't explicitly find one defined in the settings.
     //
     if ( !result.tmpl && result.tmpl !== false ) {
-      result.tmpl = _.result(_self, "tmpl") || (fqn && baseview.resources(["tmpl!url"], fqn).tmpl);
+      result.tmpl = _.result(_self, "tmpl") || (fqn && View.resources(["tmpl!url"], fqn).tmpl);
     }
 
     if ( !result.style && _self.style ) {
@@ -39,7 +39,7 @@ define([
     }
 
     promises = _.map(result, function( value, key ) {
-      promise.when(value).done(function(val) {
+      Promise.when(value).done(function(val) {
         _self[key] = val;
 
         // Immediately try to resolve resources that may have been defined as a function.
@@ -48,7 +48,7 @@ define([
       return value;
     });
 
-    return promise.when.apply(_self, promises);
+    return Promise.when.apply(_self, promises);
   }
 
 
@@ -75,12 +75,12 @@ define([
 
 
   /**
-  * baseview
+  * View
   */
-  function baseview(options) {
+  function View(options) {
     var _self  = this,
-      deferred = promise(),
-      settings = baseview.configure.apply(_self, arguments);
+      deferred = Promise.defer(),
+      settings = View.configure.apply(_self, arguments);
 
     // This is handling events that were configured when defining a view
     if ( _self.events && settings.pevents !== false ) {
@@ -99,15 +99,15 @@ define([
     _self.ready = deferred.done;
 
     // Load resources so that they can then be further processed by _init.
-    promise.when(loadResources(_self))
+    Promise.when(loadResources(_self))
     .then(function() {
-      return promise.when(_self._init(options));
+      return Promise.when(_self._init(options));
     })
     .then(function() {
-      return promise.when(initResources(_self));
+      return Promise.when(initResources(_self));
     })
     .then(function() {
-      return promise.when(_self._create(options));
+      return Promise.when(_self._create(options));
     })
     .then(function() {
       _self._create();
@@ -118,16 +118,16 @@ define([
 
 
   // Extend the prototype for baseview
-  extender.mixin(baseview, {
+  Extender.mixin(View, {
     tagName: "div",
     className: "view",
     _init: $.noop,
     _create: $.noop,
     _destroy: $.noop
-  }, events);
+  }, Events);
 
 
-  baseview.prototype.destroy = function destroy() {
+  View.prototype.destroy = function destroy() {
     // Callback
     this._destroy();
     this.trigger("view:destroy");
@@ -144,7 +144,7 @@ define([
   };
 
 
-  baseview.prototype.transition = function (view, selector) {
+  View.prototype.transition = function (view, selector) {
     var lastView = this._lastView;
 
     if ( lastView === view ) {
@@ -186,7 +186,7 @@ define([
   // events, tagName, and $el
   // It will also make sure that a view gets the proper settings
   //
-  baseview.configure = function ( options ) {
+  View.configure = function ( options ) {
     if ( options instanceof jQuery ) {
       options = { $el: options };
     }
@@ -227,7 +227,7 @@ define([
   };
 
 
-  baseview.resources = resources;
-  return baseview;
+  View.resources = Resources;
+  return View;
 });
 
