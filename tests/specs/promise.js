@@ -148,7 +148,8 @@ define(["src/spromise"], function(promise) {
 
       var promise1 = new promise();
 
-      promise.when(promise1).done(function(_actor, _categories, _books) {
+      promise.when(promise1).done(function(result) {
+        var _actor = result[0], _categories = result[1], _books = result[2];
         expect(_actor).toBeDefined();
         expect(_actor.firstName).toBe("Dracula");
         expect(_actor.nickName).toBe("Vampire");
@@ -182,7 +183,9 @@ define(["src/spromise"], function(promise) {
     it("When $.ajax", function() {
       var promise1 = $.ajax("tests/json/array.json");
 
-      return promise.when(promise1).done(function(data, code, xhr) {
+      return promise.when(promise1).done(function(response) {
+        var data = response[0], code = response[1], xhr = response[2];
+
         // Make sure first param is the data
         expect(data.length).toBe(2);
         expect(data[0].name).toBe("Pablo");

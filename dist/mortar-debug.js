@@ -1062,7 +1062,7 @@ define( 'src/async',[],function() {
 
 
 define('src/promise',["src/async"], function (async) {
-  
+
 
   var states = {
     "pending": 0,
@@ -1381,7 +1381,7 @@ define('src/when',[
   "src/promise",
   "src/async"
 ], function(promise, async) {
-  
+
 
   /**
   * Interface to allow multiple promises to be synchronized
@@ -1407,7 +1407,7 @@ define('src/when',[
       }
 
       if ( !remaining ) {
-        promise1.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
+        promise1.resolve.apply(context, queue);
       }
     }
 
@@ -1416,7 +1416,7 @@ define('src/when',[
       return function() {
         // We will replace the item in the queue with result to make
         // it easy to send all the data into the resolve interface.
-        queue[index] = arguments;
+        queue[index] = arguments.length === 1 ? arguments[0] : arguments;
         checkPending();
       };
     }
@@ -1434,7 +1434,7 @@ define('src/when',[
           item.then(resolve(i), reject);
         }
         else {
-          queue[i] = queueLength === 1 ? [item] : item;
+          queue[i] = item;
           checkPending();
         }
       }
@@ -1654,7 +1654,7 @@ define('src/model',[
   // Create item in datasource
   crud.prototype.create = function(data, options) {
     return Promise.when.call(this, this.datasource("post", data, options)).then(function(data){
-      return data;
+      return data[0];
     });
   };
 
@@ -1662,8 +1662,8 @@ define('src/model',[
   // Read item from datasource
   crud.prototype.read = function(data, options) {
     return Promise.when.call(this, this.datasource("get", data, options)).then(function(data) {
-      this.serialize(data);
-      return data;
+      this.serialize(data[0]);
+      return data[0];
     });
   };
 
@@ -1671,7 +1671,7 @@ define('src/model',[
   // Update item in the server
   crud.prototype.update = function(data, options) {
     return Promise.when.call(this, this.datasource("put", data, options)).then(function(data){
-      return data;
+      return data[0];
     });
   };
 
@@ -1679,7 +1679,7 @@ define('src/model',[
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
     return Promise.when.call(this, this.datasource("delete", data, options)).then(function(data){
-      return data;
+      return data[0];
     });
   };
 
@@ -1861,7 +1861,7 @@ define('src/model',[
 });
 
 
-define('src/fetch',[],function() {
+define('src/fetch',["src/spromise"], function(Promise) {
   
 
   var cache = {};
@@ -1890,7 +1890,7 @@ define('src/fetch',[],function() {
       }, settings.ajax);
 
       // Make request and add to the cache.
-      cache[settings.url] = $.ajax($ajax);
+      cache[settings.url] = Promise.thenable($.ajax($ajax));
 
       // If cache is disabled, we delete the item from the cache once the
       // resource is downloaded.  The reason we put it in the cache hash

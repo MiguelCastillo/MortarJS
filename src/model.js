@@ -60,7 +60,7 @@ define([
   // Create item in datasource
   crud.prototype.create = function(data, options) {
     return Promise.when.call(this, this.datasource("post", data, options)).then(function(data){
-      return data;
+      return data[0];
     });
   };
 
@@ -68,8 +68,8 @@ define([
   // Read item from datasource
   crud.prototype.read = function(data, options) {
     return Promise.when.call(this, this.datasource("get", data, options)).then(function(data) {
-      this.serialize(data);
-      return data;
+      this.serialize(data[0]);
+      return data[0];
     });
   };
 
@@ -77,7 +77,7 @@ define([
   // Update item in the server
   crud.prototype.update = function(data, options) {
     return Promise.when.call(this, this.datasource("put", data, options)).then(function(data){
-      return data;
+      return data[0];
     });
   };
 
@@ -85,7 +85,7 @@ define([
   // Delete item from the server
   crud.prototype.remove = function(data, options) {
     return Promise.when.call(this, this.datasource("delete", data, options)).then(function(data){
-      return data;
+      return data[0];
     });
   };
 
