@@ -9,7 +9,7 @@ define([
   "src/view",
   "src/resources",
   "src/spromise"
-], function(Extender, Events, Hash, Model, Fetch, Style, Tmpl, View, Resources, Promise) {
+], function(Extender, Events, Hash, Model, Fetch, Style, Tmpl, View, Resources, Promise, Module) {
 
   return {
     Extender: Extender,
@@ -21,7 +21,8 @@ define([
     Tmpl: Tmpl,
     View: View,
     Resources: Resources,
-    Promise: Promise
+    Promise: Promise,
+    Module: Module
   };
 
 });

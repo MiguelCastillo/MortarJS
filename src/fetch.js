@@ -1,4 +1,4 @@
-define(function() {
+define(["src/spromise"], function(Promise) {
   "use strict";
 
   var cache = {};
@@ -27,7 +27,7 @@ define(function() {
       }, settings.ajax);
 
       // Make request and add to the cache.
-      cache[settings.url] = $.ajax($ajax);
+      cache[settings.url] = Promise.thenable($.ajax($ajax));
 
       // If cache is disabled, we delete the item from the cache once the
       // resource is downloaded.  The reason we put it in the cache hash
