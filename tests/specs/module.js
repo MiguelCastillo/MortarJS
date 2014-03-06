@@ -2,11 +2,26 @@ define(["src/module"], function(Module) {
 
   describe("Module", function() {
 
+    it("require rawModule", function() {
+      return Module.import("tests/js/rawModule").done(function(result) {
+        console.log(result);
+      });
+    });
+
+
+    it("require rawModuleNoReturn", function() {
+      return Module.import("tests/js/rawModuleNoReturn").done(function(result) {
+        console.log(result);
+      });
+    });
+
+
     it("require simpleObject", function() {
       return Module.import("tests/js/simpleObject").done(function(result) {
         console.log(result);
       });
     });
+
 
     it("require multipleDefine", function() {
       return Module.import("tests/js/multipleDefine").done(function(result) {

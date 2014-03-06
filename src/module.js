@@ -13,11 +13,12 @@
         cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g;
 
     var deferred = {}, resolved = {}, pending = {};
-    var injectModule = "var d = this.define;\n var r = this.require;\n var exports = module.exports;\n this.require = function() {\n return Module.require.apply(module, arguments); }\n this.define = function() {\n Module.adapters.apply(module, arguments); \n};\n try {\n eval(content); \n}finally{\n this.require = r;\n this.define = d;\n}";
-    function _injectModule( moduleMeta, moduleContent ) { return (new Function("Module", "module", "content", injectModule))(Module, moduleMeta, moduleContent); }
     function _result(input, args, context) { if (typeof(input) === "function") {return input.apply(context, args||[]);} return input; }
     function _noop() {}
 
+    /**
+    * Module contructor
+    */
     function Module() {
       return Module.define.apply(this, arguments);
     }
@@ -25,7 +26,7 @@
     /**
     * AMD compliant define interface
     */
-    Module.define = function(name, dependencies, factory) {
+    Module.define = function(name, deps, factory) {
       throw new TypeError("Define not implemented");
     };
 
@@ -57,26 +58,15 @@
     * Import interface to load a module
     */
     Module.import = function(name, options) {
-      if (name in deferred) {
-        return deferred[name];
-      }
-
       var moduleMeta;
-      options = options || Module.settings;
-      options.baseUrl = options.baseUrl || Module.settings.baseUrl;
 
-      if (name in pending) {
+      if (name in pending === true) {
         moduleMeta = pending[name];
         delete pending[name];
         deferred[name] = Module.resolve(moduleMeta);
       }
-      else {
-        // moduleMeta is an object used for collecting information about a module file being
-        // loaded.  This is where we are storing information such as anonymously defined modules,
-        // and named modules.  If no modules are loaded, we assumed that the file being loaded
-        // is the module itself which is treated as a CJS module.
-        var file = File.factory(name, options.baseUrl);
-        moduleMeta = {name:name, file:file, settings:options, anonymous:[], modules:{}, dependencies:[], exports:{}};
+      else if (name in deferred === false) {
+        moduleMeta = Module.configure(name, options);
         deferred[name] = Module.load(moduleMeta);
       }
 
@@ -98,28 +88,30 @@
         moduleContent
           .replace(commentRegExp, '')
           .replace(cjsRequireRegExp, function (match, dep) {
-            moduleMeta.dependencies.push(dep);
+            moduleMeta.deps.push(dep);
           });
 
         // Currently, the only way to get these dependencies at the moduleMeta level is when
-        // they are required inline in CJS format. E.g. var x = require("x");
-        // If we find any of these, then we will pre load them so that they are available if
+        // they are inline require calls in CJS format. E.g. var x = require("x");
+        // If we find any of these, then we will preload them so that they are available if
         // and when they are required.
         //
-        if ( moduleMeta.dependencies.length ) {
-          return Module.require(moduleMeta.dependencies).then(function() {
-            return Module.finalize(moduleMeta, _injectModule(moduleMeta, moduleContent));
+        if ( moduleMeta.deps.length ) {
+          return Module.require(moduleMeta.deps).then(function() {
+            return Module.finalize(moduleMeta, Module.injection(moduleMeta, moduleContent));
           });
         }
         else {
-          return Module.finalize(moduleMeta, _injectModule(moduleMeta, moduleContent));
+          return Module.finalize(moduleMeta, Module.injection(moduleMeta, moduleContent));
         }
       });
     };
 
     /**
+    * Interface to take a module, ensure its dependencies are loaded, then make sure that the
+    * proper value is reolved for the module.
     */
-    Module.finalize = function(moduleMeta) {
+    Module.finalize = function(moduleMeta, moduleResult) {
       var mainModule = moduleMeta.modules[moduleMeta.name];
       var currentModule;
 
@@ -141,37 +133,80 @@
 
       // If there is no mainModule, that means that define was not called with a corresponding
       // module id or even anonymously.  This means we are going to try to use the moduleMeta
-      // and use the exports
-      return Module.resolve(mainModule || moduleMeta);
+      // and use the exports or whatever was returned when loading the module.
+      return Module.resolve(mainModule || moduleMeta, moduleResult);
     };
 
     /**
-    * Resolve a module dependencies
+    * Resolve a module dependencies and figure out what the module actually is.
     */
-    Module.resolve = function(module) {
+    Module.resolve = function(module, moduleResult) {
       var i, length;
-      var dependencies = module.dependencies || [], deps = [];
+      var deps = [];
 
-      for ( i = 0, length = dependencies.length; i < length; i++ ) {
-        deps.push( Module.import(dependencies[i]) );
+      for ( i = 0, length = module.deps.length; i < length; i++ ) {
+        deps.push( Module.import(module.deps[i]) );
       }
 
       return Promise.when.apply(module, deps).then(function() {
         var i, length;
+        module.resolved = [];
+
         for ( i = 0, length = deps.length; i < length; i++ ) {
-          deps[i] = arguments[i];
+          module.resolved.push(arguments[i]);
         }
 
-        module.resolved = deps;
-        return (resolved[module.name] = _result(module.factory, deps, Module.settings.global) || module.exports);
+        //
+        // Order of priority.
+        // 1. Factory, which can be a function we need to invoke to get a value from or a value
+        // 2. moduleResult, which is basically anything that was returned by the module when it was loaded
+        // 3. exports, which is a place holder in a module for modules to inject what they was to exposed to the world
+        //
+        return (resolved[module.name] = _result(module.factory, module.resolved, Module.settings.global) || moduleResult || module.exports);
       });
     };
+
+
+    Module.injection = function( moduleMeta, moduleContent ) {
+      return (new Function("Module", "module", "content", Module.injection.__module))(Module, moduleMeta, moduleContent);
+    };
+
+
+    Module.injection.__module = "var d = this.define;\n var r = this.require;\n var exports = module.exports;\n var result;\n" +
+      "this.require = function() {\n return Module.require.apply(module, arguments); \n}\n" +
+      "this.define = function() {\n Module.adapters.apply(module, arguments); \n};\n" +
+      "try {\n result = eval(content); \n}finally{\n this.require = r;\n this.define = d; \n}\n" +
+      "return result;";
+
+
+    /**
+    * Takes in a module name and options to create a proper moduleMeta object needed to load the module
+    *
+    // moduleMeta is an object used for collecting information about a module file being loaded. This
+    // is where we are storing information such as anonymously modules, names modules, exports and so on.
+    // This information is used to figure out if we have and AMD, CJS, or just a plain ole module pattern.
+    */
+    Module.configure = function(name, options) {
+      options = options || Module.settings;
+      options.baseUrl = options.baseUrl || Module.settings.baseUrl;
+
+      return {
+        name: name,
+        file: File.factory(name, options.baseUrl),
+        settings: options,
+        anonymous: [],
+        modules: {},
+        deps :[],
+        exports: {}
+      };
+    };
+
 
     /**
     * Adapter interfaces to define modules
     */
-    Module.adapters = function(name, dependencies, factory) {
-      var _signature = ["", typeof name, typeof dependencies, typeof factory].join("/");
+    Module.adapters = function(name, deps, factory) {
+      var _signature = ["", typeof name, typeof deps, typeof factory].join("/");
       var _adapter   = Module.adapters[_signature];
       if ( _adapter ) {
         return _adapter.apply(this, arguments);
@@ -182,6 +217,7 @@
       var context = this;
       context.modules[name] = {
         name: name,
+        deps: [],
         factory: factory
       };
     };
@@ -190,24 +226,25 @@
       var context = this;
       context.modules[name] = {
         name: name,
+        deps: [],
         factory: data
       };
     };
 
-    Module.adapters["/string/object/function"] = function(name, dependencies, factory) {
+    Module.adapters["/string/object/function"] = function(name, deps, factory) {
       var context = this;
       context.modules[name] = {
         name: name,
-        dependencies: dependencies,
+        deps: deps,
         factory: factory
       };
     };
 
-    Module.adapters["/object/function/undefined"] = function(dependencies, factory) {
+    Module.adapters["/object/function/undefined"] = function(deps, factory) {
       var context = this;
       context.anonymous.push({
         name: context.name,
-        dependencies: dependencies,
+        deps: deps,
         factory: factory
       });
     };
@@ -216,6 +253,7 @@
       var context = this;
       context.anonymous.push({
         name: context.name,
+        deps: [],
         factory: data
       });
     };
@@ -224,6 +262,7 @@
       var context = this;
       context.anonymous.push({
         name: context.name,
+        deps: [],
         factory: factory
       });
     };
@@ -232,7 +271,7 @@
       global: this,
       baseUrl: "",
       cache: true,
-      dependencies: []
+      deps: []
     };
 
 
