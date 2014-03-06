@@ -6,10 +6,17 @@
   ], function(Fetch, Promise) {
     "use strict";
 
-    var cache = {};
-    var injectModule = "var d = this.define || function() {};\n var result;\n this.define = function() {\n adapters.apply(module, arguments); \n};\n try {\n result = eval(content); \n}finally{\n this.define = d; }\n return result;";
-    function _injectModule( moduleMeta, moduleContent ) { return (new Function("adapters", "module", "content", injectModule))(Module.adapters, moduleMeta, moduleContent); }
-    function _result(input, args, context) { if (typeof(input) === "function") {return input.apply(context||this, args);} return input; }
+    ///
+    /// From requirejs https://github.com/jrburke/requirejs. Thanks dude!
+    ///
+    var commentRegExp    = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg,
+        cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g;
+
+    var deferred = {}, resolved = {}, pending = {};
+    var injectModule = "var d = this.define;\n var r = this.require;\n var exports = module.exports;\n this.require = function() {\n return Module.require.apply(module, arguments); }\n this.define = function() {\n Module.adapters.apply(module, arguments); \n};\n try {\n eval(content); \n}finally{\n this.require = r;\n this.define = d;\n}";
+    function _injectModule( moduleMeta, moduleContent ) { return (new Function("Module", "module", "content", injectModule))(Module, moduleMeta, moduleContent); }
+    function _result(input, args, context) { if (typeof(input) === "function") {return input.apply(context, args||[]);} return input; }
+    function _noop() {}
 
     function Module() {
       return Module.define.apply(this, arguments);
@@ -23,18 +30,57 @@
     };
 
     /**
-    * AMD/CJS compliant require interface
+    * AMD/CJS compliant require interface.
+    *
+    * name can be a string or an array or string module name
+    * ready is the callback when the module(s) is loaded.
+    * If multiple module are to loaded, a promise object is also returned. If a single module
+    * is required in CJS format, then the resolved module is returned.
+    *
+    * return promise object
     */
-    Module.require = function(name, options) {
-      if (name in cache) {
-        return cache[name];
+    Module.require = function(name, ready, options) {
+      var pending = [];
+      var i, length;
+
+      if ( name instanceof Array ) {
+        for (i = 0, length = name.length; i < length; i++) {
+          pending.push(Module.import(name[i], options));
+        }
+        return Promise.when.apply((void 0), pending).done(ready || _noop);
       }
 
+      return resolved[name];
+    };
+
+    /**
+    * Import interface to load a module
+    */
+    Module.import = function(name, options) {
+      if (name in deferred) {
+        return deferred[name];
+      }
+
+      var moduleMeta;
       options = options || Module.settings;
       options.baseUrl = options.baseUrl || Module.settings.baseUrl;
-      var file = File.factory(name, options.baseUrl);
-      var moduleMeta = {name: name, file: file, settings: options, anonymous: [], modules: {}};
-      return (cache[name] = Module.load(moduleMeta));
+
+      if (name in pending) {
+        moduleMeta = pending[name];
+        delete pending[name];
+        deferred[name] = Module.resolve(moduleMeta);
+      }
+      else {
+        // moduleMeta is an object used for collecting information about a module file being
+        // loaded.  This is where we are storing information such as anonymously defined modules,
+        // and named modules.  If no modules are loaded, we assumed that the file being loaded
+        // is the module itself which is treated as a CJS module.
+        var file = File.factory(name, options.baseUrl);
+        moduleMeta = {name:name, file:file, settings:options, anonymous:[], modules:{}, dependencies:[], exports:{}};
+        deferred[name] = Module.load(moduleMeta);
+      }
+
+      return deferred[name];
     };
 
     /**
@@ -48,15 +94,34 @@
         }
       })
       .then(function(moduleContent) {
-        return Module.finalize(moduleMeta, _injectModule(moduleMeta, moduleContent));
+        // Prep script to handle inline module imports in CJS format. E.g. var x = require("x");
+        moduleContent
+          .replace(commentRegExp, '')
+          .replace(cjsRequireRegExp, function (match, dep) {
+            moduleMeta.dependencies.push(dep);
+          });
+
+        // Currently, the only way to get these dependencies at the moduleMeta level is when
+        // they are required inline in CJS format. E.g. var x = require("x");
+        // If we find any of these, then we will pre load them so that they are available if
+        // and when they are required.
+        //
+        if ( moduleMeta.dependencies.length ) {
+          return Module.require(moduleMeta.dependencies).then(function() {
+            return Module.finalize(moduleMeta, _injectModule(moduleMeta, moduleContent));
+          });
+        }
+        else {
+          return Module.finalize(moduleMeta, _injectModule(moduleMeta, moduleContent));
+        }
       });
     };
 
     /**
     */
     Module.finalize = function(moduleMeta) {
-      var mainModule = moduleMeta.modules[moduleMeta.name], pending = [];
-      var currentModule, i, length;
+      var mainModule = moduleMeta.modules[moduleMeta.name];
+      var currentModule;
 
       if ( mainModule ) {
         delete moduleMeta.modules[moduleMeta.name];
@@ -65,25 +130,19 @@
         mainModule = moduleMeta.anonymous.shift();
       }
 
-      // In order to allow modules to not depend in the order in which they are loaded, the
-      // modules need to be added as pending so that a later step to actually load them can
-      // allow for modules to depend on other modules that are pending.
-
-      // First make sure we add all modules as pending so that they can be inner dependent
+      // Add modules to the pending bucket.  This is so that we can lazy load these pending
+      // modules as dependencies to other modules.  Only load them when they are imported.
       for (var iModule in moduleMeta.modules) {
         currentModule = moduleMeta.modules[iModule];
-        if ( !cache[currentModule.name] ) {
-          cache[currentModule.name] = Promise.defer();
-          pending.push(currentModule);
+        if ( !deferred[currentModule.name] && !pending[currentModule.name] ) {
+          pending[currentModule.name] = currentModule;
         }
       }
 
-      // Now that the modules are pending, load them
-      for (i = 0, length = pending.length; i < length; i++) {
-        Module.resolve(pending[i]).done(cache[pending[i].name].resolve);
-      }
-
-      return Module.resolve(mainModule, true);
+      // If there is no mainModule, that means that define was not called with a corresponding
+      // module id or even anonymously.  This means we are going to try to use the moduleMeta
+      // and use the exports
+      return Module.resolve(mainModule || moduleMeta);
     };
 
     /**
@@ -94,7 +153,7 @@
       var dependencies = module.dependencies || [], deps = [];
 
       for ( i = 0, length = dependencies.length; i < length; i++ ) {
-        deps.push( Module.require(dependencies[i]) );
+        deps.push( Module.import(dependencies[i]) );
       }
 
       return Promise.when.apply(module, deps).then(function() {
@@ -104,7 +163,7 @@
         }
 
         module.resolved = deps;
-        return _result(module.factory, deps, Module.settings.global);
+        return (resolved[module.name] = _result(module.factory, deps, Module.settings.global) || module.exports);
       });
     };
 
@@ -187,6 +246,8 @@
       this.protocol = settings.protocol;
     }
 
+    /**
+    */
     File.prototype.toUrl = function() {
       var file = this;
       var protocol = file.protocol ? file.protocol + "//" : "";
@@ -194,7 +255,6 @@
     };
 
     /**
-    *
     */
     File.factory = function( file, base ) {
       file = File.parsePath(file);
@@ -266,9 +326,9 @@
       return path.replace(/\/$/, "");
     };
 
+    Module.define.amd = {};
     //root.require = Module.require;
     //root.define  = Module.define;
-    Module.define.amd = {};
     return Module;
   });
 

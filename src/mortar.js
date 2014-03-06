@@ -8,7 +8,8 @@ define([
   "src/tmpl",
   "src/view",
   "src/resources",
-  "src/spromise"
+  "src/spromise",
+  "src/module"
 ], function(Extender, Events, Hash, Model, Fetch, Style, Tmpl, View, Resources, Promise, Module) {
 
   return {
