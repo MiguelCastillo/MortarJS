@@ -3339,14 +3339,14 @@ define('src/timer',[
 ], function() {
   
 
-  function timer(start) {
+  function Timer(start) {
     if(start !== false) {
       this.start();
     }
   }
 
 
-  timer.units = {
+  Timer.units = {
     msec: 1,
     secs: 1000,
     mins: 1000 * 60,
@@ -3354,26 +3354,26 @@ define('src/timer',[
   };
 
 
-  timer.prototype.start = function() {
+  Timer.prototype.start = function() {
     this._start = Date.now();
   };
 
 
-  timer.prototype.end = function() {
+  Timer.prototype.end = function() {
     this._end = Date.now();
   };
 
 
-  timer.prototype.elapsed = function(unit) {
+  Timer.prototype.elapsed = function(unit) {
     if ( isNaN(unit) === true ) {
-      unit = timer.units.secs;
+      unit = Timer.units.secs;
     }
 
     this.end();
     return (this._end - this._start)/unit;
   };
 
-  return timer;
+  return Timer;
 });
 
 
@@ -3389,19 +3389,21 @@ define('src/timer',[
 
 
 define('src/boot',[
-  "jasmine",
   "src/spromise",
   "src/timer"
-], function(jasmine, promise, timer) {
+], function(Promise, Timer) {
   
 
 
-  function boot( options ) {
+  function Boot( options ) {
+    options = options || {};
+    var jasmine = options.jasmine;
+
 
     // Simple wrapper to make jasmine's done interface be used as promises
     function makePromise(func) {
       return function(done) {
-        promise.when(func()).done(done);
+        Promise.when(func()).done(done);
       };
     }
 
@@ -3461,7 +3463,7 @@ define('src/boot',[
       },
 
       jsApiReporter: new core.JsApiReporter({
-        timer: new timer()
+        timer: new Timer()
       })
     };
 
@@ -3499,7 +3501,7 @@ define('src/boot',[
   }
 
 
-  return boot;
+  return Boot;
 });
 
 
@@ -3512,7 +3514,7 @@ define('src/boot',[
 define('src/extender',[],function() {
   
 
-  function extender(/*target, [source]+ */) {
+  function Extender(/*target, [source]+ */) {
     var sources = Array.prototype.slice.call(arguments),
         target  = sources.shift();
 
@@ -3528,8 +3530,8 @@ define('src/extender',[],function() {
     return target;
   }
 
-  extender.mixin = extender;
-  return extender;
+  Extender.mixin = Extender;
+  return Extender;
 });
 
 
@@ -3543,7 +3545,7 @@ define('src/extender',[],function() {
 
 define('src/reporters',[
   "src/spromise"
-], function(promise) {
+], function(Promise) {
   
 
   var builtInReporters = {
@@ -3552,39 +3554,40 @@ define('src/reporters',[
   };
 
 
-  function reporters ( rjasmine, options ) {
-    var _promises = [];
+  function Reporters ( rjasmine, options ) {
+    var pending = [], reporterName, reporterOptions;
 
     for ( var option in options ) {
-      var _reporter = options[option];
+      reporterName = option;
+      reporterOptions = options[option];
 
       // If its a built in reporter, we need to adjust the path
       // so that we can load the proper reporter
-      if ( option in builtInReporters ) {
-        option = "src/reporters/" + option;
+      if ( reporterName in builtInReporters ) {
+        reporterName = "src/reporters/" + reporterName;
       }
 
-      _promises.push(load( rjasmine, option, _reporter ));
+      pending.push(load( rjasmine, reporterName, reporterOptions ));
     }
 
-    return promise.when.apply(promise, _promises);
+    this.ready = (Promise.when.apply(Promise, pending)).done;
   }
 
 
   function load( rjasmine, name, options ) {
-    var _promise = new promise();
+    var pending = Promise.defer();
 
-    require([name], function(reporter) {
-      var _reporter = new reporter(rjasmine, options);
-      rjasmine._env.addReporter(_reporter);
-      _promise.resolve(_reporter);
+    require([name], function(Reporter) {
+      var reporter = new Reporter(rjasmine, options);
+      rjasmine._env.addReporter(reporter);
+      pending.resolve(reporter);
     });
 
-    return _promise;
+    return pending;
   }
 
 
-  return reporters;
+  return Reporters;
 
 });
 
@@ -3597,7 +3600,7 @@ define('src/reporters',[
  */
 
 /**
- * jasmine expansion to provide AMD support.
+ * jasmine expansion to provide AMD and Promises support.
  */
 define('src/rjasmine',[
   "jasmine",
@@ -3606,29 +3609,30 @@ define('src/rjasmine',[
   "src/timer",
   "src/reporters",
   "src/spromise"
-], function(jasmine, boot, extender, timer, reporters, promise) {
+], function(Jasmine, Boot, Extender, Timer, Reporters, Promise) {
   
 
 
   function rjasmine( options ) {
     options = options || {};
+    options.jasmine = options.jasmine || Jasmine;
 
     // Call boot to get jasmine stuff all setup.
-    var _boot = new boot(options);
+    var boot = new Boot(options);
 
     // Init reporters
-    var ready = reporters(this, options.reporters);
+    var ready = (new Reporters(this, options.reporters)).ready;
 
     // Extend the instance to include important bits from jasmine
-    rjasmine.extend(this, _boot.api, {
-      _api: _boot.api,
-      _core: _boot.core,
-      _env: _boot.env,
-      _reporter: _boot.reporter,
-      execute: _boot.env.execute,
+    rjasmine.extend(this, boot.api, {
+      _api: boot.api,
+      _core: boot.core,
+      _env: boot.env,
+      _reporter: boot.reporter,
+      execute: boot.env.execute,
       extend: rjasmine.extend,
-      jasmine: jasmine,
-      ready: ready.done
+      jasmine: options.jasmine,
+      ready: ready
     });
   }
 
@@ -3636,11 +3640,10 @@ define('src/rjasmine',[
   /**
    * Exposes important bits that users might want to consume directly
    */
-  rjasmine.extend    = extender;
-  rjasmine.timer     = timer;
-  rjasmine.jasmine   = jasmine;
-  rjasmine.reporters = reporters;
-  rjasmine.promise   = promise;
+  rjasmine.extend    = Extender;
+  rjasmine.timer     = Timer;
+  rjasmine.reporters = Reporters;
+  rjasmine.promise   = Promise;
   return rjasmine;
 
 });
