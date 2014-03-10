@@ -2880,7 +2880,7 @@ define( 'src/async',[],function() {
   *  no function is provided then the exception will be rethrown outside
   *  of the setTimeout scope
   */
-  function async( ) {
+  function Async( ) {
     var args     = arguments,
         func     = arguments[0],
         index    = 1,
@@ -2913,7 +2913,7 @@ define( 'src/async',[],function() {
     return now ? instance.run() : instance;
   }
 
-  return async;
+  return Async;
 });
 
 /**
@@ -2922,7 +2922,7 @@ define( 'src/async',[],function() {
  */
 
 
-define('src/promise',["src/async"], function (async) {
+define('src/promise',["src/async"], function (Async) {
   
 
   var states = {
@@ -3134,7 +3134,7 @@ define('src/promise',["src/async"], function (async) {
       this.state   = state;
       this.context = context;
       this.value   = value;
-      this.async   = async.call(context, false, (void 0), value);
+      this.async   = Async.call(context, false, (void 0), value);
       if (this.deferred) {
         this.notify();
       }
@@ -3241,21 +3241,21 @@ define('src/promise',["src/async"], function (async) {
 define('src/when',[
   "src/promise",
   "src/async"
-], function(promise, async) {
+], function(Promise, Async) {
   
 
   /**
   * Interface to allow multiple promises to be synchronized
   */
-  function when( ) {
+  function When( ) {
     // The input is the queue of items that need to be resolved.
     var queue    = Array.prototype.slice.call(arguments),
-        promise1 = promise(),
+        promise  = Promise.defer(),
         context  = this,
         i, item, remaining, queueLength;
 
     if ( !queue.length ) {
-      return promise1.resolve(null);
+      return promise.resolve(null);
     }
 
     //
@@ -3268,7 +3268,7 @@ define('src/when',[
       }
 
       if ( !remaining ) {
-        promise1.resolve.apply(context, queue);
+        promise.resolve.apply(context, queue);
       }
     }
 
@@ -3283,7 +3283,7 @@ define('src/when',[
     }
 
     function reject() {
-      promise1.reject.apply(this, arguments);
+      promise.reject.apply(this, arguments);
     }
 
     function processQueue() {
@@ -3302,11 +3302,11 @@ define('src/when',[
     }
 
     // Process the promises and callbacks
-    async(processQueue);
-    return promise1;
+    Async(processQueue);
+    return promise;
   }
 
-  return when;
+  return When;
 });
 
 
