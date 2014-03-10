@@ -13,7 +13,7 @@
   "main": "main.js",
   "dependencies": {
     "requirejs": "",
-    "jquery": "",
+    "jquery": "1.11.0",
     "underscore": "",
     "rjasmine": ""
   }

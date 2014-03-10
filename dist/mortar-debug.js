@@ -2396,7 +2396,7 @@ define('src/view',[
     * AMD compliant define interface
     */
     Module.define = function(name, deps, factory) {
-      throw new TypeError("Define not implemented");
+      pending[name] = {name:name, deps:deps, factory:factory};
     };
 
     /**

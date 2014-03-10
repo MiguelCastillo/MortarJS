@@ -2897,7 +2897,7 @@ define( 'src/async',[],function() {
     }
 
     // Readjust args
-    args = arguments[index];
+    args = arguments[index] || [];
 
     instance.run = function run(fn) {
       exec(runner(fn || func));
@@ -2967,17 +2967,17 @@ define('src/promise',["src/async"], function (async) {
 
     function done(cb) {
       stateManager.queue(states.resolved, cb);
-      return target;
+      return target.promise;
     }
 
     function fail(cb) {
       stateManager.queue(states.rejected, cb);
-      return target;
+      return target.promise;
     }
 
     function always(cb) {
       stateManager.queue(queues.always, cb);
-      return target;
+      return target.promise;
     }
 
     function state() {
@@ -3268,7 +3268,7 @@ define('src/when',[
       }
 
       if ( !remaining ) {
-        promise1.resolve.apply(context, queueLength === 1 ? queue[0] : queue);
+        promise1.resolve.apply(context, queue);
       }
     }
 
@@ -3277,7 +3277,7 @@ define('src/when',[
       return function() {
         // We will replace the item in the queue with result to make
         // it easy to send all the data into the resolve interface.
-        queue[index] = arguments;
+        queue[index] = arguments.length === 1 ? arguments[0] : arguments;
         checkPending();
       };
     }
@@ -3295,7 +3295,7 @@ define('src/when',[
           item.then(resolve(i), reject);
         }
         else {
-          queue[i] = queueLength === 1 ? [item] : item;
+          queue[i] = item;
           checkPending();
         }
       }
