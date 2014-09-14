@@ -1,4 +1,6 @@
-define(["src/spromise"], function(Promise) {
+define([
+  "src/spromise"
+], function(Promise) {
   "use strict";
 
   var cache = {};

@@ -2,8 +2,9 @@ define([
   "src/extender",
   "src/events",
   "src/resources",
-  "src/spromise"
-], function(Extender, Events, Resources, Promise) {
+  "src/spromise",
+  "src/utils"
+], function(Extender, Events, Resources, Promise, Utils) {
   "use strict";
 
 
@@ -26,29 +27,29 @@ define([
     // view if it does not render anything?  That's why I will force loading of a template via
     // the resource manager if I can't explicitly find one defined in the settings.
     //
-    if ( !result.tmpl && result.tmpl !== false ) {
-      result.tmpl = _.result(_self, "tmpl") || (fqn && View.resources(["tmpl!url"], fqn).tmpl);
+    if (!result.tmpl && result.tmpl !== false) {
+      result.tmpl = Utils.result(_self, "tmpl") || (fqn && View.resources(["tmpl!url"], fqn).tmpl);
     }
 
-    if ( !result.style && _self.style ) {
-      result.style = _.result(_self, "style");
+    if (!result.style && _self.style) {
+      result.style = Utils.result(_self, "style");
     }
 
-    if ( !result.model && _self.model ) {
-      result.model = _.result(_self, "model");
+    if (!result.model && _self.model) {
+      result.model = Utils.result(_self, "model");
     }
 
-    promises = _.map(result, function( value, key ) {
+    promises = _.map(result, function(value, key) {
       Promise.when(value).done(function(val) {
         _self[key] = val;
 
         // Immediately try to resolve resources that may have been defined as a function.
-        _self[key] = _.result(_self, key);
+        _self[key] = Utils.result(_self, key);
       });
       return value;
     });
 
-    return Promise.when.apply(_self, promises);
+    return Promise.all.call(_self, promises);
   }
 
 
@@ -66,8 +67,8 @@ define([
     }
 
     // Iterate through all the resources and make sure we call load passing in the instance of the view
-    for ( var resource in resources ) {
-      if ( resources.hasOwnProperty( resource ) && _.isFunction(resources[resource].loaded) ) {
+    for (var resource in resources) {
+      if (resources.hasOwnProperty(resource) && Utils.isFunction(resources[resource].loaded)) {
         resources[resource].loaded.call(_self[resource], _self);
       }
     }
@@ -75,8 +76,8 @@ define([
 
 
   /**
-  * View
-  */
+   * View
+   */
   function View(options) {
     var _self  = this,
       deferred = Promise.defer(),
@@ -94,7 +95,7 @@ define([
       _self.on.call(_self.$el, settings.events, _self);
     }
 
-    _.extend(_self, settings.options);
+    Utils.extend(_self, settings.options);
     _self.$el.addClass(_self.className);
     _self.ready = deferred.done;
 
@@ -191,13 +192,13 @@ define([
       options = { $el: options };
     }
     else {
-      options = _.extend({}, options);
+      options = Utils.extend({}, options);
     }
 
     options.settings = options.settings || {};
 
     // Keep events separate so that we dont override events when creating instances.
-    var events = _.extend({}, options.events);
+    var events = Utils.extend({}, options.events);
     delete options.events;
 
     var tagName = options.tagName || this.tagName;

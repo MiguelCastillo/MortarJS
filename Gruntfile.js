@@ -57,6 +57,65 @@ module.exports = function(grunt) {
             endFile: 'buildinfo/module-end.frag'
           }
         }
+      },
+
+      next: {
+        options: {
+          baseUrl: '.',
+          paths: {
+          },
+
+          include: [
+            "src/extender",
+            "src/events",
+            "src/hash.route",
+            "src/model",
+            "src/fetch",
+            "src/style",
+            "src/tmpl",
+            "src/view",
+            "src/resources",
+            "src/spromise",
+            "src/module"
+          ],
+          out: 'dist/mortar-next-debug.js',
+
+          optimize: 'none',
+          preserveLicenseComments: true,
+          skipModuleInsertion: true,
+          wrap: {
+            startFile: ['buildinfo/license.frag']
+          }
+        }
+      },
+      nextminify: {
+        options: {
+          baseUrl: '.',
+          paths: {
+          },
+
+          include: [
+            "src/extender",
+            "src/events",
+            "src/hash.route",
+            "src/model",
+            "src/fetch",
+            "src/style",
+            "src/tmpl",
+            "src/view",
+            "src/resources",
+            "src/spromise",
+            "src/module"
+          ],
+          out: 'dist/mortar-next.js',
+
+          optimize: 'uglify',
+          preserveLicenseComments: true,
+          skipModuleInsertion: true,
+          wrap: {
+            startFile: ['buildinfo/license.frag']
+          }
+        }
       }
     },
     jasmine: {

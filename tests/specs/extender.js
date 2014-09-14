@@ -3,7 +3,6 @@ define(["src/extender"], function(extender) {
   describe("Extender", function() {
 
     it("extend", function() {
-
       // Base class
       function base() {}
       base.prototype.yes = function() {};
@@ -25,7 +24,6 @@ define(["src/extender"], function(extender) {
 
 
     it("3rd extend", function() {
-
       // Base class
       function base() {}
       base.prototype.yes = function() {};
@@ -83,7 +81,6 @@ define(["src/extender"], function(extender) {
 
 
     it("expand", function() {
-
       // Base class
       function base() {}
 
