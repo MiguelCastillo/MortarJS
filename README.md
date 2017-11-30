@@ -1,6 +1,8 @@
 MortarJs
 ========
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/MiguelCastillo/MortarJS.svg)](https://greenkeeper.io/)
+
 Going through major facelift!
 
 # Install
