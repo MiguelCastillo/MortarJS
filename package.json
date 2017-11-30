@@ -15,14 +15,14 @@
     "url": "https://github.com/MiguelCastillo/MortarJS/issues"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-requirejs": "~0.4.1",
-    "grunt-contrib-jasmine": "~0.5.2",
-    "grunt-contrib-jshint": "~0.8.0",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-template-jasmine-requirejs": "~0.1.8",
-    "zombie": "~2.0.0-alpha24"
+    "grunt": "~1.0.1",
+    "grunt-contrib-concat": "~1.0.1",
+    "grunt-contrib-requirejs": "~1.0.0",
+    "grunt-contrib-jasmine": "~1.1.0",
+    "grunt-contrib-jshint": "~1.1.0",
+    "grunt-contrib-watch": "~1.0.0",
+    "grunt-template-jasmine-requirejs": "~0.2.3",
+    "zombie": "~5.0.7"
   },
   "private": true
 }
